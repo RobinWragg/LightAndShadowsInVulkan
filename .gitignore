@@ -1,2 +1,3 @@
 .DS_Store
-code/macos/build/*
+code/macos/build
+*.xcuserdatad
