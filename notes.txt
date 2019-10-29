@@ -3,8 +3,6 @@ ReflectAndEvaluate, ShowPlanningAndTimeManagement, ShowEmployability
 intro WHAT
 Learn and practice using shadow maps
 
-
-
 motivation WHY
 I can build on top of my recently learned Vulkan knowledge
 I can also reuse much of that code, enabling the project to go comparatively further in the same timeframe
@@ -13,13 +11,6 @@ I can also reuse much of that code, enabling the project to go comparatively fur
 
 work plan HOW
 Build a scene; spheres, cubes, perhaps load more complex meshes? Only vertices, no materials etc
-
-For all this area including sides of geometry that face away from the light source, we can use a simple technique. Get the surface normal the direction of the light source, both as unit vectors. Then dot-product them, and that's your brightness.
-... (hand illustration)
-For shadows, it's more complicated. First of all, we need to render the geometry from the perspective of the light source, but for each pixel, we don't record the red-blue-green values, we record the distance from the geometry to the camera, in this case, the light source. So then we've got a big grid of distance values called a depth texture, but I recommend thinking of it as a distance texture when we're shadow mapping because it's easier to think about and that's what we're going to use it for.
-Okay great, so we've got a distance texture now. Let's Render the scene from the normal perspective.
-When rendering as we normally do, every pixel corresponds to a location in world space of course. Using the information of how the distance texture was rendered, we can run the location through a function that will return the corresponding pixel from the distance texture. For example, we now know that this pixel at the corner of the cube corresponds to a pixel here, on the corner of the cube in the center. What does that tell us? It tells the distance from our location to the light source. And you might be thinking "well, if that's the information we're trying to get, why don't we just compare these two points to get the distance? It'll give the same answer." Yes. It will give us the same answer unless the location we're talking about is in shadow. We can't see any shadow from the perspective of the light source. So what the distance pixel tells us is the distance from about here, to the light source. So our two distance values are now different. When they are different, we can confirm that our location is in shadow, and we darken the pixel.
-
 Then I will try out things like sub-texel sampling and and and
 
 it's like a magnifying glass
@@ -33,9 +24,6 @@ They say lighting is super important (it's why deferred rendering is a common ap
 
 risks WHAT
 I think the main risk whenever working to a deadline, especially when aiming to learn something new is that I can underestimate how much I can do in the timeframe; there are lots of unknowns; that's kind of the point of this sort of project. I've structured this project so that I get the basics done first (classical shadow mapping) then I can squeeze in as many incremental changes as the time allows.
-Make a change, write about it.
-Make a change, write about it.
-Make a change, write about it.
 
 shadow mapping
 https://www.youtube.com/watch?v=R18YahCJJoc
