@@ -24,7 +24,7 @@
 using namespace glm;
 using namespace std;
 
-float getTime() {
+double getTime() {
 	static uint64_t startCount = SDL_GetPerformanceCounter();
 	return (SDL_GetPerformanceCounter() - startCount) / (double)SDL_GetPerformanceFrequency();
 }
