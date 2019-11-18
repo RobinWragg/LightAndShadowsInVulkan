@@ -4,25 +4,7 @@
 #include <windows.h>
 #endif
 
-#include <cstdio>
-#include <vector>
-#include <thread>
-#include <mutex>
-#include <fstream>
-
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_vulkan.h>
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include "glm/vec3.hpp"
-#include "glm/vec4.hpp"
-#include "glm/mat4x4.hpp"
-
-// #include <vulkan/vulkan.h>
-
-using namespace glm;
-using namespace std;
+#include "main.h"
 
 double getTime() {
 	static uint64_t startCount = SDL_GetPerformanceCounter();

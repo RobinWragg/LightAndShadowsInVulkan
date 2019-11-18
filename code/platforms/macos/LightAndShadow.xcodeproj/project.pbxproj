@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0036EB322382A352008538A6 /* graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0036EB302382A352008538A6 /* graphics.cpp */; };
+		0036EB332382A352008538A6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0036EB312382A352008538A6 /* main.cpp */; };
+		0036EB362382A71D008538A6 /* vulkan.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; };
 		00470909238218AA0018D488 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; };
 		0047090B238219250018D488 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		00F949F423821FB60033D418 /* spirv in Resources */ = {isa = PBXBuildFile; fileRef = 00F949F323821FB60033D418 /* spirv */; };
@@ -29,8 +32,11 @@
 /* Begin PBXFileReference section */
 		001D32B7238217CF001A68C7 /* LightAndShadow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LightAndShadow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		001D32C2238217D1001A68C7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0036EB302382A352008538A6 /* graphics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics.cpp; sourceTree = "<group>"; };
+		0036EB312382A352008538A6 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		0036EB342382A3B3008538A6 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
+		0036EB352382A71D008538A6 /* vulkan.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = vulkan.framework; sourceTree = SOURCE_ROOT; };
 		00470908238218AA0018D488 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL2.framework; sourceTree = SOURCE_ROOT; };
-		00E40CE923821FA00095F971 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		00F949F323821FB60033D418 /* spirv */ = {isa = PBXFileReference; lastKnownFileType = folder; name = spirv; path = ../../spirv; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -40,6 +46,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				00470909238218AA0018D488 /* SDL2.framework in Frameworks */,
+				0036EB362382A71D008538A6 /* vulkan.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -49,8 +56,8 @@
 		001D32AE238217CF001A68C7 = {
 			isa = PBXGroup;
 			children = (
+				0036EB2F2382A352008538A6 /* cpp */,
 				00F949F323821FB60033D418 /* spirv */,
-				00E40CE823821FA00095F971 /* cpp */,
 				001D32B9238217CF001A68C7 /* LightAndShadow */,
 				001D32B8238217CF001A68C7 /* Products */,
 			);
@@ -67,16 +74,19 @@
 		001D32B9238217CF001A68C7 /* LightAndShadow */ = {
 			isa = PBXGroup;
 			children = (
+				0036EB352382A71D008538A6 /* vulkan.framework */,
 				00470908238218AA0018D488 /* SDL2.framework */,
 				001D32C2238217D1001A68C7 /* Info.plist */,
 			);
 			path = LightAndShadow;
 			sourceTree = "<group>";
 		};
-		00E40CE823821FA00095F971 /* cpp */ = {
+		0036EB2F2382A352008538A6 /* cpp */ = {
 			isa = PBXGroup;
 			children = (
-				00E40CE923821FA00095F971 /* main.cpp */,
+				0036EB342382A3B3008538A6 /* main.h */,
+				0036EB302382A352008538A6 /* graphics.cpp */,
+				0036EB312382A352008538A6 /* main.cpp */,
 			);
 			name = cpp;
 			path = ../../cpp;
@@ -151,6 +161,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0036EB332382A352008538A6 /* main.cpp in Sources */,
+				0036EB322382A352008538A6 /* graphics.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -277,7 +289,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				HEADER_SEARCH_PATHS = "../libs/glm-0.9.9.6";
+				HEADER_SEARCH_PATHS = "../../libs/glm-0.9.9.6";
 				INFOPLIST_FILE = LightAndShadow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -299,7 +311,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				HEADER_SEARCH_PATHS = "../libs/glm-0.9.9.6";
+				HEADER_SEARCH_PATHS = "../../libs/glm-0.9.9.6";
 				INFOPLIST_FILE = LightAndShadow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
