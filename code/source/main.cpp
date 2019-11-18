@@ -45,17 +45,23 @@ void monitorFramerate(float deltaTime) {
 SDL_Renderer *renderer;
 int rendererWidth, rendererHeight;
 
-int main(int argc, char* argv[]) {
-	int result = SDL_Init(SDL_INIT_EVERYTHING);
-	SDL_assert_release(result == 0);
-    
-	char *path = SDL_GetBasePath();
+void setWorkingDir() {
+    char *path = SDL_GetBasePath();
     #ifdef __APPLE__
     SDL_assert_release(chdir(path) == 0);
     #else
     SDL_assert_release(SetCurrentDirectory(path));
     #endif
-	SDL_free(path);
+    SDL_free(path);
+}
+
+int main(int argc, char* argv[]) {
+    long long a = 234;
+    int b = a;
+	ignt result = SDL_Init(SDL_INIT_EVERYTHING);
+	SDL_assert_release(result == 0);
+    
+    setWorkingDir();
 
 	// create a 4:3 SDL window
 	int windowWidth = 600;
