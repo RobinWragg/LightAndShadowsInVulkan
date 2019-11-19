@@ -13,7 +13,8 @@
 		00470909238218AA0018D488 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; };
 		0047090B238219250018D488 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		00E56C35238472FB00EE76EB /* vulkan.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		00F949F423821FB60033D418 /* spirv in Resources */ = {isa = PBXBuildFile; fileRef = 00F949F323821FB60033D418 /* spirv */; };
+		00F10F3B23848EA900C328BF /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 00F10F3A23848EA900C328BF /* assets */; };
+		00F10F3E2384936E00C328BF /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00F10F3D2384936E00C328BF /* Metal.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -39,7 +40,8 @@
 		0036EB342382A3B3008538A6 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		0036EB352382A71D008538A6 /* vulkan.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = vulkan.framework; sourceTree = SOURCE_ROOT; };
 		00470908238218AA0018D488 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL2.framework; sourceTree = SOURCE_ROOT; };
-		00F949F323821FB60033D418 /* spirv */ = {isa = PBXFileReference; lastKnownFileType = folder; name = spirv; path = ../../spirv; sourceTree = "<group>"; };
+		00F10F3A23848EA900C328BF /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../assets; sourceTree = "<group>"; };
+		00F10F3D2384936E00C328BF /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +49,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				00F10F3E2384936E00C328BF /* Metal.framework in Frameworks */,
 				00470909238218AA0018D488 /* SDL2.framework in Frameworks */,
 				0036EB362382A71D008538A6 /* vulkan.framework in Frameworks */,
 			);
@@ -58,10 +61,11 @@
 		001D32AE238217CF001A68C7 = {
 			isa = PBXGroup;
 			children = (
+				00F10F3A23848EA900C328BF /* assets */,
 				0036EB2F2382A352008538A6 /* cpp */,
-				00F949F323821FB60033D418 /* spirv */,
 				001D32B9238217CF001A68C7 /* LightAndShadow */,
 				001D32B8238217CF001A68C7 /* Products */,
+				00F10F3C2384936D00C328BF /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -92,6 +96,14 @@
 			);
 			name = cpp;
 			path = ../../cpp;
+			sourceTree = "<group>";
+		};
+		00F10F3C2384936D00C328BF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				00F10F3D2384936E00C328BF /* Metal.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -152,7 +164,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00F949F423821FB60033D418 /* spirv in Resources */,
+				00F10F3B23848EA900C328BF /* assets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

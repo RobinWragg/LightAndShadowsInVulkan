@@ -25,21 +25,7 @@ double getTime();
 
 namespace graphics {
 	void init(
-		SDL_Window *window,
-		const vector<VkVertexInputBindingDescription> &bindingDesc,
-		const vector<VkVertexInputAttributeDescription> &attribDescs);
+		SDL_Window *window);
 	void destroy();
 	void render(uint32_t particleCount, uint8_t componentCount, float *componentPtrs[]);
-}
-
-namespace particles {
-	struct Particle {
-		vec3 position;
-		float brightness;
-	};
-
-	void init(SDL_Window *window);
-	void update(int particleCount, float deltaTime);
-	void render();
-	void destroy();
 }

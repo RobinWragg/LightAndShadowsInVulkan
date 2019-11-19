@@ -29,10 +29,11 @@ int rendererWidth, rendererHeight;
 
 void setWorkingDir() {
 	char *path = SDL_GetBasePath();
+	string assetsPath = string(path) + "/assets";
 #ifdef __APPLE__
-	SDL_assert_release(chdir(path) == 0);
+	SDL_assert_release(chdir(assetsPath.c_str()) == 0);
 #else
-	SDL_assert_release(SetCurrentDirectory(path));
+	SDL_assert_release(SetCurrentDirectory(assetsPath));
 #endif
 	SDL_free(path);
 }
@@ -52,8 +53,24 @@ int main(int argc, char* argv[]) {
 		"Shadow Mapping", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		windowWidth, windowHeight, SDL_WINDOW_VULKAN);
 	SDL_assert_release(window != NULL);
+	printf("Created window\n");
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	graphics::init(window);
 	
 	bool running = true;
+	running = false;
+	
+	printf("Beginning frame loop\n");
+	
 	while (running) {
 		float deltaTime;
 		{
@@ -72,9 +89,9 @@ int main(int argc, char* argv[]) {
 		
 		printf("(render)\n");
 	}
-
+	
+	printf("Quitting\n");
 	SDL_Quit();
-
 	return 0;
 }
 

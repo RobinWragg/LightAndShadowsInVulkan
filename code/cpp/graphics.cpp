@@ -1,16 +1,22 @@
 #include "main.h"
+#include "vulkan_stateless.cpp"
 
 namespace graphics {
 	const auto requiredSwapchainFormat = VK_FORMAT_B8G8R8A8_UNORM;
 	const auto requiredSwapchainColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 	const int requiredSwapchainImageCount = 2;
-	bool enableVsync = false;
+	bool enableVsync = true;
 	bool enableDepthTesting = true;
 
 	vector<const char*> requiredValidationLayers = {
-#ifdef _DEBUG
-		"VK_LAYER_LUNARG_standard_validation"
-#endif
+		"VK_LAYER_GOOGLE_unique_objects",
+		// "VK_LAYER_LUNARG_api_dump",
+		"VK_LAYER_LUNARG_standard_validation",
+		"VK_LAYER_KHRONOS_validation",
+		"VK_LAYER_GOOGLE_threading",
+		"VK_LAYER_LUNARG_core_validation",
+		"VK_LAYER_LUNARG_parameter_validation",
+		"VK_LAYER_LUNARG_object_tracker"
 	};
 
 	VkSemaphore imageAvailableSemaphore;
@@ -39,6 +45,8 @@ namespace graphics {
 	VkInstance instance = VK_NULL_HANDLE;
 	
 	vector<uint8_t> loadBinaryFile(const char *filename) {
+		printf("Loading file: %s\n", filename);
+		
 		ifstream file(filename, ios::ate | ios::binary);
 
 		SDL_assert_release(file.is_open());
@@ -93,25 +101,6 @@ namespace graphics {
 		return foundRequiredFormat;
 	}
 
-	void printQueueFamilies(VkPhysicalDevice device) {
-		uint32_t familyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, nullptr);
-
-		std::vector<VkQueueFamilyProperties> families(familyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, families.data());
-
-		printf("\nDevice has these queue families:\n");
-		for (uint32_t i = 0; i < familyCount; i++) {
-			printf("\tNumber of queues: %i. Support: ", families[i].queueCount);
-
-			if (families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) printf("graphics ");
-			if (families[i].queueFlags & VK_QUEUE_COMPUTE_BIT) printf("compute ");
-			if (families[i].queueFlags & VK_QUEUE_TRANSFER_BIT) printf("transfer ");
-			if (families[i].queueFlags & VK_QUEUE_SPARSE_BINDING_BIT) printf("sparse_binding ");
-			printf("\n");
-		}
-	}
-
 	VkDeviceQueueCreateInfo buildQueueCreateInfo(VkPhysicalDevice device, VkQueueFlagBits requiredFlags, bool mustSupportSurface) {
 		uint32_t familyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, nullptr);
@@ -150,26 +139,6 @@ namespace graphics {
 		info.pQueuePriorities = priorities;
 
 		return info;
-	}
-
-	void printAvailableInstanceLayers() {
-		uint32_t layerCount;
-		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-		vector<VkLayerProperties> availableLayers(layerCount);
-		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-		printf("\nAvailable layers:\n");
-		for (const auto& layer : availableLayers) printf("\t%s\n", layer.layerName);
-	}
-
-	void printAvailableDeviceLayers(VkPhysicalDevice device) {
-		uint32_t layerCount;
-		vkEnumerateDeviceLayerProperties(device, &layerCount, nullptr);
-		vector<VkLayerProperties> deviceLayers(layerCount);
-		vkEnumerateDeviceLayerProperties(device, &layerCount, deviceLayers.data());
-
-		printf("\nAvailable device layers (deprecated API section):\n");
-		for (const auto& layer : deviceLayers) printf("\t%s\n", layer.layerName);
 	}
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -348,8 +317,7 @@ namespace graphics {
 	}
 
 	void buildPipeline(
-		const vector<VkVertexInputBindingDescription> &bindingDescs,
-		const vector<VkVertexInputAttributeDescription> &attribDescs) {
+		VkVertexInputBindingDescription &bindingDesc, VkVertexInputAttributeDescription &attribDesc) {
 		
 		vector<VkPipelineShaderStageCreateInfo> shaderStages = {
 			buildShaderStage("basic_vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
@@ -359,15 +327,15 @@ namespace graphics {
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-		vertexInputInfo.vertexBindingDescriptionCount = (int)bindingDescs.size();
-		vertexInputInfo.pVertexBindingDescriptions = bindingDescs.data();
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.pVertexBindingDescriptions = &bindingDesc;
 
-		vertexInputInfo.vertexAttributeDescriptionCount = (int)attribDescs.size();
-		vertexInputInfo.pVertexAttributeDescriptions = attribDescs.data();
+		vertexInputInfo.vertexAttributeDescriptionCount = 1;
+		vertexInputInfo.pVertexAttributeDescriptions = &attribDesc;
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 
 		VkViewport viewport = {};
@@ -397,6 +365,7 @@ namespace graphics {
 		rasterInfo.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterInfo.lineWidth = 1; // TODO: unnecessary?
 		rasterInfo.cullMode = VK_CULL_MODE_NONE;
+		
 		rasterInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 		rasterInfo.depthBiasEnable = VK_FALSE;
 
@@ -437,8 +406,8 @@ namespace graphics {
 		pipelineInfo.pInputAssemblyState = &inputAssembly;
 		pipelineInfo.pViewportState = &viewportInfo;
 
+		VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
 		if (enableDepthTesting) {
-			VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
 			depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 			depthStencilInfo.depthTestEnable = VK_TRUE;
 			depthStencilInfo.depthWriteEnable = VK_TRUE;
@@ -454,7 +423,9 @@ namespace graphics {
 		pipelineInfo.layout = pipelineLayout;
 		pipelineInfo.renderPass = renderPass;
 		pipelineInfo.subpass = 0;
-		SDL_assert_release(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) == VK_SUCCESS);
+        
+        auto result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline);
+		SDL_assert_release(result == VK_SUCCESS);
 
 		for (auto &stage : shaderStages) vkDestroyShaderModule(device, stage.module, nullptr);
 	}
@@ -675,10 +646,19 @@ namespace graphics {
 		endDepthTestingCommandBuffer(commandBuffer, commandPool);
 	}
 
-	void init(
-		SDL_Window *window,
-		const vector<VkVertexInputBindingDescription> &bindingDescs,
-		const vector<VkVertexInputAttributeDescription> &attribDescs) {
+	void init(SDL_Window *window) {
+		
+		VkVertexInputBindingDescription bindingDesc = {};
+		VkVertexInputAttributeDescription attribDesc = {};
+
+		bindingDesc.binding = 0;
+		bindingDesc.stride = sizeof(vec3);
+		bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		attribDesc.binding = 0;
+		attribDesc.location = 0;
+		attribDesc.format = VK_FORMAT_R32G32B32_SFLOAT;
+		attribDesc.offset = 0;
 
 		printAvailableInstanceLayers();
 
@@ -691,17 +671,8 @@ namespace graphics {
 			createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 
 			// Specify app info TODO: necessary?
-			VkApplicationInfo appInfo = {};
-			{
-				appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-				appInfo.pApplicationName = "Vulkan Particle System";
-				appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-				appInfo.pEngineName = "N/A";
-				appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-				appInfo.apiVersion = VK_API_VERSION_1_0;
-
-				createInfo.pApplicationInfo = &appInfo;
-			}
+			auto appInfo = makeApplicationInfo();
+			createInfo.pApplicationInfo = &appInfo;
 
 			// Request the instance extensions that SDL requires
 			vector<const char*> requiredExtensions;
@@ -763,7 +734,6 @@ namespace graphics {
 				vkGetPhysicalDeviceProperties(candidateDevice, &properties);
 
 				if (VK_VERSION_MAJOR(properties.apiVersion) >= 1
-					&& VK_VERSION_MINOR(properties.apiVersion) >= 1
 					&& deviceHasExtensions(candidateDevice, requiredDeviceExtensions)
 					&& deviceSupportsAcceptableSwapchain(candidateDevice, surface)) {
 					physicalDevice = candidateDevice;
@@ -776,6 +746,7 @@ namespace graphics {
 			VkPhysicalDeviceProperties properties;
 			vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 			printf("\nChosen device: %s\n", properties.deviceName);
+            printQueueFamilies(physicalDevice);
 		}
 
 		// Create the logical device with a queue capable of graphics and surface presentation commands
@@ -799,11 +770,10 @@ namespace graphics {
 				deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
 			}
 
-			// Enable validation layers for the device, same as the instance (deprecated in Vulkan 1.1, but the API advises we do so) TODO: remove?
 			{
-				//printAvailableDeviceLayers(physicalDevice);
-				//deviceCreateInfo.enabledLayerCount = (int)requiredValidationLayers.size();
-				//deviceCreateInfo.ppEnabledLayerNames = requiredValidationLayers.data();
+				printAvailableDeviceLayers(physicalDevice);
+				deviceCreateInfo.enabledLayerCount = (int)requiredValidationLayers.size();
+				deviceCreateInfo.ppEnabledLayerNames = requiredValidationLayers.data();
 			}
 
 			SDL_assert_release(vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device) == VK_SUCCESS);
@@ -882,7 +852,7 @@ namespace graphics {
 		printf("\nInitialised Vulkan\n");
 
 		buildRenderPass();
-		buildPipeline(bindingDescs, attribDescs);
+		buildPipeline(bindingDesc, attribDesc);
 		commandPool = buildCommandPool(device, queueFamilyIndex);
 		if (enableDepthTesting) setupDepthTesting(commandPool);
 		buildFramebuffers();
