@@ -38,11 +38,11 @@ void setWorkingDir() {
 }
 
 int main(int argc, char* argv[]) {
-    
+	
 	int result = SDL_Init(SDL_INIT_EVERYTHING);
 	SDL_assert_release(result == 0);
-    
-    setWorkingDir();
+	
+	setWorkingDir();
 
 	// create a 4:3 SDL window
 	int windowWidth = 600;

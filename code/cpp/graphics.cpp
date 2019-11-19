@@ -720,9 +720,8 @@ namespace graphics {
 			// Enable instance validation layers
 			createInfo.enabledLayerCount = (int)requiredValidationLayers.size();
 			createInfo.ppEnabledLayerNames = requiredValidationLayers.data();
-
-			auto creationResult = vkCreateInstance(&createInfo, nullptr, &instance);
-			//SDL_assert_release( == VK_SUCCESS);
+			
+			SDL_assert_release(vkCreateInstance(&createInfo, nullptr, &instance) == VK_SUCCESS);
 			printf("\nCreated Vulkan instance\n");
 		}
 
