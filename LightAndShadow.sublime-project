@@ -9,20 +9,12 @@
   [
     {
       "name": "LightAndShadow",
-      "file_regex": "^(/.+?):(\\d+):(\\d+): (?:error:)?(.+?)$",
+      "file_regex": "(/Users/.+?):(\\d+)(?::(\\d+): (?:error:)?(.+?)$)?",
       "quiet": true,
       "word_wrap": true,
       "osx": {
-        "shell_cmd": "cd $project_path/code/platforms/macos && ./build.sh"
-      },
-      "variants": [
-        {
-          "name": "Build & Run",
-          "osx": {
-            "shell_cmd": "cd $project_path/code/platforms/macos && ./build.sh && "
-          }
-        }
-      ]
+        "shell_cmd": "cd $project_path/code/platforms/macos && xcodebuild -configuration Debug -quiet && build/Debug/LightAndShadow.app/Contents/MacOS/LightAndShadow"
+      }
     }
   ]
 }

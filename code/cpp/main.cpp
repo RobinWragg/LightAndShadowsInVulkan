@@ -28,13 +28,13 @@ SDL_Renderer *renderer;
 int rendererWidth, rendererHeight;
 
 void setWorkingDir() {
-    char *path = SDL_GetBasePath();
+	char *path = SDL_GetBasePath();
 #ifdef __APPLE__
-    SDL_assert_release(chdir(path) == 0);
+	SDL_assert_release(chdir(path) == 0);
 #else
-    SDL_assert_release(SetCurrentDirectory(path));
+	SDL_assert_release(SetCurrentDirectory(path));
 #endif
-    SDL_free(path);
+	SDL_free(path);
 }
 
 int main(int argc, char* argv[]) {

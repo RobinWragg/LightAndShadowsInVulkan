@@ -1,3 +1,0 @@
-echo Running build.sh...
-xcodebuild -configuration Debug -quiet | grep 'error:\|warning:'
-echo Done

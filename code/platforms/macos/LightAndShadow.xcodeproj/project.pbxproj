@@ -12,6 +12,7 @@
 		0036EB362382A71D008538A6 /* vulkan.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; };
 		00470909238218AA0018D488 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; };
 		0047090B238219250018D488 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		00E56C35238472FB00EE76EB /* vulkan.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		00F949F423821FB60033D418 /* spirv in Resources */ = {isa = PBXBuildFile; fileRef = 00F949F323821FB60033D418 /* spirv */; };
 /* End PBXBuildFile section */
 
@@ -23,6 +24,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				0047090B238219250018D488 /* SDL2.framework in Copy Frameworks */,
+				00E56C35238472FB00EE76EB /* vulkan.framework in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
