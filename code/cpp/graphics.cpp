@@ -1,17 +1,14 @@
 #include "main.h"
-#include "graphics_creation.cpp"
+#include <SDL2/SDL_vulkan.h>
+#include <vulkan/vulkan.h>
+
+#include "graphics_creation.h"
 
 namespace graphics {
 	const auto requiredSwapchainFormat = VK_FORMAT_B8G8R8A8_UNORM;
 	const auto requiredSwapchainColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 	const int requiredSwapchainImageCount = 2;
 	bool enableDepthTesting = true;
-
-	vector<const char*> layers = {
-//        "VK_LAYER_LUNARG_api_dump",
-		"VK_LAYER_LUNARG_standard_validation",
-		"VK_LAYER_KHRONOS_validation"
-	};
 
 	VkSemaphore imageAvailableSemaphore;
 	VkSemaphore renderCompletedSemaphore;
@@ -25,7 +22,8 @@ namespace graphics {
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkExtent2D extent;
 	int queueFamilyIndex = -1;
-	VkQueue queue = VK_NULL_HANDLE;
+	VkQueue graphicsQueue = VK_NULL_HANDLE;
+	VkQueue surfaceQueue = VK_NULL_HANDLE;
 	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 	VkPipeline pipeline = VK_NULL_HANDLE;
 	VkRenderPass renderPass = VK_NULL_HANDLE;
@@ -34,7 +32,6 @@ namespace graphics {
 	vector<VkImage> swapchainImages;
 	vector<VkImageView> swapchainViews;
 	VkDevice device = VK_NULL_HANDLE;
-	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	VkInstance instance = VK_NULL_HANDLE;
 	
 	vector<uint8_t> loadBinaryFile(const char *filename) {
@@ -68,68 +65,6 @@ namespace graphics {
 		}
 
 		return foundRequiredFormat;
-	}
-
-	void printQueueFamilies(VkPhysicalDevice device) {
-		uint32_t familyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, nullptr);
-
-		std::vector<VkQueueFamilyProperties> families(familyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, families.data());
-
-		printf("\nDevice has these queue families:\n");
-		for (uint32_t i = 0; i < familyCount; i++) {
-            auto &family = families[i];
-			printf("\tNumber of queues: %i. Support: ", family.queueCount);
-
-			if (family.queueFlags & VK_QUEUE_GRAPHICS_BIT) printf("graphics ");
-			if (family.queueFlags & VK_QUEUE_COMPUTE_BIT) printf("compute ");
-			if (family.queueFlags & VK_QUEUE_TRANSFER_BIT) printf("transfer ");
-			if (family.queueFlags & VK_QUEUE_SPARSE_BINDING_BIT) printf("sparse_binding ");
-			printf("\n");
-		}
-        
-        printf("(end)\n");
-	}
-
-	VkDeviceQueueCreateInfo createQueueCreateInfo(VkPhysicalDevice device, VkQueueFlagBits requiredFlags, bool mustSupportSurface) {
-		uint32_t familyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, nullptr);
-		std::vector<VkQueueFamilyProperties> families(familyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, families.data());
-
-		int selectedIndex = -1;
-
-		// Choose the first queue family that has the required support
-		for (int index = 0; index < families.size(); index++) {
-			if (!requiredFlags || (families[index].queueFlags & requiredFlags)) {
-				if (mustSupportSurface) {
-					VkBool32 familySupportsSurface;
-					vkGetPhysicalDeviceSurfaceSupportKHR(device, index, surface, &familySupportsSurface);
-
-					// Family doesn't support the surface, so skip it
-					if (familySupportsSurface == VK_FALSE) continue;
-				}
-
-				selectedIndex = index;
-				break;
-			}
-		}
-
-		SDL_assert_release(selectedIndex >= 0);
-
-		VkDeviceQueueCreateInfo info = {};
-		info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		info.queueFamilyIndex = selectedIndex;
-		info.queueCount = 1;
-
-		// I'm allocating without freeing here which is super bad practice,
-		// but it's only 4 bytes for the entire life of the program.
-		float *priorities = new float[1];
-		priorities[0] = 1.0f;
-		info.pQueuePriorities = priorities;
-
-		return info;
 	}
 
 	void printAvailableDeviceLayers(VkPhysicalDevice device) {
@@ -566,8 +501,8 @@ namespace graphics {
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &buffer;
 
-		vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(queue);
+		vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(graphicsQueue);
 
 		vkFreeCommandBuffers(device, commandPool, 1, &buffer);
 	}
@@ -650,56 +585,11 @@ namespace graphics {
 	void init(SDL_Window *window) {
 		instance = createInstance(window, layers);
 		
-		// Setup the debug messenger
 		if (!layers.empty()) createDebugMessenger(instance, debugCallback);
-
-		// Create surface
-		SDL_assert_release(SDL_Vulkan_CreateSurface(window, instance, &surface) == SDL_TRUE);
-
-		physicalDevice = createPhysicalDevice(instance, surface);
-
-		// Create the logical device with a queue capable of graphics and surface presentation commands
-        VkPhysicalDeviceFeatures enabledDeviceFeatures = {};
-		{
-            printQueueFamilies(physicalDevice);
-            
-			vector<VkDeviceQueueCreateInfo> queueInfos = {
-				createQueueCreateInfo(physicalDevice, VK_QUEUE_GRAPHICS_BIT, true)
-			};
-			queueFamilyIndex = queueInfos[0].queueFamilyIndex;
-
-			VkDeviceCreateInfo deviceCreateInfo = {};
-            vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-			{
-				deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-
-				deviceCreateInfo.pQueueCreateInfos = queueInfos.data();
-				deviceCreateInfo.queueCreateInfoCount = (int)queueInfos.size();
-
-				deviceCreateInfo.pEnabledFeatures = &enabledDeviceFeatures;
-
-				// Enable extensions
-				deviceCreateInfo.enabledExtensionCount = 1;
-				deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
-			}
-
-			// Enable validation layers for the device, same as the instance (deprecated in Vulkan 1.1, but the API advises we do so) TODO: remove?
-			{
-				printAvailableDeviceLayers(physicalDevice);
-				deviceCreateInfo.enabledLayerCount = (int)layers.size();
-				deviceCreateInfo.ppEnabledLayerNames = layers.data();
-			}
-
-			SDL_assert_release(vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device) == VK_SUCCESS);
-			SDL_assert_release(device != VK_NULL_HANDLE);
-			printf("\nCreated logical device\n");
-
-			// Get a handle to the new queue
-			int queueIndex = 0; // Only one queue per VkDeviceQueueCreateInfo was created, so this is 0.
-			vkGetDeviceQueue(device, queueInfos[0].queueFamilyIndex, queueIndex, &queue);
-			SDL_assert_release(queue != VK_NULL_HANDLE);
-			printf("\nCreated queue at family index %i\n", queueInfos[0].queueFamilyIndex);
-		}
+		
+		physicalDevice = createPhysicalDevice(instance, window);
+		
+		createLogicalDevice(physicalDevice, &device, &graphicsQueue, &surfaceQueue);
 		
 		// Create the swapchain
 		{
@@ -811,9 +701,10 @@ namespace graphics {
 
 
 		if (!commandBuffers.empty()) {
-			// The queue may not have finished its commands from the last frame yet,
+			// The queues may not have finished their commands from the last frame yet,
 			// so we wait for everything to be finished before rebuilding the buffers.
-			vkQueueWaitIdle(queue);
+			vkQueueWaitIdle(graphicsQueue);
+			vkQueueWaitIdle(surfaceQueue);
 			freeRenderBuffers();
 		}
 
@@ -840,7 +731,7 @@ namespace graphics {
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = &renderCompletedSemaphore;
 
-		result = vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+		result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		SDL_assert(result == VK_SUCCESS);
 
 		// Present
@@ -854,12 +745,14 @@ namespace graphics {
 		presentInfo.pSwapchains = &swapchain;
 		presentInfo.pImageIndices = &swapchainImageIndex;
 
-		result = vkQueuePresentKHR(queue, &presentInfo);
+		result = vkQueuePresentKHR(surfaceQueue, &presentInfo);
 		SDL_assert(result == VK_SUCCESS);
 	}
 
 	void destroy() {
-		vkQueueWaitIdle(queue);
+		vkQueueWaitIdle(graphicsQueue);
+		vkQueueWaitIdle(surfaceQueue);
+		
 		freeRenderBuffers();
 
 		vkDestroyCommandPool(device, commandPool, nullptr);
@@ -883,7 +776,7 @@ namespace graphics {
 		swapchainImages.resize(0);
 		vkDestroySwapchainKHR(device, swapchain, nullptr);
 		vkDestroyDevice(device, nullptr);
-		vkDestroySurfaceKHR(instance, surface, nullptr);
+		//vkDestroySurfaceKHR(instance, surface, nullptr);
 		vkDestroyInstance(instance, nullptr);
 	}
 }

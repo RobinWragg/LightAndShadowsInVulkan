@@ -13,6 +13,7 @@
 		00470909238218AA0018D488 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; };
 		0047090B238219250018D488 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		00E56C35238472FB00EE76EB /* vulkan.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		00EE526223873BAB00F48749 /* graphics_creation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00EE526123873BAB00F48749 /* graphics_creation.cpp */; };
 		00F10F3B23848EA900C328BF /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 00F10F3A23848EA900C328BF /* assets */; };
 /* End PBXBuildFile section */
 
@@ -39,6 +40,7 @@
 		0036EB342382A3B3008538A6 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		0036EB352382A71D008538A6 /* vulkan.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = vulkan.framework; sourceTree = SOURCE_ROOT; };
 		00470908238218AA0018D488 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL2.framework; sourceTree = SOURCE_ROOT; };
+		00EE526123873BAB00F48749 /* graphics_creation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics_creation.cpp; sourceTree = "<group>"; };
 		00F10F3A23848EA900C328BF /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../assets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -87,6 +89,7 @@
 			isa = PBXGroup;
 			children = (
 				0036EB342382A3B3008538A6 /* main.h */,
+				00EE526123873BAB00F48749 /* graphics_creation.cpp */,
 				0036EB302382A352008538A6 /* graphics.cpp */,
 				0036EB312382A352008538A6 /* main.cpp */,
 			);
@@ -186,6 +189,7 @@
 			files = (
 				0036EB332382A352008538A6 /* main.cpp in Sources */,
 				0036EB322382A352008538A6 /* graphics.cpp in Sources */,
+				00EE526223873BAB00F48749 /* graphics_creation.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

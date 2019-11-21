@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <vector>
+#include <set>
 #include <thread>
 #include <mutex>
 #include <fstream>
@@ -14,9 +15,6 @@
 #include <glm/mat4x4.hpp>
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_vulkan.h>
-
-#include <vulkan/vulkan.h>
 
 using namespace glm;
 using namespace std;
