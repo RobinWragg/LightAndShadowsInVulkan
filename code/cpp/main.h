@@ -27,5 +27,5 @@ namespace graphics {
 	void init(
 		SDL_Window *window);
 	void destroy();
-	void render(uint32_t particleCount, uint8_t componentCount, float *componentPtrs[]);
+	void render();
 }

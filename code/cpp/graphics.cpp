@@ -7,7 +7,7 @@ namespace graphics {
 	bool enableDepthTesting = true;
 
 	vector<const char*> requiredValidationLayers = {
-        "VK_LAYER_LUNARG_api_dump",
+//        "VK_LAYER_LUNARG_api_dump",
 		"VK_LAYER_LUNARG_standard_validation",
 		"VK_LAYER_KHRONOS_validation"
 	};
@@ -343,8 +343,9 @@ namespace graphics {
 		SDL_assert(result == VK_SUCCESS);
 
 		uint8_t * mappedMemory;
-		vkMapMemory(device, vertexBufferMemSlots->back(), 0, bufferInfo.size, 0, (void**)&mappedMemory);
-
+		result = vkMapMemory(device, vertexBufferMemSlots->back(), 0, bufferInfo.size, 0, (void**)&mappedMemory);
+        SDL_assert(result == VK_SUCCESS);
+        
 		memcpy(mappedMemory, vertices, bufferInfo.size);
 		vkUnmapMemory(device, vertexBufferMemSlots->back());
 	}
@@ -815,9 +816,9 @@ namespace graphics {
 
 			// Enable validation layers for the device, same as the instance (deprecated in Vulkan 1.1, but the API advises we do so) TODO: remove?
 			{
-				//printAvailableDeviceLayers(physicalDevice);
-				//deviceCreateInfo.enabledLayerCount = (int)requiredValidationLayers.size();
-				//deviceCreateInfo.ppEnabledLayerNames = requiredValidationLayers.data();
+				printAvailableDeviceLayers(physicalDevice);
+				deviceCreateInfo.enabledLayerCount = (int)requiredValidationLayers.size();
+				deviceCreateInfo.ppEnabledLayerNames = requiredValidationLayers.data();
 			}
 
 			SDL_assert_release(vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device) == VK_SUCCESS);

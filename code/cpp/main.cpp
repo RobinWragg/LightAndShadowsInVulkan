@@ -86,7 +86,8 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		
-		printf("(render)\n");
+        graphics::render();
+		printf("fps: %.1f\n", 1 / deltaTime);
 	}
 	
 	printf("Quitting\n");
