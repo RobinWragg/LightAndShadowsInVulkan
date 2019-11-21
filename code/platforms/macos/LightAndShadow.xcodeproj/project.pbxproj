@@ -102,6 +102,7 @@
 			buildConfigurationList = 001D32C8238217D1001A68C7 /* Build configuration list for PBXNativeTarget "LightAndShadow" */;
 			buildPhases = (
 				001D32B3238217CF001A68C7 /* Sources */,
+				00EE525E238710D000F48749 /* ShellScript */,
 				001D32B4238217CF001A68C7 /* Frameworks */,
 				001D32B5238217CF001A68C7 /* Resources */,
 				0047090A238219140018D488 /* Copy Frameworks */,
@@ -157,6 +158,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		00EE525E238710D000F48749 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "python3 compile_shaders.py\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		001D32B3238217CF001A68C7 /* Sources */ = {

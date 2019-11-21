@@ -9,7 +9,7 @@
   [
     {
       "name": "LightAndShadow",
-      "file_regex": "(/Users/.+?):(\\d+)(?::(\\d+): (?:error:)?(.+?)$)?",
+      "file_regex": "(/Users/.+?):(\\d+):(?:(\\d+):)? (?:error:)?(.+?)$",
       "quiet": true,
       "word_wrap": true,
       "osx": {

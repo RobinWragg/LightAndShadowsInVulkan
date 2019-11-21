@@ -198,6 +198,7 @@ namespace graphics {
 		};
 
 		printf("%s (%i objects reported)\n", data->pMessage, data->objectCount);
+		fflush(stdout);
 
 		switch (severity) {
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
@@ -355,8 +356,8 @@ namespace graphics {
 		const VkVertexInputAttributeDescription &attribDesc) {
 		
 		vector<VkPipelineShaderStageCreateInfo> shaderStages = {
-			buildShaderStage("basic_vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-			buildShaderStage("basic_frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
+			buildShaderStage("basic.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+			buildShaderStage("basic.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
 		};
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
