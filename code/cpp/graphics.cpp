@@ -1,11 +1,9 @@
 #include "main.h"
-#include "vulkan_stateless.cpp"
 
 namespace graphics {
 	const auto requiredSwapchainFormat = VK_FORMAT_B8G8R8A8_UNORM;
 	const auto requiredSwapchainColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 	const int requiredSwapchainImageCount = 2;
-	bool enableVsync = true;
 	bool enableDepthTesting = true;
 
 	vector<const char*> requiredValidationLayers = {
@@ -45,8 +43,6 @@ namespace graphics {
 	VkInstance instance = VK_NULL_HANDLE;
 	
 	vector<uint8_t> loadBinaryFile(const char *filename) {
-		printf("Loading file: %s\n", filename);
-		
 		ifstream file(filename, ios::ate | ios::binary);
 
 		SDL_assert_release(file.is_open());
@@ -101,6 +97,25 @@ namespace graphics {
 		return foundRequiredFormat;
 	}
 
+	void printQueueFamilies(VkPhysicalDevice device) {
+		uint32_t familyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, nullptr);
+
+		std::vector<VkQueueFamilyProperties> families(familyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, families.data());
+
+		printf("\nDevice has these queue families:\n");
+		for (uint32_t i = 0; i < familyCount; i++) {
+			printf("\tNumber of queues: %i. Support: ", families[i].queueCount);
+
+			if (families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) printf("graphics ");
+			if (families[i].queueFlags & VK_QUEUE_COMPUTE_BIT) printf("compute ");
+			if (families[i].queueFlags & VK_QUEUE_TRANSFER_BIT) printf("transfer ");
+			if (families[i].queueFlags & VK_QUEUE_SPARSE_BINDING_BIT) printf("sparse_binding ");
+			printf("\n");
+		}
+	}
+
 	VkDeviceQueueCreateInfo buildQueueCreateInfo(VkPhysicalDevice device, VkQueueFlagBits requiredFlags, bool mustSupportSurface) {
 		uint32_t familyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, nullptr);
@@ -139,6 +154,26 @@ namespace graphics {
 		info.pQueuePriorities = priorities;
 
 		return info;
+	}
+
+	void printAvailableInstanceLayers() {
+		uint32_t layerCount;
+		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+		vector<VkLayerProperties> availableLayers(layerCount);
+		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+		printf("\nAvailable layers:\n");
+		for (const auto& layer : availableLayers) printf("\t%s\n", layer.layerName);
+	}
+
+	void printAvailableDeviceLayers(VkPhysicalDevice device) {
+		uint32_t layerCount;
+		vkEnumerateDeviceLayerProperties(device, &layerCount, nullptr);
+		vector<VkLayerProperties> deviceLayers(layerCount);
+		vkEnumerateDeviceLayerProperties(device, &layerCount, deviceLayers.data());
+
+		printf("\nAvailable device layers (deprecated API section):\n");
+		for (const auto& layer : deviceLayers) printf("\t%s\n", layer.layerName);
 	}
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -277,47 +312,48 @@ namespace graphics {
 		return 0;
 	}
 
-	void buildVertexBuffers(
-		uint32_t particleCount, uint8_t componentCount, float *componentPtrs[],
+	void buildVertexBuffers(uint32_t vertexCount, float vertices[],
 		vector<VkBuffer> *vertexBuffers, vector<VkDeviceMemory> *vertexBufferMemSlots) {
 
 		VkBufferCreateInfo bufferInfo = {};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = sizeof(float) * particleCount;
+		bufferInfo.size = sizeof(float) * 3 * vertexCount;
 		bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		for (int c = 0; c < componentCount; c++) {
-			vertexBuffers->push_back(VkBuffer());
-			auto result = vkCreateBuffer(device, &bufferInfo, nullptr, &vertexBuffers->back());
-			SDL_assert(result == VK_SUCCESS);
-
-			VkMemoryRequirements memoryReqs;
-			vkGetBufferMemoryRequirements(device, vertexBuffers->back(), &memoryReqs);
-
-			VkMemoryAllocateInfo allocInfo = {};
-			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize = memoryReqs.size;
-			allocInfo.memoryTypeIndex = findMemoryType(
-				memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-			vertexBufferMemSlots->push_back(VkDeviceMemory());
-			result = vkAllocateMemory(device, &allocInfo, nullptr, &vertexBufferMemSlots->back());
-			SDL_assert(result == VK_SUCCESS);
-			result = vkBindBufferMemory(device, vertexBuffers->back(), vertexBufferMemSlots->back(), 0);
-			SDL_assert(result == VK_SUCCESS);
-
-			uint8_t * mappedMemory;
-			vkMapMemory(device, vertexBufferMemSlots->back(), 0, bufferInfo.size, 0, (void**)&mappedMemory);
-			
-			memcpy(mappedMemory, componentPtrs[c], bufferInfo.size);
-			vkUnmapMemory(device, vertexBufferMemSlots->back());
-		}
 		
+
+
+
+		vertexBuffers->push_back(VkBuffer());
+		auto result = vkCreateBuffer(device, &bufferInfo, nullptr, &vertexBuffers->back());
+		SDL_assert(result == VK_SUCCESS);
+
+		VkMemoryRequirements memoryReqs;
+		vkGetBufferMemoryRequirements(device, vertexBuffers->back(), &memoryReqs);
+
+		VkMemoryAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memoryReqs.size;
+		allocInfo.memoryTypeIndex = findMemoryType(
+			memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+		vertexBufferMemSlots->push_back(VkDeviceMemory());
+		result = vkAllocateMemory(device, &allocInfo, nullptr, &vertexBufferMemSlots->back());
+		SDL_assert(result == VK_SUCCESS);
+		result = vkBindBufferMemory(device, vertexBuffers->back(), vertexBufferMemSlots->back(), 0);
+		SDL_assert(result == VK_SUCCESS);
+
+		uint8_t * mappedMemory;
+		vkMapMemory(device, vertexBufferMemSlots->back(), 0, bufferInfo.size, 0, (void**)&mappedMemory);
+
+		memcpy(mappedMemory, vertices, bufferInfo.size);
+		vkUnmapMemory(device, vertexBufferMemSlots->back());
 	}
 
 	void buildPipeline(
-		VkVertexInputBindingDescription &bindingDesc, VkVertexInputAttributeDescription &attribDesc) {
+		const VkVertexInputBindingDescription &bindingDesc,
+		const VkVertexInputAttributeDescription &attribDesc) {
 		
 		vector<VkPipelineShaderStageCreateInfo> shaderStages = {
 			buildShaderStage("basic_vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
@@ -365,7 +401,6 @@ namespace graphics {
 		rasterInfo.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterInfo.lineWidth = 1; // TODO: unnecessary?
 		rasterInfo.cullMode = VK_CULL_MODE_NONE;
-		
 		rasterInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 		rasterInfo.depthBiasEnable = VK_FALSE;
 
@@ -406,8 +441,8 @@ namespace graphics {
 		pipelineInfo.pInputAssemblyState = &inputAssembly;
 		pipelineInfo.pViewportState = &viewportInfo;
 
-		VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
 		if (enableDepthTesting) {
+			VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
 			depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 			depthStencilInfo.depthTestEnable = VK_TRUE;
 			depthStencilInfo.depthWriteEnable = VK_TRUE;
@@ -423,9 +458,7 @@ namespace graphics {
 		pipelineInfo.layout = pipelineLayout;
 		pipelineInfo.renderPass = renderPass;
 		pipelineInfo.subpass = 0;
-        
-        auto result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline);
-		SDL_assert_release(result == VK_SUCCESS);
+		SDL_assert_release(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) == VK_SUCCESS);
 
 		for (auto &stage : shaderStages) vkDestroyShaderModule(device, stage.module, nullptr);
 	}
@@ -647,12 +680,12 @@ namespace graphics {
 	}
 
 	void init(SDL_Window *window) {
-		
+
 		VkVertexInputBindingDescription bindingDesc = {};
 		VkVertexInputAttributeDescription attribDesc = {};
 
 		bindingDesc.binding = 0;
-		bindingDesc.stride = sizeof(vec3);
+		bindingDesc.stride = sizeof(float) * 3;
 		bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 		attribDesc.binding = 0;
@@ -671,8 +704,17 @@ namespace graphics {
 			createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 
 			// Specify app info TODO: necessary?
-			auto appInfo = makeApplicationInfo();
-			createInfo.pApplicationInfo = &appInfo;
+			VkApplicationInfo appInfo = {};
+			{
+				appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+				appInfo.pApplicationName = "Vulkan Particle System";
+				appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+				appInfo.pEngineName = "N/A";
+				appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+				appInfo.apiVersion = VK_API_VERSION_1_0;
+
+				createInfo.pApplicationInfo = &appInfo;
+			}
 
 			// Request the instance extensions that SDL requires
 			vector<const char*> requiredExtensions;
@@ -691,8 +733,9 @@ namespace graphics {
 			// Enable instance validation layers
 			createInfo.enabledLayerCount = (int)requiredValidationLayers.size();
 			createInfo.ppEnabledLayerNames = requiredValidationLayers.data();
-			
-			SDL_assert_release(vkCreateInstance(&createInfo, nullptr, &instance) == VK_SUCCESS);
+
+			auto creationResult = vkCreateInstance(&createInfo, nullptr, &instance);
+			//SDL_assert_release( == VK_SUCCESS);
 			printf("\nCreated Vulkan instance\n");
 		}
 
@@ -746,7 +789,6 @@ namespace graphics {
 			VkPhysicalDeviceProperties properties;
 			vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 			printf("\nChosen device: %s\n", properties.deviceName);
-            printQueueFamilies(physicalDevice);
 		}
 
 		// Create the logical device with a queue capable of graphics and surface presentation commands
@@ -770,10 +812,11 @@ namespace graphics {
 				deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
 			}
 
+			// Enable validation layers for the device, same as the instance (deprecated in Vulkan 1.1, but the API advises we do so) TODO: remove?
 			{
-				printAvailableDeviceLayers(physicalDevice);
-				deviceCreateInfo.enabledLayerCount = (int)requiredValidationLayers.size();
-				deviceCreateInfo.ppEnabledLayerNames = requiredValidationLayers.data();
+				//printAvailableDeviceLayers(physicalDevice);
+				//deviceCreateInfo.enabledLayerCount = (int)requiredValidationLayers.size();
+				//deviceCreateInfo.ppEnabledLayerNames = requiredValidationLayers.data();
 			}
 
 			SDL_assert_release(vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device) == VK_SUCCESS);
@@ -810,7 +853,7 @@ namespace graphics {
 			createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE; // the graphics and surface queues are the same, so no sharing is necessary.
 			createInfo.preTransform = capabilities.currentTransform;
 			createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // Opaque window
-			createInfo.presentMode = enableVsync ? VK_PRESENT_MODE_FIFO_KHR : VK_PRESENT_MODE_MAILBOX_KHR;
+			createInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR; // vsync
 			createInfo.clipped = VK_FALSE; // Vulkan will always render all the pixels, even if some are osbscured by other windows.
 			createInfo.oldSwapchain = VK_NULL_HANDLE; // I will not support swapchain recreation.
 
@@ -875,7 +918,13 @@ namespace graphics {
 		vertexBufferMemSlots.resize(0);
 	}
 
-	void render(uint32_t particleCount, uint8_t componentCount, float *componentPtrs[]) {
+	void render() {
+		uint32_t vertexCount = 6;
+		float vertices[] = {
+			-0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, -0.5, 0.5,
+			-0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.6
+		};
+
 
 		if (!commandBuffers.empty()) {
 			// The queue may not have finished its commands from the last frame yet,
@@ -884,8 +933,8 @@ namespace graphics {
 			freeRenderBuffers();
 		}
 
-		buildVertexBuffers(particleCount, componentCount, componentPtrs, &vertexBuffers, &vertexBufferMemSlots);
-		buildCommandBuffers(commandPool, vertexBuffers, particleCount, &commandBuffers);
+		buildVertexBuffers(vertexCount, vertices, &vertexBuffers, &vertexBufferMemSlots);
+		buildCommandBuffers(commandPool, vertexBuffers, vertexCount, &commandBuffers);
 
 		// Submit commands
 		uint32_t swapchainImageIndex = INT32_MAX;
