@@ -67,7 +67,6 @@ int main(int argc, char* argv[]) {
 	graphics::init(window);
 	
 	bool running = true;
-	running = false;
 	
 	printf("Beginning frame loop\n");
 	

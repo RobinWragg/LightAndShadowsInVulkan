@@ -7,14 +7,9 @@ namespace graphics {
 	bool enableDepthTesting = true;
 
 	vector<const char*> requiredValidationLayers = {
-		"VK_LAYER_GOOGLE_unique_objects",
-		// "VK_LAYER_LUNARG_api_dump",
+        "VK_LAYER_LUNARG_api_dump",
 		"VK_LAYER_LUNARG_standard_validation",
-		"VK_LAYER_KHRONOS_validation",
-		"VK_LAYER_GOOGLE_threading",
-		"VK_LAYER_LUNARG_core_validation",
-		"VK_LAYER_LUNARG_parameter_validation",
-		"VK_LAYER_LUNARG_object_tracker"
+		"VK_LAYER_KHRONOS_validation"
 	};
 
 	VkSemaphore imageAvailableSemaphore;
@@ -106,14 +101,17 @@ namespace graphics {
 
 		printf("\nDevice has these queue families:\n");
 		for (uint32_t i = 0; i < familyCount; i++) {
-			printf("\tNumber of queues: %i. Support: ", families[i].queueCount);
+            auto &family = families[i];
+			printf("\tNumber of queues: %i. Support: ", family.queueCount);
 
-			if (families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) printf("graphics ");
-			if (families[i].queueFlags & VK_QUEUE_COMPUTE_BIT) printf("compute ");
-			if (families[i].queueFlags & VK_QUEUE_TRANSFER_BIT) printf("transfer ");
-			if (families[i].queueFlags & VK_QUEUE_SPARSE_BINDING_BIT) printf("sparse_binding ");
+			if (family.queueFlags & VK_QUEUE_GRAPHICS_BIT) printf("graphics ");
+			if (family.queueFlags & VK_QUEUE_COMPUTE_BIT) printf("compute ");
+			if (family.queueFlags & VK_QUEUE_TRANSFER_BIT) printf("transfer ");
+			if (family.queueFlags & VK_QUEUE_SPARSE_BINDING_BIT) printf("sparse_binding ");
 			printf("\n");
 		}
+        
+        printf("(end)\n");
 	}
 
 	VkDeviceQueueCreateInfo buildQueueCreateInfo(VkPhysicalDevice device, VkQueueFlagBits requiredFlags, bool mustSupportSurface) {
@@ -440,9 +438,9 @@ namespace graphics {
 		pipelineInfo.pVertexInputState = &vertexInputInfo;
 		pipelineInfo.pInputAssemblyState = &inputAssembly;
 		pipelineInfo.pViewportState = &viewportInfo;
-
+        
+        VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
 		if (enableDepthTesting) {
-			VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
 			depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 			depthStencilInfo.depthTestEnable = VK_TRUE;
 			depthStencilInfo.depthWriteEnable = VK_TRUE;
@@ -523,7 +521,7 @@ namespace graphics {
 
 		// Color clear value
 		clearValues.push_back(VkClearValue());
-		clearValues.back().color = { 0, 0, 0, 1 };
+		clearValues.back().color = { 0, 1, 0, 1 };
 		clearValues.back().depthStencil = {};
 
 		if (enableDepthTesting) {
@@ -725,6 +723,7 @@ namespace graphics {
 				SDL_Vulkan_GetInstanceExtensions(window, &requiredExtensionCount, requiredExtensions.data());
 
 				if (!requiredValidationLayers.empty()) requiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+                requiredExtensions.push_back("VK_EXT_metal_surface");
 
 				createInfo.enabledExtensionCount = (int)requiredExtensions.size();
 				createInfo.ppEnabledExtensionNames = requiredExtensions.data();
@@ -735,7 +734,7 @@ namespace graphics {
 			createInfo.ppEnabledLayerNames = requiredValidationLayers.data();
 
 			auto creationResult = vkCreateInstance(&createInfo, nullptr, &instance);
-			//SDL_assert_release( == VK_SUCCESS);
+			SDL_assert_release(creationResult == VK_SUCCESS);
 			printf("\nCreated Vulkan instance\n");
 		}
 
@@ -761,7 +760,7 @@ namespace graphics {
 		}
 
 		// Create surface
-		SDL_assert_release(SDL_Vulkan_CreateSurface(window, instance, &surface));
+		SDL_assert_release(SDL_Vulkan_CreateSurface(window, instance, &surface) == SDL_TRUE);
 		printf("\nCreated SDL+Vulkan surface\n");
 
 		// Get physical device (GTX 1060 3GB)
@@ -793,6 +792,8 @@ namespace graphics {
 
 		// Create the logical device with a queue capable of graphics and surface presentation commands
 		{
+            printQueueFamilies(physicalDevice);
+            
 			vector<VkDeviceQueueCreateInfo> queueInfos = {
 				buildQueueCreateInfo(physicalDevice, VK_QUEUE_GRAPHICS_BIT, true)
 			};
