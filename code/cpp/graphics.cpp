@@ -4,7 +4,6 @@ namespace graphics {
 	const auto requiredSwapchainFormat = VK_FORMAT_B8G8R8A8_UNORM;
 	const auto requiredSwapchainColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 	const int requiredSwapchainImageCount = 2;
-	bool enableVsync = false;
 	bool enableDepthTesting = true;
 
 	vector<const char*> requiredValidationLayers = {
@@ -308,48 +307,48 @@ namespace graphics {
 		return 0;
 	}
 
-	void buildVertexBuffers(
-		uint32_t particleCount, uint8_t componentCount, float *componentPtrs[],
+	void buildVertexBuffers(uint32_t vertexCount, float vertices[],
 		vector<VkBuffer> *vertexBuffers, vector<VkDeviceMemory> *vertexBufferMemSlots) {
 
 		VkBufferCreateInfo bufferInfo = {};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = sizeof(float) * particleCount;
+		bufferInfo.size = sizeof(float) * 3 * vertexCount;
 		bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		for (int c = 0; c < componentCount; c++) {
-			vertexBuffers->push_back(VkBuffer());
-			auto result = vkCreateBuffer(device, &bufferInfo, nullptr, &vertexBuffers->back());
-			SDL_assert(result == VK_SUCCESS);
-
-			VkMemoryRequirements memoryReqs;
-			vkGetBufferMemoryRequirements(device, vertexBuffers->back(), &memoryReqs);
-
-			VkMemoryAllocateInfo allocInfo = {};
-			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			allocInfo.allocationSize = memoryReqs.size;
-			allocInfo.memoryTypeIndex = findMemoryType(
-				memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-			vertexBufferMemSlots->push_back(VkDeviceMemory());
-			result = vkAllocateMemory(device, &allocInfo, nullptr, &vertexBufferMemSlots->back());
-			SDL_assert(result == VK_SUCCESS);
-			result = vkBindBufferMemory(device, vertexBuffers->back(), vertexBufferMemSlots->back(), 0);
-			SDL_assert(result == VK_SUCCESS);
-
-			uint8_t * mappedMemory;
-			vkMapMemory(device, vertexBufferMemSlots->back(), 0, bufferInfo.size, 0, (void**)&mappedMemory);
-			
-			memcpy(mappedMemory, componentPtrs[c], bufferInfo.size);
-			vkUnmapMemory(device, vertexBufferMemSlots->back());
-		}
 		
+
+
+
+		vertexBuffers->push_back(VkBuffer());
+		auto result = vkCreateBuffer(device, &bufferInfo, nullptr, &vertexBuffers->back());
+		SDL_assert(result == VK_SUCCESS);
+
+		VkMemoryRequirements memoryReqs;
+		vkGetBufferMemoryRequirements(device, vertexBuffers->back(), &memoryReqs);
+
+		VkMemoryAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memoryReqs.size;
+		allocInfo.memoryTypeIndex = findMemoryType(
+			memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+		vertexBufferMemSlots->push_back(VkDeviceMemory());
+		result = vkAllocateMemory(device, &allocInfo, nullptr, &vertexBufferMemSlots->back());
+		SDL_assert(result == VK_SUCCESS);
+		result = vkBindBufferMemory(device, vertexBuffers->back(), vertexBufferMemSlots->back(), 0);
+		SDL_assert(result == VK_SUCCESS);
+
+		uint8_t * mappedMemory;
+		vkMapMemory(device, vertexBufferMemSlots->back(), 0, bufferInfo.size, 0, (void**)&mappedMemory);
+
+		memcpy(mappedMemory, vertices, bufferInfo.size);
+		vkUnmapMemory(device, vertexBufferMemSlots->back());
 	}
 
 	void buildPipeline(
-		const vector<VkVertexInputBindingDescription> &bindingDescs,
-		const vector<VkVertexInputAttributeDescription> &attribDescs) {
+		const VkVertexInputBindingDescription &bindingDesc,
+		const VkVertexInputAttributeDescription &attribDesc) {
 		
 		vector<VkPipelineShaderStageCreateInfo> shaderStages = {
 			buildShaderStage("basic_vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
@@ -359,15 +358,15 @@ namespace graphics {
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-		vertexInputInfo.vertexBindingDescriptionCount = (int)bindingDescs.size();
-		vertexInputInfo.pVertexBindingDescriptions = bindingDescs.data();
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.pVertexBindingDescriptions = &bindingDesc;
 
-		vertexInputInfo.vertexAttributeDescriptionCount = (int)attribDescs.size();
-		vertexInputInfo.pVertexAttributeDescriptions = attribDescs.data();
+		vertexInputInfo.vertexAttributeDescriptionCount = 1;
+		vertexInputInfo.pVertexAttributeDescriptions = &attribDesc;
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 
 		VkViewport viewport = {};
@@ -675,10 +674,19 @@ namespace graphics {
 		endDepthTestingCommandBuffer(commandBuffer, commandPool);
 	}
 
-	void init(
-		SDL_Window *window,
-		const vector<VkVertexInputBindingDescription> &bindingDescs,
-		const vector<VkVertexInputAttributeDescription> &attribDescs) {
+	void init(SDL_Window *window) {
+
+		VkVertexInputBindingDescription bindingDesc = {};
+		VkVertexInputAttributeDescription attribDesc = {};
+
+		bindingDesc.binding = 0;
+		bindingDesc.stride = sizeof(float) * 3;
+		bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		attribDesc.binding = 0;
+		attribDesc.location = 0;
+		attribDesc.format = VK_FORMAT_R32G32B32_SFLOAT;
+		attribDesc.offset = 0;
 
 		printAvailableInstanceLayers();
 
@@ -720,8 +728,9 @@ namespace graphics {
 			// Enable instance validation layers
 			createInfo.enabledLayerCount = (int)requiredValidationLayers.size();
 			createInfo.ppEnabledLayerNames = requiredValidationLayers.data();
-			
-			SDL_assert_release(vkCreateInstance(&createInfo, nullptr, &instance) == VK_SUCCESS);
+
+			auto creationResult = vkCreateInstance(&createInfo, nullptr, &instance);
+			//SDL_assert_release( == VK_SUCCESS);
 			printf("\nCreated Vulkan instance\n");
 		}
 
@@ -763,7 +772,6 @@ namespace graphics {
 				vkGetPhysicalDeviceProperties(candidateDevice, &properties);
 
 				if (VK_VERSION_MAJOR(properties.apiVersion) >= 1
-					&& VK_VERSION_MINOR(properties.apiVersion) >= 1
 					&& deviceHasExtensions(candidateDevice, requiredDeviceExtensions)
 					&& deviceSupportsAcceptableSwapchain(candidateDevice, surface)) {
 					physicalDevice = candidateDevice;
@@ -840,7 +848,7 @@ namespace graphics {
 			createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE; // the graphics and surface queues are the same, so no sharing is necessary.
 			createInfo.preTransform = capabilities.currentTransform;
 			createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // Opaque window
-			createInfo.presentMode = enableVsync ? VK_PRESENT_MODE_FIFO_KHR : VK_PRESENT_MODE_MAILBOX_KHR;
+			createInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR; // vsync
 			createInfo.clipped = VK_FALSE; // Vulkan will always render all the pixels, even if some are osbscured by other windows.
 			createInfo.oldSwapchain = VK_NULL_HANDLE; // I will not support swapchain recreation.
 
@@ -882,7 +890,7 @@ namespace graphics {
 		printf("\nInitialised Vulkan\n");
 
 		buildRenderPass();
-		buildPipeline(bindingDescs, attribDescs);
+		buildPipeline(bindingDesc, attribDesc);
 		commandPool = buildCommandPool(device, queueFamilyIndex);
 		if (enableDepthTesting) setupDepthTesting(commandPool);
 		buildFramebuffers();
@@ -905,7 +913,13 @@ namespace graphics {
 		vertexBufferMemSlots.resize(0);
 	}
 
-	void render(uint32_t particleCount, uint8_t componentCount, float *componentPtrs[]) {
+	void render() {
+		uint32_t vertexCount = 6;
+		float vertices[] = {
+			-0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, -0.5, 0.5,
+			-0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.6
+		};
+
 
 		if (!commandBuffers.empty()) {
 			// The queue may not have finished its commands from the last frame yet,
@@ -914,8 +928,8 @@ namespace graphics {
 			freeRenderBuffers();
 		}
 
-		buildVertexBuffers(particleCount, componentCount, componentPtrs, &vertexBuffers, &vertexBufferMemSlots);
-		buildCommandBuffers(commandPool, vertexBuffers, particleCount, &commandBuffers);
+		buildVertexBuffers(vertexCount, vertices, &vertexBuffers, &vertexBufferMemSlots);
+		buildCommandBuffers(commandPool, vertexBuffers, vertexCount, &commandBuffers);
 
 		// Submit commands
 		uint32_t swapchainImageIndex = INT32_MAX;
