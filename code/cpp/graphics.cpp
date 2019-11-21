@@ -50,28 +50,6 @@ namespace graphics {
 		return bytes;
 	}
 
-	bool deviceHasExtensions(VkPhysicalDevice device, vector<const char*> requiredExtensions) {
-		uint32_t availableExtensionCount;
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &availableExtensionCount, nullptr);
-		std::vector<VkExtensionProperties> availableExtensions(availableExtensionCount);
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &availableExtensionCount, availableExtensions.data());
-
-		for (auto &requiredExt : requiredExtensions) {
-			bool found = false;
-
-			for (auto &availableExt : availableExtensions) {
-				if (strcmp(requiredExt, availableExt.extensionName) == 0) {
-					found = true;
-					break;
-				}
-			}
-
-			if (!found) return false;
-		}
-
-		return true;
-	}
-
 	bool deviceSupportsAcceptableSwapchain(VkPhysicalDevice device, VkSurfaceKHR surface) {
 		
 		// Check for required format
@@ -671,45 +649,17 @@ namespace graphics {
 
 	void init(SDL_Window *window) {
 		instance = createInstance(window, layers);
-
-		vector<const char*> requiredDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-		VkPhysicalDeviceFeatures enabledDeviceFeatures = {};
-
+		
 		// Setup the debug messenger
 		if (!layers.empty()) createDebugMessenger(instance, debugCallback);
 
 		// Create surface
 		SDL_assert_release(SDL_Vulkan_CreateSurface(window, instance, &surface) == SDL_TRUE);
-		printf("\nCreated SDL+Vulkan surface\n");
 
-		// Get physical device (GTX 1060 3GB)
-		{
-			uint32_t deviceCount = 0;
-			vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
-			vector<VkPhysicalDevice> candidateDevices(deviceCount);
-			vkEnumeratePhysicalDevices(instance, &deviceCount, candidateDevices.data());
-
-			// This picks the first found device that meets my requirements (this resolves to the GTX 1060 3GB on my computer)
-			for (auto &candidateDevice : candidateDevices) {
-				VkPhysicalDeviceProperties properties;
-				vkGetPhysicalDeviceProperties(candidateDevice, &properties);
-
-				if (VK_VERSION_MAJOR(properties.apiVersion) >= 1
-					&& deviceHasExtensions(candidateDevice, requiredDeviceExtensions)
-					&& deviceSupportsAcceptableSwapchain(candidateDevice, surface)) {
-					physicalDevice = candidateDevice;
-					break;
-				}
-			}
-
-			SDL_assert_release(physicalDevice != VK_NULL_HANDLE);
-
-			VkPhysicalDeviceProperties properties;
-			vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-			printf("\nChosen device: %s\n", properties.deviceName);
-		}
+		physicalDevice = createPhysicalDevice(instance, surface);
 
 		// Create the logical device with a queue capable of graphics and surface presentation commands
+        VkPhysicalDeviceFeatures enabledDeviceFeatures = {};
 		{
             printQueueFamilies(physicalDevice);
             
@@ -719,6 +669,7 @@ namespace graphics {
 			queueFamilyIndex = queueInfos[0].queueFamilyIndex;
 
 			VkDeviceCreateInfo deviceCreateInfo = {};
+            vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 			{
 				deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
@@ -728,8 +679,8 @@ namespace graphics {
 				deviceCreateInfo.pEnabledFeatures = &enabledDeviceFeatures;
 
 				// Enable extensions
-				deviceCreateInfo.enabledExtensionCount = (int)requiredDeviceExtensions.size();
-				deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
+				deviceCreateInfo.enabledExtensionCount = 1;
+				deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 			}
 
 			// Enable validation layers for the device, same as the instance (deprecated in Vulkan 1.1, but the API advises we do so) TODO: remove?

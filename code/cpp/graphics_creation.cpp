@@ -1,4 +1,8 @@
 
+const auto requiredFormat = VK_FORMAT_B8G8R8A8_UNORM;
+const auto requiredColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+const char *deviceExtension = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+
 VkDebugUtilsMessengerEXT debugMsgr = VK_NULL_HANDLE;
 
 void printAvailableInstanceLayers() {
@@ -65,7 +69,70 @@ void destroyDebugMessenger(VkInstance instance) {
 	destroyDebugUtilsMessenger(instance, debugMsgr, nullptr);
 }
 
+VkPhysicalDevice createPhysicalDevice(VkInstance instance, VkSurfaceKHR surface) {
+	
+	uint32_t deviceCount = 0;
+	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+	vector<VkPhysicalDevice> availableDevices(deviceCount);
+	vkEnumeratePhysicalDevices(instance, &deviceCount, availableDevices.data());
+	
+	vector<VkPhysicalDevice> suitableDevices;
+	
+	for (auto &availableDevice : availableDevices) {
+		
+		// Require Vulkan 1.x
+		{
+			VkPhysicalDeviceProperties properties;
+			vkGetPhysicalDeviceProperties(availableDevice, &properties);
+			if (VK_VERSION_MAJOR(properties.apiVersion) != 1) continue;
+		}
+		
+		// Check for the swapchain extension
+		{
+			uint32_t count;
+			vkEnumerateDeviceExtensionProperties(availableDevice, nullptr, &count, nullptr);
+			vector<VkExtensionProperties> availableExtensions(count);
+			vkEnumerateDeviceExtensionProperties(availableDevice, nullptr, &count, availableExtensions.data());
+			
+			bool found = false;
+			for (auto &availableExt : availableExtensions) {
+				if (strcmp(availableExt.extensionName, deviceExtension) == 0) {
+					found = true;
+					break;
+				}
+			}
+			
+			if (!found) continue;
+		}
+		
+		// Check for required format and colour space
+		{
+			uint32_t count;
+			vkGetPhysicalDeviceSurfaceFormatsKHR(availableDevice, surface, &count, nullptr);
+			vector<VkSurfaceFormatKHR> formats(count);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(availableDevice, surface, &count, formats.data());
 
+			bool found = false;
+			for (auto &format : formats) {
+				if (format.format == requiredFormat
+					&& format.colorSpace == requiredColorSpace) {
+					found = true;
+				}
+			}
+			
+			if (!found) continue;
+		}
+
+		suitableDevices.push_back(availableDevice);
+	}
+	
+	
+	SDL_assert_release(suitableDevices.size() == 1);
+	VkPhysicalDeviceProperties properties;
+	vkGetPhysicalDeviceProperties(suitableDevices[0], &properties);
+	printf("\nChosen device: %s\n", properties.deviceName);
+	return suitableDevices[0];
+}
 
 
 
