@@ -1,4 +1,5 @@
 #include "main.h"
+#include "graphics_creation.cpp"
 
 namespace graphics {
 	const auto requiredSwapchainFormat = VK_FORMAT_B8G8R8A8_UNORM;
@@ -6,7 +7,7 @@ namespace graphics {
 	const int requiredSwapchainImageCount = 2;
 	bool enableDepthTesting = true;
 
-	vector<const char*> requiredValidationLayers = {
+	vector<const char*> layers = {
 //        "VK_LAYER_LUNARG_api_dump",
 		"VK_LAYER_LUNARG_standard_validation",
 		"VK_LAYER_KHRONOS_validation"
@@ -24,7 +25,6 @@ namespace graphics {
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkExtent2D extent;
 	int queueFamilyIndex = -1;
-	VkDebugUtilsMessengerEXT debugMsgr;
 	VkQueue queue = VK_NULL_HANDLE;
 	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 	VkPipeline pipeline = VK_NULL_HANDLE;
@@ -114,7 +114,7 @@ namespace graphics {
         printf("(end)\n");
 	}
 
-	VkDeviceQueueCreateInfo buildQueueCreateInfo(VkPhysicalDevice device, VkQueueFlagBits requiredFlags, bool mustSupportSurface) {
+	VkDeviceQueueCreateInfo createQueueCreateInfo(VkPhysicalDevice device, VkQueueFlagBits requiredFlags, bool mustSupportSurface) {
 		uint32_t familyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &familyCount, nullptr);
 		std::vector<VkQueueFamilyProperties> families(familyCount);
@@ -152,16 +152,6 @@ namespace graphics {
 		info.pQueuePriorities = priorities;
 
 		return info;
-	}
-
-	void printAvailableInstanceLayers() {
-		uint32_t layerCount;
-		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-		vector<VkLayerProperties> availableLayers(layerCount);
-		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-		printf("\nAvailable layers:\n");
-		for (const auto& layer : availableLayers) printf("\t%s\n", layer.layerName);
 	}
 
 	void printAvailableDeviceLayers(VkPhysicalDevice device) {
@@ -211,7 +201,7 @@ namespace graphics {
 		return VK_FALSE;
 	}
 
-	VkPipelineShaderStageCreateInfo buildShaderStage(const char *spirVFilePath, VkShaderStageFlagBits stage) {
+	VkPipelineShaderStageCreateInfo createShaderStage(const char *spirVFilePath, VkShaderStageFlagBits stage) {
 		auto spirV = loadBinaryFile(spirVFilePath);
 
 		VkShaderModuleCreateInfo moduleInfo = {};
@@ -233,7 +223,7 @@ namespace graphics {
 		return stageInfo;
 	}
 
-	VkAttachmentDescription buildAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout) {
+	VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout) {
 		VkAttachmentDescription attachment = {};
 
 		attachment.format = format;
@@ -248,7 +238,7 @@ namespace graphics {
 		return attachment;
 	}
 
-	void buildRenderPass() {
+	void createRenderPass() {
 
 		VkSubpassDependency dependency = {};
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -262,7 +252,7 @@ namespace graphics {
 
 		vector<VkAttachmentDescription> attachments = {};
 
-		VkAttachmentDescription colorAttachment = buildAttachmentDescription(
+		VkAttachmentDescription colorAttachment = createAttachmentDescription(
 			requiredSwapchainFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 		attachments.push_back(colorAttachment);
 
@@ -276,7 +266,7 @@ namespace graphics {
 		subpass.pColorAttachments = &colorAttachmentRef;
 
 		if (enableDepthTesting) {
-			VkAttachmentDescription depthAttachment = buildAttachmentDescription(
+			VkAttachmentDescription depthAttachment = createAttachmentDescription(
 				VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 			attachments.push_back(depthAttachment);
 
@@ -311,7 +301,7 @@ namespace graphics {
 		return 0;
 	}
 
-	void buildVertexBuffers(uint32_t vertexCount, float vertices[],
+	void createVertexBuffers(uint32_t vertexCount, float vertices[],
 		vector<VkBuffer> *vertexBuffers, vector<VkDeviceMemory> *vertexBufferMemSlots) {
 
 		VkBufferCreateInfo bufferInfo = {};
@@ -351,13 +341,13 @@ namespace graphics {
 		vkUnmapMemory(device, vertexBufferMemSlots->back());
 	}
 
-	void buildPipeline(
+	void createPipeline(
 		const VkVertexInputBindingDescription &bindingDesc,
 		const VkVertexInputAttributeDescription &attribDesc) {
 		
 		vector<VkPipelineShaderStageCreateInfo> shaderStages = {
-			buildShaderStage("basic.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-			buildShaderStage("basic.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
+			createShaderStage("basic.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+			createShaderStage("basic.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
 		};
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
@@ -463,7 +453,7 @@ namespace graphics {
 		for (auto &stage : shaderStages) vkDestroyShaderModule(device, stage.module, nullptr);
 	}
 
-	void buildFramebuffers() {
+	void createFramebuffers() {
 		framebuffers.resize(swapchainViews.size());
 
 		for (int i = 0; i < swapchainViews.size(); i++) {
@@ -483,14 +473,14 @@ namespace graphics {
 		}
 	}
 
-	void buildSemaphores() {
+	void createSemaphores() {
 		VkSemaphoreCreateInfo semaphoreInfo = {};
 		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 		SDL_assert_release(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) == VK_SUCCESS);
 		SDL_assert_release(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderCompletedSemaphore) == VK_SUCCESS);
 	}
 
-	VkCommandPool buildCommandPool(VkDevice device, int queueFamilyIndex) {
+	VkCommandPool createCommandPool(VkDevice device, int queueFamilyIndex) {
 		VkCommandPoolCreateInfo poolInfo = {};
 
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -503,7 +493,7 @@ namespace graphics {
 		return commandPool;
 	}
 
-	void buildCommandBuffers(
+	void createCommandBuffers(
 		VkCommandPool commandPool,
 		vector<VkBuffer> vertexBuffers,
 		uint32_t vertexCount,
@@ -569,7 +559,7 @@ namespace graphics {
 		clearValues.resize(0);
 	}
 	
-	VkCommandBuffer buildAndBeginDepthTestingCommandBuffer(VkCommandPool commandPool) {
+	VkCommandBuffer createAndBeginDepthTestingCommandBuffer(VkCommandPool commandPool) {
 		SDL_assert_release(commandPool != VK_NULL_HANDLE);
 
 		VkCommandBufferAllocateInfo allocInfo = {};
@@ -654,7 +644,7 @@ namespace graphics {
 		SDL_assert_release(vkCreateImageView(device, &viewInfo, nullptr, &depthImageView) == VK_SUCCESS);
 
 		// Initialise image layout
-		VkCommandBuffer commandBuffer = buildAndBeginDepthTestingCommandBuffer(commandPool);
+		VkCommandBuffer commandBuffer = createAndBeginDepthTestingCommandBuffer(commandPool);
 
 		VkImageMemoryBarrier barrier = {};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -680,86 +670,13 @@ namespace graphics {
 	}
 
 	void init(SDL_Window *window) {
-
-		VkVertexInputBindingDescription bindingDesc = {};
-		VkVertexInputAttributeDescription attribDesc = {};
-
-		bindingDesc.binding = 0;
-		bindingDesc.stride = sizeof(float) * 3;
-		bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-		attribDesc.binding = 0;
-		attribDesc.location = 0;
-		attribDesc.format = VK_FORMAT_R32G32B32_SFLOAT;
-		attribDesc.offset = 0;
-
-		printAvailableInstanceLayers();
+		instance = createInstance(window, layers);
 
 		vector<const char*> requiredDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 		VkPhysicalDeviceFeatures enabledDeviceFeatures = {};
 
-		// Create VK instance
-		{
-			VkInstanceCreateInfo createInfo = {};
-			createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-
-			// Specify app info TODO: necessary?
-			VkApplicationInfo appInfo = {};
-			{
-				appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-				appInfo.pApplicationName = "Vulkan Particle System";
-				appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-				appInfo.pEngineName = "N/A";
-				appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-				appInfo.apiVersion = VK_API_VERSION_1_0;
-
-				createInfo.pApplicationInfo = &appInfo;
-			}
-
-			// Request the instance extensions that SDL requires
-			vector<const char*> requiredExtensions;
-			{
-				unsigned int requiredExtensionCount;
-				SDL_Vulkan_GetInstanceExtensions(window, &requiredExtensionCount, nullptr);
-				requiredExtensions.resize(requiredExtensionCount);
-				SDL_Vulkan_GetInstanceExtensions(window, &requiredExtensionCount, requiredExtensions.data());
-
-				if (!requiredValidationLayers.empty()) requiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-                requiredExtensions.push_back("VK_EXT_metal_surface");
-
-				createInfo.enabledExtensionCount = (int)requiredExtensions.size();
-				createInfo.ppEnabledExtensionNames = requiredExtensions.data();
-			}
-
-			// Enable instance validation layers
-			createInfo.enabledLayerCount = (int)requiredValidationLayers.size();
-			createInfo.ppEnabledLayerNames = requiredValidationLayers.data();
-
-			auto creationResult = vkCreateInstance(&createInfo, nullptr, &instance);
-			SDL_assert_release(creationResult == VK_SUCCESS);
-			printf("\nCreated Vulkan instance\n");
-		}
-
 		// Setup the debug messenger
-		if (!requiredValidationLayers.empty()) {
-			VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
-			createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-
-			createInfo.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
-			// createInfo.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
-			createInfo.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
-			createInfo.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-
-			createInfo.messageType |= VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT;
-			createInfo.messageType |= VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
-			createInfo.messageType |= VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-
-			createInfo.pfnUserCallback = debugCallback;
-
-			auto createDebugUtilsMessenger =
-				(PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-			SDL_assert_release(createDebugUtilsMessenger(instance, &createInfo, nullptr, &debugMsgr) == VK_SUCCESS);
-		}
+		if (!layers.empty()) createDebugMessenger(instance, debugCallback);
 
 		// Create surface
 		SDL_assert_release(SDL_Vulkan_CreateSurface(window, instance, &surface) == SDL_TRUE);
@@ -797,7 +714,7 @@ namespace graphics {
             printQueueFamilies(physicalDevice);
             
 			vector<VkDeviceQueueCreateInfo> queueInfos = {
-				buildQueueCreateInfo(physicalDevice, VK_QUEUE_GRAPHICS_BIT, true)
+				createQueueCreateInfo(physicalDevice, VK_QUEUE_GRAPHICS_BIT, true)
 			};
 			queueFamilyIndex = queueInfos[0].queueFamilyIndex;
 
@@ -818,8 +735,8 @@ namespace graphics {
 			// Enable validation layers for the device, same as the instance (deprecated in Vulkan 1.1, but the API advises we do so) TODO: remove?
 			{
 				printAvailableDeviceLayers(physicalDevice);
-				deviceCreateInfo.enabledLayerCount = (int)requiredValidationLayers.size();
-				deviceCreateInfo.ppEnabledLayerNames = requiredValidationLayers.data();
+				deviceCreateInfo.enabledLayerCount = (int)layers.size();
+				deviceCreateInfo.ppEnabledLayerNames = layers.data();
 			}
 
 			SDL_assert_release(vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device) == VK_SUCCESS);
@@ -897,12 +814,25 @@ namespace graphics {
 
 		printf("\nInitialised Vulkan\n");
 
-		buildRenderPass();
-		buildPipeline(bindingDesc, attribDesc);
-		commandPool = buildCommandPool(device, queueFamilyIndex);
+		createRenderPass();
+		
+		VkVertexInputBindingDescription bindingDesc = {};
+		bindingDesc.binding = 0;
+		bindingDesc.stride = sizeof(float) * 3;
+		bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		VkVertexInputAttributeDescription attribDesc = {};
+		attribDesc.binding = 0;
+		attribDesc.location = 0;
+		attribDesc.format = VK_FORMAT_R32G32B32_SFLOAT;
+		attribDesc.offset = 0;
+		
+		createPipeline(bindingDesc, attribDesc);
+		
+		commandPool = createCommandPool(device, queueFamilyIndex);
 		if (enableDepthTesting) setupDepthTesting(commandPool);
-		buildFramebuffers();
-		buildSemaphores();
+		createFramebuffers();
+		createSemaphores();
 	}
 
 	// Ephemeral render buffers
@@ -936,8 +866,8 @@ namespace graphics {
 			freeRenderBuffers();
 		}
 
-		buildVertexBuffers(vertexCount, vertices, &vertexBuffers, &vertexBufferMemSlots);
-		buildCommandBuffers(commandPool, vertexBuffers, vertexCount, &commandBuffers);
+		createVertexBuffers(vertexCount, vertices, &vertexBuffers, &vertexBufferMemSlots);
+		createCommandBuffers(commandPool, vertexBuffers, vertexCount, &commandBuffers);
 
 		// Submit commands
 		uint32_t swapchainImageIndex = INT32_MAX;
@@ -983,11 +913,7 @@ namespace graphics {
 
 		vkDestroyCommandPool(device, commandPool, nullptr);
 
-		if (!requiredValidationLayers.empty()) {
-			auto destroyDebugUtilsMessenger =
-				(PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-			destroyDebugUtilsMessenger(instance, debugMsgr, nullptr);
-		}
+		if (!layers.empty()) destroyDebugMessenger(instance);
 
 		vkDeviceWaitIdle(device);
 

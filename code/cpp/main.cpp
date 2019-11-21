@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
 		}
 		
         graphics::render();
-		printf("fps: %.1f\n", 1 / deltaTime);
+		// printf("fps: %.1f\n", 1 / deltaTime);
 		fflush(stdout);
 	}
 	
