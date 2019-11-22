@@ -39,6 +39,8 @@ void setWorkingDir() {
 }
 
 int main(int argc, char* argv[]) {
+  printf("main()\n");
+  fflush(stdout);
   
   int result = SDL_Init(SDL_INIT_EVERYTHING);
   SDL_assert_release(result == 0);
@@ -50,25 +52,18 @@ int main(int argc, char* argv[]) {
   int windowHeight = 400;
 
   SDL_Window *window = SDL_CreateWindow(
-    "Shadow Mapping", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+    "Light and Shadow", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
     windowWidth, windowHeight, SDL_WINDOW_VULKAN);
   SDL_assert_release(window != NULL);
   printf("Created window\n");
-  
-  
-  
-  
-  
-  
-  
-  
-  
+  fflush(stdout);
   
   graphics::init(window);
   
   bool running = true;
   
   printf("Beginning frame loop\n");
+  fflush(stdout);
   
   while (running) {
     float deltaTime;
