@@ -6,6 +6,9 @@
 
 class GraphicsFoundation {
   public:
+    GraphicsFoundation(SDL_Window *window, PFN_vkDebugUtilsMessengerCallbackEXT debugCallback);
+    ~GraphicsFoundation();
+    
     VkInstance instance                = VK_NULL_HANDLE;
     VkDebugUtilsMessengerEXT debugMsgr = VK_NULL_HANDLE;
     VkSurfaceKHR surface               = VK_NULL_HANDLE;
@@ -14,29 +17,33 @@ class GraphicsFoundation {
     VkQueue graphicsQueue              = VK_NULL_HANDLE;
     VkQueue surfaceQueue               = VK_NULL_HANDLE;
     
-    GraphicsFoundation(SDL_Window *window, PFN_vkDebugUtilsMessengerCallbackEXT debugCallback);
-    ~GraphicsFoundation();
+    const VkFormat format            = VK_FORMAT_B8G8R8A8_UNORM;
+    const VkColorSpaceKHR colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    
+    const vector<const char*> layers = {
+      // "VK_LAYER_LUNARG_api_dump",
+      "VK_LAYER_LUNARG_standard_validation",
+      "VK_LAYER_KHRONOS_validation"
+    };
+    
+    const vector<const char *> deviceExtensions = {
+      VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
     
   private:
     enum class QueueType;
     
     void printAvailableInstanceLayers();
     
-    VkInstance createInstance(SDL_Window *window, const vector<const char*> &layers);
+    VkInstance createInstance(SDL_Window *window);
     
     VkDebugUtilsMessengerEXT createDebugMessenger(PFN_vkDebugUtilsMessengerCallbackEXT callback);
     
-    VkPhysicalDevice createPhysicalDevice(
-      SDL_Window *window,
-      const vector<const char *> &deviceExtensions,
-      VkFormat requiredFormat,
-      VkColorSpaceKHR requiredColorSpace);
+    VkPhysicalDevice createPhysicalDevice(SDL_Window *window);
     
     VkDeviceQueueCreateInfo createQueueInfo(QueueType queueType);
     
-    void createDeviceAndQueues(
-      const vector<const char*> &layers,
-      const vector<const char *> &deviceExtensions);
+    void createDeviceAndQueues();
 };
 
 

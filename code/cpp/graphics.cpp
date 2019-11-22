@@ -2,10 +2,12 @@
 #include <SDL2/SDL_vulkan.h>
 #include <vulkan/vulkan.h>
 
+#include "GraphicsFoundation.h"
+
 #include "graphics_creation.h"
 
 namespace graphics {
-  GraphicsBaseHandles baseHandles;
+  GraphicsFoundation *foundation = nullptr;
   
   bool enableDepthTesting = true;
   const auto requiredSwapchainFormat = VK_FORMAT_B8G8R8A8_UNORM;
@@ -28,6 +30,13 @@ namespace graphics {
   VkSwapchainKHR swapchain = VK_NULL_HANDLE;
   vector<VkImage> swapchainImages;
   vector<VkImageView> swapchainViews;
+  
+  VkExtent2D getExtent() {
+    VkSurfaceCapabilitiesKHR capabilities;
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+      foundation->physDevice, foundation->surface, &capabilities);
+    return capabilities.currentExtent;
+  }
   
   vector<uint8_t> loadBinaryFile(const char *filename) {
     ifstream file(filename, ios::ate | ios::binary);
@@ -118,7 +127,7 @@ namespace graphics {
     moduleInfo.pCode = (uint32_t*)spirV.data();
 
     VkShaderModule module = VK_NULL_HANDLE;
-    SDL_assert_release(vkCreateShaderModule(baseHandles.device, &moduleInfo, nullptr, &module) == VK_SUCCESS);
+    SDL_assert_release(vkCreateShaderModule(foundation->device, &moduleInfo, nullptr, &module) == VK_SUCCESS);
 
     VkPipelineShaderStageCreateInfo stageInfo = {};
     stageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -194,12 +203,12 @@ namespace graphics {
     renderPassInfo.pSubpasses = &subpass;
     renderPassInfo.pDependencies = &dependency;
 
-    SDL_assert_release(vkCreateRenderPass(baseHandles.device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS);
+    SDL_assert_release(vkCreateRenderPass(foundation->device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS);
   }
 
   uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
     VkPhysicalDeviceMemoryProperties memoryProperties;
-    vkGetPhysicalDeviceMemoryProperties(baseHandles.physDevice, &memoryProperties);
+    vkGetPhysicalDeviceMemoryProperties(foundation->physDevice, &memoryProperties);
 
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
       if ((typeFilter & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) return i;
@@ -223,11 +232,11 @@ namespace graphics {
 
 
     vertexBuffers->push_back(VkBuffer());
-    auto result = vkCreateBuffer(baseHandles.device, &bufferInfo, nullptr, &vertexBuffers->back());
+    auto result = vkCreateBuffer(foundation->device, &bufferInfo, nullptr, &vertexBuffers->back());
     SDL_assert(result == VK_SUCCESS);
 
     VkMemoryRequirements memoryReqs;
-    vkGetBufferMemoryRequirements(baseHandles.device, vertexBuffers->back(), &memoryReqs);
+    vkGetBufferMemoryRequirements(foundation->device, vertexBuffers->back(), &memoryReqs);
 
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -236,17 +245,17 @@ namespace graphics {
       memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     vertexBufferMemSlots->push_back(VkDeviceMemory());
-    result = vkAllocateMemory(baseHandles.device, &allocInfo, nullptr, &vertexBufferMemSlots->back());
+    result = vkAllocateMemory(foundation->device, &allocInfo, nullptr, &vertexBufferMemSlots->back());
     SDL_assert(result == VK_SUCCESS);
-    result = vkBindBufferMemory(baseHandles.device, vertexBuffers->back(), vertexBufferMemSlots->back(), 0);
+    result = vkBindBufferMemory(foundation->device, vertexBuffers->back(), vertexBufferMemSlots->back(), 0);
     SDL_assert(result == VK_SUCCESS);
 
     uint8_t * mappedMemory;
-    result = vkMapMemory(baseHandles.device, vertexBufferMemSlots->back(), 0, bufferInfo.size, 0, (void**)&mappedMemory);
+    result = vkMapMemory(foundation->device, vertexBufferMemSlots->back(), 0, bufferInfo.size, 0, (void**)&mappedMemory);
         SDL_assert(result == VK_SUCCESS);
         
     memcpy(mappedMemory, vertices, bufferInfo.size);
-    vkUnmapMemory(baseHandles.device, vertexBufferMemSlots->back());
+    vkUnmapMemory(foundation->device, vertexBufferMemSlots->back());
   }
 
   void createPipeline(
@@ -276,7 +285,7 @@ namespace graphics {
     viewport.x = 0;
     viewport.y = 0;
     
-    auto extent = getExtent(baseHandles);
+    auto extent = getExtent();
     viewport.width = (float)extent.width;
     viewport.height = (float)extent.height;
     
@@ -330,7 +339,7 @@ namespace graphics {
 
     VkPipelineLayoutCreateInfo layoutInfo = {};
     layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    SDL_assert_release(vkCreatePipelineLayout(baseHandles.device, &layoutInfo, nullptr, &pipelineLayout) == VK_SUCCESS);
+    SDL_assert_release(vkCreatePipelineLayout(foundation->device, &layoutInfo, nullptr, &pipelineLayout) == VK_SUCCESS);
 
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -359,9 +368,9 @@ namespace graphics {
     pipelineInfo.layout = pipelineLayout;
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.subpass = 0;
-    SDL_assert_release(vkCreateGraphicsPipelines(baseHandles.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) == VK_SUCCESS);
+    SDL_assert_release(vkCreateGraphicsPipelines(foundation->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) == VK_SUCCESS);
 
-    for (auto &stage : shaderStages) vkDestroyShaderModule(baseHandles.device, stage.module, nullptr);
+    for (auto &stage : shaderStages) vkDestroyShaderModule(foundation->device, stage.module, nullptr);
   }
 
   void createFramebuffers() {
@@ -377,21 +386,21 @@ namespace graphics {
       framebufferInfo.attachmentCount = (uint32_t)attachments.size();
       framebufferInfo.pAttachments = attachments.data();
       
-      auto extent = getExtent(baseHandles);
+      auto extent = getExtent();
       framebufferInfo.width = extent.width;
       framebufferInfo.height = extent.height;
       
       framebufferInfo.layers = 1;
 
-      SDL_assert_release(vkCreateFramebuffer(baseHandles.device, &framebufferInfo, nullptr, &framebuffers[i]) == VK_SUCCESS);
+      SDL_assert_release(vkCreateFramebuffer(foundation->device, &framebufferInfo, nullptr, &framebuffers[i]) == VK_SUCCESS);
     }
   }
 
   void createSemaphores() {
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    SDL_assert_release(vkCreateSemaphore(baseHandles.device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) == VK_SUCCESS);
-    SDL_assert_release(vkCreateSemaphore(baseHandles.device, &semaphoreInfo, nullptr, &renderCompletedSemaphore) == VK_SUCCESS);
+    SDL_assert_release(vkCreateSemaphore(foundation->device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) == VK_SUCCESS);
+    SDL_assert_release(vkCreateSemaphore(foundation->device, &semaphoreInfo, nullptr, &renderCompletedSemaphore) == VK_SUCCESS);
   }
 
   VkCommandPool createCommandPool(VkDevice device) {
@@ -420,7 +429,7 @@ namespace graphics {
     bufferInfo.commandPool = commandPool;
     bufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY; // TODO: optimise by reusing commands (secondary buffer level)?
     bufferInfo.commandBufferCount = (int)commandBuffersOut->size();
-    auto result = vkAllocateCommandBuffers(baseHandles.device, &bufferInfo, commandBuffersOut->data());
+    auto result = vkAllocateCommandBuffers(foundation->device, &bufferInfo, commandBuffersOut->data());
     SDL_assert(result == VK_SUCCESS);
 
     vector<VkClearValue> clearValues;
@@ -454,7 +463,7 @@ namespace graphics {
       renderPassInfo.pClearValues = clearValues.data();
 
       renderPassInfo.renderArea.offset = { 0, 0 };
-      renderPassInfo.renderArea.extent = getExtent(baseHandles);
+      renderPassInfo.renderArea.extent = getExtent();
 
       vkCmdBeginRenderPass((*commandBuffersOut)[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
       vkCmdBindPipeline((*commandBuffersOut)[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
@@ -483,7 +492,7 @@ namespace graphics {
     allocInfo.commandBufferCount = 1;
 
     VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(baseHandles.device, &allocInfo, &commandBuffer);
+    vkAllocateCommandBuffers(foundation->device, &allocInfo, &commandBuffer);
 
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -502,10 +511,10 @@ namespace graphics {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &buffer;
 
-    vkQueueSubmit(baseHandles.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(baseHandles.graphicsQueue);
+    vkQueueSubmit(foundation->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(foundation->graphicsQueue);
 
-    vkFreeCommandBuffers(baseHandles.device, commandPool, 1, &buffer);
+    vkFreeCommandBuffers(foundation->device, commandPool, 1, &buffer);
   }
 
   void setupDepthTesting(VkCommandPool commandPool) {
@@ -518,7 +527,7 @@ namespace graphics {
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     
-    auto extent = getExtent(baseHandles);
+    auto extent = getExtent();
     imageInfo.extent.width = extent.width;
     imageInfo.extent.height = extent.height;
     imageInfo.extent.depth = 1;
@@ -532,19 +541,19 @@ namespace graphics {
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    SDL_assert_release(vkCreateImage(baseHandles.device, &imageInfo, nullptr, &depthImage) == VK_SUCCESS);
+    SDL_assert_release(vkCreateImage(foundation->device, &imageInfo, nullptr, &depthImage) == VK_SUCCESS);
 
     VkMemoryRequirements memoryReqs;
-    vkGetImageMemoryRequirements(baseHandles.device, depthImage, &memoryReqs);
+    vkGetImageMemoryRequirements(foundation->device, depthImage, &memoryReqs);
 
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memoryReqs.size;
     allocInfo.memoryTypeIndex = findMemoryType(memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    SDL_assert_release(vkAllocateMemory(baseHandles.device, &allocInfo, nullptr, &depthImageMemory) == VK_SUCCESS);
+    SDL_assert_release(vkAllocateMemory(foundation->device, &allocInfo, nullptr, &depthImageMemory) == VK_SUCCESS);
 
-    vkBindImageMemory(baseHandles.device, depthImage, depthImageMemory, 0);
+    vkBindImageMemory(foundation->device, depthImage, depthImageMemory, 0);
 
     // Make image view
     VkImageViewCreateInfo viewInfo = {};
@@ -558,7 +567,7 @@ namespace graphics {
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
-    SDL_assert_release(vkCreateImageView(baseHandles.device, &viewInfo, nullptr, &depthImageView) == VK_SUCCESS);
+    SDL_assert_release(vkCreateImageView(foundation->device, &viewInfo, nullptr, &depthImageView) == VK_SUCCESS);
 
     // Initialise image layout
     VkCommandBuffer commandBuffer = createAndBeginDepthTestingCommandBuffer(commandPool);
@@ -588,18 +597,18 @@ namespace graphics {
 
   void init(SDL_Window *window) {
     
-    baseHandles = init2(window, layers, debugCallback);
+    foundation = new GraphicsFoundation(window, debugCallback);
     
-    swapchain = createSwapchain(baseHandles);
+    swapchain = createSwapchain(foundation);
 
     // Get handles to the swapchain images and create their views
     {
       uint32_t actualImageCount;
-      vkGetSwapchainImagesKHR(baseHandles.device, swapchain, &actualImageCount, nullptr);
+      vkGetSwapchainImagesKHR(foundation->device, swapchain, &actualImageCount, nullptr);
       SDL_assert_release(actualImageCount >= requiredSwapchainImageCount);
       swapchainImages.resize(actualImageCount);
       swapchainViews.resize(actualImageCount);
-      SDL_assert_release(vkGetSwapchainImagesKHR(baseHandles.device, swapchain, &actualImageCount, swapchainImages.data()) == VK_SUCCESS);
+      SDL_assert_release(vkGetSwapchainImagesKHR(foundation->device, swapchain, &actualImageCount, swapchainImages.data()) == VK_SUCCESS);
 
       for (int i = 0; i < swapchainImages.size(); i++) {
         VkImageViewCreateInfo createInfo = {};
@@ -619,7 +628,7 @@ namespace graphics {
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1;
         
-        SDL_assert_release(vkCreateImageView(baseHandles.device, &createInfo, nullptr, &swapchainViews[i]) == VK_SUCCESS);
+        SDL_assert_release(vkCreateImageView(foundation->device, &createInfo, nullptr, &swapchainViews[i]) == VK_SUCCESS);
       }
     }
 
@@ -640,7 +649,7 @@ namespace graphics {
     
     createPipeline(bindingDesc, attribDesc);
     
-    commandPool = createCommandPool(baseHandles.device);
+    commandPool = createCommandPool(foundation->device);
     if (enableDepthTesting) setupDepthTesting(commandPool);
     createFramebuffers();
     createSemaphores();
@@ -652,13 +661,13 @@ namespace graphics {
   vector<VkCommandBuffer> commandBuffers;
 
   void freeRenderBuffers() {
-    vkFreeCommandBuffers(baseHandles.device, commandPool, (uint32_t)commandBuffers.size(), commandBuffers.data());
+    vkFreeCommandBuffers(foundation->device, commandPool, (uint32_t)commandBuffers.size(), commandBuffers.data());
     commandBuffers.resize(0);
 
-    for (auto &buffer : vertexBuffers) vkDestroyBuffer(baseHandles.device, buffer, nullptr);
+    for (auto &buffer : vertexBuffers) vkDestroyBuffer(foundation->device, buffer, nullptr);
     vertexBuffers.resize(0);
 
-    for (auto &slot : vertexBufferMemSlots) vkFreeMemory(baseHandles.device, slot, nullptr);
+    for (auto &slot : vertexBufferMemSlots) vkFreeMemory(foundation->device, slot, nullptr);
     vertexBufferMemSlots.resize(0);
   }
 
@@ -673,8 +682,8 @@ namespace graphics {
     if (!commandBuffers.empty()) {
       // The queues may not have finished their commands from the last frame yet,
       // so we wait for everything to be finished before rebuilding the buffers.
-      vkQueueWaitIdle(baseHandles.graphicsQueue);
-      vkQueueWaitIdle(baseHandles.surfaceQueue);
+      vkQueueWaitIdle(foundation->graphicsQueue);
+      vkQueueWaitIdle(foundation->surfaceQueue);
       freeRenderBuffers();
     }
 
@@ -684,7 +693,7 @@ namespace graphics {
     // Submit commands
     uint32_t swapchainImageIndex = INT32_MAX;
 
-    auto result = vkAcquireNextImageKHR(baseHandles.device, swapchain, UINT64_MAX /* no timeout */, imageAvailableSemaphore, VK_NULL_HANDLE, &swapchainImageIndex);
+    auto result = vkAcquireNextImageKHR(foundation->device, swapchain, UINT64_MAX /* no timeout */, imageAvailableSemaphore, VK_NULL_HANDLE, &swapchainImageIndex);
     SDL_assert(result == VK_SUCCESS);
     
     VkSubmitInfo submitInfo = {};
@@ -701,7 +710,7 @@ namespace graphics {
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &renderCompletedSemaphore;
 
-    result = vkQueueSubmit(baseHandles.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    result = vkQueueSubmit(foundation->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
     SDL_assert(result == VK_SUCCESS);
 
     // Present
@@ -715,36 +724,36 @@ namespace graphics {
     presentInfo.pSwapchains = &swapchain;
     presentInfo.pImageIndices = &swapchainImageIndex;
 
-    result = vkQueuePresentKHR(baseHandles.surfaceQueue, &presentInfo);
+    result = vkQueuePresentKHR(foundation->surfaceQueue, &presentInfo);
     SDL_assert(result == VK_SUCCESS);
   }
 
   void destroy() {
-    vkQueueWaitIdle(baseHandles.graphicsQueue);
-    vkQueueWaitIdle(baseHandles.surfaceQueue);
+    vkQueueWaitIdle(foundation->graphicsQueue);
+    vkQueueWaitIdle(foundation->surfaceQueue);
     
     freeRenderBuffers();
 
-    vkDestroyCommandPool(baseHandles.device, commandPool, nullptr);
+    vkDestroyCommandPool(foundation->device, commandPool, nullptr);
 
-    vkDeviceWaitIdle(baseHandles.device);
+    vkDeviceWaitIdle(foundation->device);
 
-    vkDestroySemaphore(baseHandles.device, imageAvailableSemaphore, nullptr);
-    vkDestroySemaphore(baseHandles.device, renderCompletedSemaphore, nullptr);
+    vkDestroySemaphore(foundation->device, imageAvailableSemaphore, nullptr);
+    vkDestroySemaphore(foundation->device, renderCompletedSemaphore, nullptr);
 
-    for (auto &buffer : framebuffers) vkDestroyFramebuffer(baseHandles.device, buffer, nullptr);
+    for (auto &buffer : framebuffers) vkDestroyFramebuffer(foundation->device, buffer, nullptr);
     
-    vkDestroyPipeline(baseHandles.device, pipeline, nullptr);
-    vkDestroyPipelineLayout(baseHandles.device, pipelineLayout, nullptr);
-    vkDestroyRenderPass(baseHandles.device, renderPass, nullptr);
+    vkDestroyPipeline(foundation->device, pipeline, nullptr);
+    vkDestroyPipelineLayout(foundation->device, pipelineLayout, nullptr);
+    vkDestroyRenderPass(foundation->device, renderPass, nullptr);
 
-    for (auto view : swapchainViews) vkDestroyImageView(baseHandles.device, view, nullptr);
+    for (auto view : swapchainViews) vkDestroyImageView(foundation->device, view, nullptr);
     swapchainViews.resize(0);
 
     swapchainImages.resize(0);
-    vkDestroySwapchainKHR(baseHandles.device, swapchain, nullptr);
+    vkDestroySwapchainKHR(foundation->device, swapchain, nullptr);
     
-    destroy(baseHandles);
+    delete foundation;
   }
 }
 

@@ -9,27 +9,16 @@ GraphicsFoundation::GraphicsFoundation(
   SDL_Window *window,
   PFN_vkDebugUtilsMessengerCallbackEXT debugCallback) {
   
-  const vector<const char*> layers = {
-    // "VK_LAYER_LUNARG_api_dump",
-    "VK_LAYER_LUNARG_standard_validation",
-    "VK_LAYER_KHRONOS_validation"
-  };
-
-  const VkFormat requiredFormat = VK_FORMAT_B8G8R8A8_UNORM;
-  const VkColorSpaceKHR requiredColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-  const vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-  
-  instance = createInstance(window, layers);
+  instance = createInstance(window);
   
   if (!layers.empty()) createDebugMessenger(debugCallback);
   
   auto result = SDL_Vulkan_CreateSurface(window, instance, &surface);
   SDL_assert_release(result == SDL_TRUE);
   
-  physDevice = createPhysicalDevice(
-    window, deviceExtensions, requiredFormat, requiredColorSpace);
+  physDevice = createPhysicalDevice(window);
   
-  createDeviceAndQueues(layers, deviceExtensions);
+  createDeviceAndQueues();
 }
 
 GraphicsFoundation::~GraphicsFoundation() {
@@ -46,8 +35,7 @@ void GraphicsFoundation::printAvailableInstanceLayers() {
   for (const auto& layer : availableLayers) printf("\t%s\n", layer.layerName);
 }
 
-VkInstance GraphicsFoundation::createInstance(
-  SDL_Window *window, const vector<const char*> &layers) {
+VkInstance GraphicsFoundation::createInstance(SDL_Window *window) {
   if (!layers.empty()) printAvailableInstanceLayers();
   
   // Get required extensions from SDL
@@ -102,11 +90,7 @@ VkDebugUtilsMessengerEXT GraphicsFoundation::createDebugMessenger(
   return debugMsgr;
 }
 
-VkPhysicalDevice GraphicsFoundation::createPhysicalDevice(
-  SDL_Window *window,
-  const vector<const char *> &deviceExtensions,
-  VkFormat requiredFormat,
-  VkColorSpaceKHR requiredColorSpace) {
+VkPhysicalDevice GraphicsFoundation::createPhysicalDevice(SDL_Window *window) {
   
   uint32_t deviceCount = 0;
   vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
@@ -162,8 +146,8 @@ VkPhysicalDevice GraphicsFoundation::createPhysicalDevice(
 
       bool found = false;
       for (auto &format : formats) {
-        if (format.format == requiredFormat
-          && format.colorSpace == requiredColorSpace) {
+        if (format.format == this->format
+          && format.colorSpace == colorSpace) {
           found = true;
         }
       }
@@ -222,9 +206,7 @@ VkDeviceQueueCreateInfo GraphicsFoundation::createQueueInfo(QueueType queueType)
   return info;
 }
 
-void GraphicsFoundation::createDeviceAndQueues(
-  const vector<const char*> &layers,
-  const vector<const char *> &deviceExtensions) {
+void GraphicsFoundation::createDeviceAndQueues() {
   
   auto graphicsQueueInfo = createQueueInfo(QueueType::GRAPHICS);
   auto surfaceQueueInfo = createQueueInfo(QueueType::SURFACE_SUPPORT);
