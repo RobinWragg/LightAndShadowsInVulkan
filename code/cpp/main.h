@@ -22,8 +22,8 @@ using namespace std;
 double getTime();
 
 namespace graphics {
-	void init(
-		SDL_Window *window);
-	void destroy();
-	void render();
+  void init(
+    SDL_Window *window);
+  void destroy();
+  void render();
 }
