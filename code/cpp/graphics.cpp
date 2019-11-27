@@ -182,12 +182,13 @@ namespace graphics {
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
 
+    VkAttachmentDescription depthAttachment = {};
+    VkAttachmentReference depthAttachmentRef = {};
     if (enableDepthTesting) {
-      VkAttachmentDescription depthAttachment = createAttachmentDescription(
+      depthAttachment = createAttachmentDescription(
         VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
       attachments.push_back(depthAttachment);
 
-      VkAttachmentReference depthAttachmentRef = {};
       depthAttachmentRef.attachment = 1;
       depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
       subpass.pDepthStencilAttachment = &depthAttachmentRef;
@@ -195,7 +196,7 @@ namespace graphics {
 
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-
+    
     renderPassInfo.attachmentCount = (uint32_t)attachments.size();
     renderPassInfo.pAttachments = attachments.data();
     renderPassInfo.dependencyCount = 1;

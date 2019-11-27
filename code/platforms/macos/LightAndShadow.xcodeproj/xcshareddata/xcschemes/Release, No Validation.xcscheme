@@ -14,16 +14,16 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "001D32B6238217CF001A68C7"
-               BuildableName = "LightAndShadow.app"
-               BlueprintName = "LightAndShadow"
+               BlueprintIdentifier = "008D37E2238F16AB00336F14"
+               BuildableName = "LightAndShadow - Release.app"
+               BlueprintName = "LightAndShadow - Release"
                ReferencedContainer = "container:LightAndShadow.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
@@ -31,7 +31,7 @@
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -44,9 +44,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "001D32B6238217CF001A68C7"
-            BuildableName = "LightAndShadow.app"
-            BlueprintName = "LightAndShadow"
+            BlueprintIdentifier = "008D37E2238F16AB00336F14"
+            BuildableName = "LightAndShadow - Release.app"
+            BlueprintName = "LightAndShadow - Release"
             ReferencedContainer = "container:LightAndShadow.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -57,19 +57,9 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "001D32B6238217CF001A68C7"
-            BuildableName = "LightAndShadow.app"
-            BlueprintName = "LightAndShadow"
-            ReferencedContainer = "container:LightAndShadow.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
-      buildConfiguration = "Debug">
+      buildConfiguration = "Release">
    </AnalyzeAction>
    <ArchiveAction
       buildConfiguration = "Release"

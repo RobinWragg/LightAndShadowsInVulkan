@@ -56,6 +56,10 @@ VkInstance GraphicsFoundation::createInstance(SDL_Window *window) {
   createInfo.enabledLayerCount = (int)layers.size();
   createInfo.ppEnabledLayerNames = layers.data();
   
+  printf("\nEnabled instance layers:\n");
+  for (auto &layer : layers) printf("\t%s\n", layer);
+  printf("\n");
+  
   VkInstance instance;
   auto creationResult = vkCreateInstance(&createInfo, nullptr, &instance);
   SDL_assert_release(creationResult == VK_SUCCESS);

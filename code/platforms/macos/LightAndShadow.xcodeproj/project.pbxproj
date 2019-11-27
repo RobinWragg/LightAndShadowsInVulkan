@@ -10,13 +10,30 @@
 		00359D28238EB53D0076E82F /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D27238EB53C0076E82F /* CoreFoundation.framework */; };
 		00359D2A238EB54E0076E82F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D29238EB54E0076E82F /* CoreGraphics.framework */; };
 		00359D2C238EB5600076E82F /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D2B238EB5600076E82F /* IOKit.framework */; };
-		00359D2E238EB56A0076E82F /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D2D238EB56A0076E82F /* IOSurface.framework */; };
+		00359D2E238EB56A0076E82F /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D2D238EB56A0076E82F /* IOSurface.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		00359D30238EB5780076E82F /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D2F238EB5780076E82F /* Metal.framework */; };
 		00359D32238EB58D0076E82F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D31238EB58D0076E82F /* Foundation.framework */; };
 		00359D34238EB5D70076E82F /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D33238EB5D70076E82F /* AppKit.framework */; };
 		00359D36238EB65A0076E82F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D35238EB65A0076E82F /* QuartzCore.framework */; };
 		00470909238218AA0018D488 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; };
-		00AFFDA1238ECD84005806A0 /* MoltenVK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00AFFD9D238ECC16005806A0 /* MoltenVK.framework */; };
+		008D37E4238F16AB00336F14 /* graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DCD0A123886C850062AB86 /* graphics.cpp */; };
+		008D37E5238F16AB00336F14 /* GraphicsFoundation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DCD09F23886C850062AB86 /* GraphicsFoundation.cpp */; };
+		008D37E6238F16AB00336F14 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DCD0A323886C850062AB86 /* main.cpp */; };
+		008D37E7238F16AB00336F14 /* graphics_creation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DCD0A223886C850062AB86 /* graphics_creation.cpp */; };
+		008D37EA238F16AB00336F14 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D35238EB65A0076E82F /* QuartzCore.framework */; };
+		008D37EB238F16AB00336F14 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D33238EB5D70076E82F /* AppKit.framework */; };
+		008D37EC238F16AB00336F14 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D31238EB58D0076E82F /* Foundation.framework */; };
+		008D37ED238F16AB00336F14 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D2F238EB5780076E82F /* Metal.framework */; };
+		008D37EE238F16AB00336F14 /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D2D238EB56A0076E82F /* IOSurface.framework */; settings = {ATTRIBUTES = (Required, ); }; };
+		008D37EF238F16AB00336F14 /* MoltenVK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 008D37CB238F129F00336F14 /* MoltenVK.framework */; settings = {ATTRIBUTES = (Required, ); }; };
+		008D37F0238F16AB00336F14 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D2B238EB5600076E82F /* IOKit.framework */; };
+		008D37F1238F16AB00336F14 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D29238EB54E0076E82F /* CoreGraphics.framework */; };
+		008D37F2238F16AB00336F14 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D27238EB53C0076E82F /* CoreFoundation.framework */; };
+		008D37F3238F16AB00336F14 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; };
+		008D37F4238F16AB00336F14 /* vulkan.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; };
+		008D37F6238F16AB00336F14 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 00F10F3A23848EA900C328BF /* assets */; };
+		008D37F8238F16AB00336F14 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		008D37F9238F16AB00336F14 /* vulkan.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		00C1FBCF238EBB860007F048 /* vulkan.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; };
 		00C1FBD4238EBC8F0007F048 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		00C1FBD5238EBC9F0007F048 /* vulkan.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -40,10 +57,22 @@
 			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		008D37F7238F16AB00336F14 /* Copy Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				008D37F8238F16AB00336F14 /* SDL2.framework in Copy Frameworks */,
+				008D37F9238F16AB00336F14 /* vulkan.framework in Copy Frameworks */,
+			);
+			name = "Copy Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		001D32B7238217CF001A68C7 /* LightAndShadow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LightAndShadow.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		001D32B7238217CF001A68C7 /* LightAndShadow - Debug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "LightAndShadow - Debug.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		001D32C2238217D1001A68C7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00359D27238EB53C0076E82F /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		00359D29238EB54E0076E82F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -55,7 +84,16 @@
 		00359D35238EB65A0076E82F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		0036EB352382A71D008538A6 /* vulkan.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = vulkan.framework; sourceTree = SOURCE_ROOT; };
 		00470908238218AA0018D488 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL2.framework; sourceTree = SOURCE_ROOT; };
-		00AFFD9D238ECC16005806A0 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MoltenVK.framework; sourceTree = "<group>"; };
+		008D37CB238F129F00336F14 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MoltenVK.framework; sourceTree = SOURCE_ROOT; };
+		008D37D3238F168F00336F14 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		008D37D4238F168F00336F14 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		008D37D6238F169200336F14 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		008D37D9238F169200336F14 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		008D37DB238F169200336F14 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		008D37DC238F169200336F14 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		008D37DE238F169200336F14 /* LightAndShadow___Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "LightAndShadow___Release.entitlements"; sourceTree = "<group>"; };
+		008D37FD238F16AB00336F14 /* LightAndShadow - Release.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "LightAndShadow - Release.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		008D37FE238F16AB00336F14 /* LightAndShadow - Debug copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "LightAndShadow - Debug copy-Info.plist"; path = "/Users/robin/Desktop/y3/LightAndShadow/code/platforms/macos/LightAndShadow - Debug copy-Info.plist"; sourceTree = "<absolute>"; };
 		00DCD09D23886C850062AB86 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		00DCD09E23886C850062AB86 /* GraphicsFoundation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphicsFoundation.h; sourceTree = "<group>"; };
 		00DCD09F23886C850062AB86 /* GraphicsFoundation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicsFoundation.cpp; sourceTree = "<group>"; };
@@ -76,12 +114,29 @@
 				00359D32238EB58D0076E82F /* Foundation.framework in Frameworks */,
 				00359D30238EB5780076E82F /* Metal.framework in Frameworks */,
 				00359D2E238EB56A0076E82F /* IOSurface.framework in Frameworks */,
-				00AFFDA1238ECD84005806A0 /* MoltenVK.framework in Frameworks */,
 				00359D2C238EB5600076E82F /* IOKit.framework in Frameworks */,
 				00359D2A238EB54E0076E82F /* CoreGraphics.framework in Frameworks */,
 				00359D28238EB53D0076E82F /* CoreFoundation.framework in Frameworks */,
 				00470909238218AA0018D488 /* SDL2.framework in Frameworks */,
 				00C1FBCF238EBB860007F048 /* vulkan.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		008D37E9238F16AB00336F14 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				008D37EA238F16AB00336F14 /* QuartzCore.framework in Frameworks */,
+				008D37EB238F16AB00336F14 /* AppKit.framework in Frameworks */,
+				008D37EC238F16AB00336F14 /* Foundation.framework in Frameworks */,
+				008D37ED238F16AB00336F14 /* Metal.framework in Frameworks */,
+				008D37EE238F16AB00336F14 /* IOSurface.framework in Frameworks */,
+				008D37EF238F16AB00336F14 /* MoltenVK.framework in Frameworks */,
+				008D37F0238F16AB00336F14 /* IOKit.framework in Frameworks */,
+				008D37F1238F16AB00336F14 /* CoreGraphics.framework in Frameworks */,
+				008D37F2238F16AB00336F14 /* CoreFoundation.framework in Frameworks */,
+				008D37F3238F16AB00336F14 /* SDL2.framework in Frameworks */,
+				008D37F4238F16AB00336F14 /* vulkan.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,15 +149,18 @@
 				00DCD09C23886C850062AB86 /* cpp */,
 				00F10F3A23848EA900C328BF /* assets */,
 				001D32B9238217CF001A68C7 /* LightAndShadow */,
+				008D37D2238F168F00336F14 /* LightAndShadow - Release */,
 				001D32B8238217CF001A68C7 /* Products */,
 				00359D24238EB4E10076E82F /* Frameworks */,
+				008D37FE238F16AB00336F14 /* LightAndShadow - Debug copy-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
 		001D32B8238217CF001A68C7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				001D32B7238217CF001A68C7 /* LightAndShadow.app */,
+				001D32B7238217CF001A68C7 /* LightAndShadow - Debug.app */,
+				008D37FD238F16AB00336F14 /* LightAndShadow - Release.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -110,7 +168,7 @@
 		001D32B9238217CF001A68C7 /* LightAndShadow */ = {
 			isa = PBXGroup;
 			children = (
-				00AFFD9D238ECC16005806A0 /* MoltenVK.framework */,
+				008D37CB238F129F00336F14 /* MoltenVK.framework */,
 				0036EB352382A71D008538A6 /* vulkan.framework */,
 				00470908238218AA0018D488 /* SDL2.framework */,
 				001D32C2238217D1001A68C7 /* Info.plist */,
@@ -133,6 +191,20 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		008D37D2238F168F00336F14 /* LightAndShadow - Release */ = {
+			isa = PBXGroup;
+			children = (
+				008D37D3238F168F00336F14 /* AppDelegate.h */,
+				008D37D4238F168F00336F14 /* AppDelegate.m */,
+				008D37D6238F169200336F14 /* Assets.xcassets */,
+				008D37D8238F169200336F14 /* MainMenu.xib */,
+				008D37DB238F169200336F14 /* Info.plist */,
+				008D37DC238F169200336F14 /* main.m */,
+				008D37DE238F169200336F14 /* LightAndShadow___Release.entitlements */,
+			);
+			path = "LightAndShadow - Release";
+			sourceTree = "<group>";
+		};
 		00DCD09C23886C850062AB86 /* cpp */ = {
 			isa = PBXGroup;
 			children = (
@@ -151,9 +223,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		001D32B6238217CF001A68C7 /* LightAndShadow */ = {
+		001D32B6238217CF001A68C7 /* LightAndShadow - Debug */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 001D32C8238217D1001A68C7 /* Build configuration list for PBXNativeTarget "LightAndShadow" */;
+			buildConfigurationList = 001D32C8238217D1001A68C7 /* Build configuration list for PBXNativeTarget "LightAndShadow - Debug" */;
 			buildPhases = (
 				001D32B3238217CF001A68C7 /* Sources */,
 				00EE525E238710D000F48749 /* ShellScript */,
@@ -165,9 +237,28 @@
 			);
 			dependencies = (
 			);
-			name = LightAndShadow;
+			name = "LightAndShadow - Debug";
 			productName = LightAndShadow;
-			productReference = 001D32B7238217CF001A68C7 /* LightAndShadow.app */;
+			productReference = 001D32B7238217CF001A68C7 /* LightAndShadow - Debug.app */;
+			productType = "com.apple.product-type.application";
+		};
+		008D37E2238F16AB00336F14 /* LightAndShadow - Release */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 008D37FA238F16AB00336F14 /* Build configuration list for PBXNativeTarget "LightAndShadow - Release" */;
+			buildPhases = (
+				008D37E3238F16AB00336F14 /* Sources */,
+				008D37E8238F16AB00336F14 /* ShellScript */,
+				008D37E9238F16AB00336F14 /* Frameworks */,
+				008D37F5238F16AB00336F14 /* Resources */,
+				008D37F7238F16AB00336F14 /* Copy Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "LightAndShadow - Release";
+			productName = LightAndShadow;
+			productReference = 008D37FD238F16AB00336F14 /* LightAndShadow - Release.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -197,7 +288,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				001D32B6238217CF001A68C7 /* LightAndShadow */,
+				001D32B6238217CF001A68C7 /* LightAndShadow - Debug */,
+				008D37E2238F16AB00336F14 /* LightAndShadow - Release */,
 			);
 		};
 /* End PBXProject section */
@@ -211,9 +303,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		008D37F5238F16AB00336F14 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				008D37F6238F16AB00336F14 /* assets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		008D37E8238F16AB00336F14 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "python3 compile_shaders.py\n";
+		};
 		00EE525E238710D000F48749 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -245,7 +362,29 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		008D37E3238F16AB00336F14 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				008D37E4238F16AB00336F14 /* graphics.cpp in Sources */,
+				008D37E5238F16AB00336F14 /* GraphicsFoundation.cpp in Sources */,
+				008D37E6238F16AB00336F14 /* main.cpp in Sources */,
+				008D37E7238F16AB00336F14 /* graphics_creation.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		008D37D8238F169200336F14 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				008D37D9238F169200336F14 /* Base */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		001D32C6238217D1001A68C7 /* Debug */ = {
@@ -409,6 +548,58 @@
 			};
 			name = Release;
 		};
+		008D37FB238F16AB00336F14 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/LightAndShadow",
+				);
+				HEADER_SEARCH_PATHS = "../../libs/glm-0.9.9.6";
+				INFOPLIST_FILE = "LightAndShadow - Debug copy-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = RobinWragg.LightAndShadow;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Debug;
+		};
+		008D37FC238F16AB00336F14 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/LightAndShadow",
+				);
+				HEADER_SEARCH_PATHS = "../../libs/glm-0.9.9.6";
+				INFOPLIST_FILE = "LightAndShadow - Debug copy-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = RobinWragg.LightAndShadow;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -421,11 +612,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		001D32C8238217D1001A68C7 /* Build configuration list for PBXNativeTarget "LightAndShadow" */ = {
+		001D32C8238217D1001A68C7 /* Build configuration list for PBXNativeTarget "LightAndShadow - Debug" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				001D32C9238217D1001A68C7 /* Debug */,
 				001D32CA238217D1001A68C7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		008D37FA238F16AB00336F14 /* Build configuration list for PBXNativeTarget "LightAndShadow - Release" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				008D37FB238F16AB00336F14 /* Debug */,
+				008D37FC238F16AB00336F14 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

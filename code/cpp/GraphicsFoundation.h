@@ -22,11 +22,22 @@ class GraphicsFoundation {
     
     const vector<const char*> layers = {
 #ifdef __APPLE__
-      "MoltenVK"
-#else
-      "VK_LAYER_LUNARG_api_dump",
+  #ifdef DEBUG
+      // macOS with validation (Vulkan SDK installation required)
       "VK_LAYER_LUNARG_standard_validation",
       "VK_LAYER_KHRONOS_validation"
+  #else
+      // macOS without validation
+      "MoltenVK"
+  #endif
+#else
+  #ifdef DEBUG
+      // Windows with validation
+      "VK_LAYER_KHRONOS_validation"
+  #else
+      // Windows with no validation
+      // (no layers necessary)
+  #endif
 #endif
     };
     

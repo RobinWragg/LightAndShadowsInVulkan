@@ -26,6 +26,15 @@ void setWorkingDir() {
 }
 
 int main(int argc, char* argv[]) {
+  
+  #ifdef DEBUG
+  printf("Debug build\n");
+  printf("Validation enabled\n");
+  #else
+  printf("Release build\n");
+  printf("Validation disabled\n");
+  #endif
+  
   printf("main()\n");
   fflush(stdout);
   
