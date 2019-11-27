@@ -11,19 +11,6 @@ double getTime() {
   return (SDL_GetPerformanceCounter() - startCount) / (double)SDL_GetPerformanceFrequency();
 }
 
-void monitorFramerate(float deltaTime) {
-  static vector<float> frameTimes;
-
-  frameTimes.push_back(deltaTime);
-
-  if (frameTimes.size() >= 100) {
-    float worstTime = 0;
-    for (auto time : frameTimes) if (time > worstTime) worstTime = time;
-    frameTimes.resize(0);
-    printf("Worst frame out of 100: %.2f ms (%.1f fps)\n", worstTime * 1000, 1 / worstTime);
-  }
-}
-
 SDL_Renderer *renderer;
 int rendererWidth, rendererHeight;
 

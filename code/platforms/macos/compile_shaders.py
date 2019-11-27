@@ -14,7 +14,7 @@ glsl_files = [file for file in os.listdir('../../glsl') if file[0] != '.']
 for glsl_file in glsl_files:
   try:
     command = [
-      'glslc',
+      './glslc',
       os.path.join(glsl_dir, glsl_file),
       '-o',
       os.path.join(spirv_dir, glsl_file + '.spv')

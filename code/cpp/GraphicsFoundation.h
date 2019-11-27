@@ -21,9 +21,13 @@ class GraphicsFoundation {
     const VkColorSpaceKHR colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     
     const vector<const char*> layers = {
-      // "VK_LAYER_LUNARG_api_dump",
+#ifdef __APPLE__
+      "MoltenVK"
+#else
+      "VK_LAYER_LUNARG_api_dump",
       "VK_LAYER_LUNARG_standard_validation",
       "VK_LAYER_KHRONOS_validation"
+#endif
     };
     
     const vector<const char *> deviceExtensions = {

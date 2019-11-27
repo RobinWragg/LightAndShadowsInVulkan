@@ -7,14 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0036EB362382A71D008538A6 /* vulkan.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; };
+		00359D28238EB53D0076E82F /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D27238EB53C0076E82F /* CoreFoundation.framework */; };
+		00359D2A238EB54E0076E82F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D29238EB54E0076E82F /* CoreGraphics.framework */; };
+		00359D2C238EB5600076E82F /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D2B238EB5600076E82F /* IOKit.framework */; };
+		00359D2E238EB56A0076E82F /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D2D238EB56A0076E82F /* IOSurface.framework */; };
+		00359D30238EB5780076E82F /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D2F238EB5780076E82F /* Metal.framework */; };
+		00359D32238EB58D0076E82F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D31238EB58D0076E82F /* Foundation.framework */; };
+		00359D34238EB5D70076E82F /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D33238EB5D70076E82F /* AppKit.framework */; };
+		00359D36238EB65A0076E82F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D35238EB65A0076E82F /* QuartzCore.framework */; };
 		00470909238218AA0018D488 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; };
-		0047090B238219250018D488 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		00AFFDA1238ECD84005806A0 /* MoltenVK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00AFFD9D238ECC16005806A0 /* MoltenVK.framework */; };
+		00C1FBCF238EBB860007F048 /* vulkan.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; };
+		00C1FBD4238EBC8F0007F048 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		00C1FBD5238EBC9F0007F048 /* vulkan.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		00DCD0A423886C860062AB86 /* GraphicsFoundation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DCD09F23886C850062AB86 /* GraphicsFoundation.cpp */; };
 		00DCD0A523886C860062AB86 /* graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DCD0A123886C850062AB86 /* graphics.cpp */; };
 		00DCD0A623886C860062AB86 /* graphics_creation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DCD0A223886C850062AB86 /* graphics_creation.cpp */; };
 		00DCD0A723886C860062AB86 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DCD0A323886C850062AB86 /* main.cpp */; };
-		00E56C35238472FB00EE76EB /* vulkan.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		00F10F3B23848EA900C328BF /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 00F10F3A23848EA900C328BF /* assets */; };
 /* End PBXBuildFile section */
 
@@ -25,8 +34,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				0047090B238219250018D488 /* SDL2.framework in Copy Frameworks */,
-				00E56C35238472FB00EE76EB /* vulkan.framework in Copy Frameworks */,
+				00C1FBD4238EBC8F0007F048 /* SDL2.framework in Copy Frameworks */,
+				00C1FBD5238EBC9F0007F048 /* vulkan.framework in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -36,8 +45,17 @@
 /* Begin PBXFileReference section */
 		001D32B7238217CF001A68C7 /* LightAndShadow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LightAndShadow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		001D32C2238217D1001A68C7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		00359D27238EB53C0076E82F /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		00359D29238EB54E0076E82F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		00359D2B238EB5600076E82F /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		00359D2D238EB56A0076E82F /* IOSurface.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOSurface.framework; path = System/Library/Frameworks/IOSurface.framework; sourceTree = SDKROOT; };
+		00359D2F238EB5780076E82F /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		00359D31238EB58D0076E82F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		00359D33238EB5D70076E82F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		00359D35238EB65A0076E82F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		0036EB352382A71D008538A6 /* vulkan.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = vulkan.framework; sourceTree = SOURCE_ROOT; };
 		00470908238218AA0018D488 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL2.framework; sourceTree = SOURCE_ROOT; };
+		00AFFD9D238ECC16005806A0 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MoltenVK.framework; sourceTree = "<group>"; };
 		00DCD09D23886C850062AB86 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		00DCD09E23886C850062AB86 /* GraphicsFoundation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphicsFoundation.h; sourceTree = "<group>"; };
 		00DCD09F23886C850062AB86 /* GraphicsFoundation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicsFoundation.cpp; sourceTree = "<group>"; };
@@ -53,8 +71,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				00359D36238EB65A0076E82F /* QuartzCore.framework in Frameworks */,
+				00359D34238EB5D70076E82F /* AppKit.framework in Frameworks */,
+				00359D32238EB58D0076E82F /* Foundation.framework in Frameworks */,
+				00359D30238EB5780076E82F /* Metal.framework in Frameworks */,
+				00359D2E238EB56A0076E82F /* IOSurface.framework in Frameworks */,
+				00AFFDA1238ECD84005806A0 /* MoltenVK.framework in Frameworks */,
+				00359D2C238EB5600076E82F /* IOKit.framework in Frameworks */,
+				00359D2A238EB54E0076E82F /* CoreGraphics.framework in Frameworks */,
+				00359D28238EB53D0076E82F /* CoreFoundation.framework in Frameworks */,
 				00470909238218AA0018D488 /* SDL2.framework in Frameworks */,
-				0036EB362382A71D008538A6 /* vulkan.framework in Frameworks */,
+				00C1FBCF238EBB860007F048 /* vulkan.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -68,6 +95,7 @@
 				00F10F3A23848EA900C328BF /* assets */,
 				001D32B9238217CF001A68C7 /* LightAndShadow */,
 				001D32B8238217CF001A68C7 /* Products */,
+				00359D24238EB4E10076E82F /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -82,11 +110,27 @@
 		001D32B9238217CF001A68C7 /* LightAndShadow */ = {
 			isa = PBXGroup;
 			children = (
+				00AFFD9D238ECC16005806A0 /* MoltenVK.framework */,
 				0036EB352382A71D008538A6 /* vulkan.framework */,
 				00470908238218AA0018D488 /* SDL2.framework */,
 				001D32C2238217D1001A68C7 /* Info.plist */,
 			);
 			path = LightAndShadow;
+			sourceTree = "<group>";
+		};
+		00359D24238EB4E10076E82F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				00359D35238EB65A0076E82F /* QuartzCore.framework */,
+				00359D33238EB5D70076E82F /* AppKit.framework */,
+				00359D31238EB58D0076E82F /* Foundation.framework */,
+				00359D2F238EB5780076E82F /* Metal.framework */,
+				00359D2D238EB56A0076E82F /* IOSurface.framework */,
+				00359D2B238EB5600076E82F /* IOKit.framework */,
+				00359D29238EB54E0076E82F /* CoreGraphics.framework */,
+				00359D27238EB53C0076E82F /* CoreFoundation.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		00DCD09C23886C850062AB86 /* cpp */ = {
@@ -318,11 +362,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/LightAndShadow",
 				);
 				HEADER_SEARCH_PATHS = "../../libs/glm-0.9.9.6";
 				INFOPLIST_FILE = LightAndShadow/Info.plist;
@@ -332,6 +379,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = RobinWragg.LightAndShadow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
 		};
@@ -340,11 +388,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/LightAndShadow",
 				);
 				HEADER_SEARCH_PATHS = "../../libs/glm-0.9.9.6";
 				INFOPLIST_FILE = LightAndShadow/Info.plist;
@@ -354,6 +405,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = RobinWragg.LightAndShadow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
 		};
