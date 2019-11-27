@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "001D32B6238217CF001A68C7"
-               BuildableName = "LightAndShadow - Debug.app"
-               BlueprintName = "LightAndShadow - Debug"
+               BuildableName = "Debug.app"
+               BlueprintName = "Debug"
                ReferencedContainer = "container:LightAndShadow.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,8 +45,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "001D32B6238217CF001A68C7"
-            BuildableName = "LightAndShadow - Debug.app"
-            BlueprintName = "LightAndShadow - Debug"
+            BuildableName = "Debug.app"
+            BlueprintName = "Debug"
             ReferencedContainer = "container:LightAndShadow.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -62,8 +62,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "001D32B6238217CF001A68C7"
-            BuildableName = "LightAndShadow - Debug.app"
-            BlueprintName = "LightAndShadow - Debug"
+            BuildableName = "Debug.app"
+            BlueprintName = "Debug"
             ReferencedContainer = "container:LightAndShadow.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
