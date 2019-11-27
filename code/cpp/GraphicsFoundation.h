@@ -17,8 +17,8 @@ class GraphicsFoundation {
     VkQueue graphicsQueue              = VK_NULL_HANDLE;
     VkQueue surfaceQueue               = VK_NULL_HANDLE;
     
-    const VkFormat format            = VK_FORMAT_B8G8R8A8_UNORM;
-    const VkColorSpaceKHR colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    const VkFormat surfaceFormat            = VK_FORMAT_B8G8R8A8_UNORM;
+    const VkColorSpaceKHR surfaceColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     
     const vector<const char*> layers = {
 #ifdef __APPLE__

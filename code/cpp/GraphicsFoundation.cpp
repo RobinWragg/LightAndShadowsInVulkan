@@ -150,8 +150,8 @@ VkPhysicalDevice GraphicsFoundation::createPhysicalDevice(SDL_Window *window) {
 
       bool found = false;
       for (auto &format : formats) {
-        if (format.format == this->format
-          && format.colorSpace == colorSpace) {
+        if (format.format == this->surfaceFormat
+          && format.colorSpace == surfaceColorSpace) {
           found = true;
         }
       }

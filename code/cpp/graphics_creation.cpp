@@ -1,5 +1,9 @@
 #include "graphics_creation.h"
 
+const int swapchainSize = 2; // Double buffered
+vector<VkImage> swapchainImages;
+vector<VkImageView> swapchainViews;
+
 VkSwapchainKHR createSwapchain(const GraphicsFoundation *foundation) {
   VkSurfaceCapabilitiesKHR capabilities;
   vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
@@ -16,9 +20,9 @@ VkSwapchainKHR createSwapchain(const GraphicsFoundation *foundation) {
   VkSwapchainCreateInfoKHR createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
   createInfo.surface = foundation->surface;
-  createInfo.minImageCount = 2; // Double buffered
-  createInfo.imageFormat = foundation->format;
-  createInfo.imageColorSpace = foundation->colorSpace;
+  createInfo.minImageCount = swapchainSize;
+  createInfo.imageFormat = foundation->surfaceFormat;
+  createInfo.imageColorSpace = foundation->surfaceColorSpace;
   createInfo.imageExtent = capabilities.currentExtent;
   createInfo.imageArrayLayers = 1; // 1 == not stereoscopic
   createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // Suitable for VkFrameBuffer
@@ -42,6 +46,47 @@ VkSwapchainKHR createSwapchain(const GraphicsFoundation *foundation) {
   
   return swapchain;
 }
+
+void createSwapchainImagesAndViews(VkSwapchainKHR swapchain, const GraphicsFoundation *foundation) {
+  uint32_t imageCount;
+  vkGetSwapchainImagesKHR(foundation->device, swapchain, &imageCount, nullptr);
+  swapchainImages.resize(imageCount);
+  swapchainViews.resize(imageCount);
+  
+  SDL_assert_release(imageCount == swapchainSize);
+  
+  vkGetSwapchainImagesKHR(foundation->device, swapchain, &imageCount, swapchainImages.data());
+
+  for (int i = 0; i < swapchainImages.size(); i++) {
+    VkImageViewCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    createInfo.image = swapchainImages[i];
+    createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    createInfo.format = foundation->surfaceFormat;
+    
+    createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+    createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    createInfo.subresourceRange.baseMipLevel = 0;
+    createInfo.subresourceRange.levelCount = 1;
+    createInfo.subresourceRange.baseArrayLayer = 0;
+    createInfo.subresourceRange.layerCount = 1;
+    
+    SDL_assert_release(vkCreateImageView(foundation->device, &createInfo, nullptr, &swapchainViews[i]) == VK_SUCCESS);
+  }
+}
+
+
+
+
+
+
+
+
+
 
 
 

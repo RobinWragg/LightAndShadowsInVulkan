@@ -10,9 +10,6 @@ namespace graphics {
   GraphicsFoundation *foundation = nullptr;
   
   bool enableDepthTesting = true;
-  const auto requiredSwapchainFormat = VK_FORMAT_B8G8R8A8_UNORM;
-  const auto requiredSwapchainColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-  const int requiredSwapchainImageCount = 2;
 
   VkSemaphore imageAvailableSemaphore;
   VkSemaphore renderCompletedSemaphore;
@@ -28,8 +25,6 @@ namespace graphics {
   VkRenderPass renderPass = VK_NULL_HANDLE;
   vector<VkFramebuffer> framebuffers;
   VkSwapchainKHR swapchain = VK_NULL_HANDLE;
-  vector<VkImage> swapchainImages;
-  vector<VkImageView> swapchainViews;
   
   VkExtent2D getExtent() {
     VkSurfaceCapabilitiesKHR capabilities;
@@ -49,26 +44,6 @@ namespace graphics {
     file.close();
 
     return bytes;
-  }
-
-  bool deviceSupportsAcceptableSwapchain(VkPhysicalDevice device, VkSurfaceKHR surface) {
-    
-    // Check for required format
-    uint32_t formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
-    vector<VkSurfaceFormatKHR> formats(formatCount);
-    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, formats.data());
-
-    bool foundRequiredFormat = false;
-
-    for (auto &format : formats) {
-      if (format.format == requiredSwapchainFormat
-        && format.colorSpace == requiredSwapchainColorSpace) {
-        foundRequiredFormat = true;
-      }
-    }
-
-    return foundRequiredFormat;
   }
 
   void printAvailableDeviceLayers(VkPhysicalDevice device) {
@@ -169,8 +144,7 @@ namespace graphics {
 
     vector<VkAttachmentDescription> attachments = {};
 
-    VkAttachmentDescription colorAttachment = createAttachmentDescription(
-      requiredSwapchainFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    VkAttachmentDescription colorAttachment = createAttachmentDescription(foundation->surfaceFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     attachments.push_back(colorAttachment);
 
     VkAttachmentReference colorAttachmentRef = {};
@@ -602,36 +576,7 @@ namespace graphics {
     
     swapchain = createSwapchain(foundation);
 
-    // Get handles to the swapchain images and create their views
-    {
-      uint32_t actualImageCount;
-      vkGetSwapchainImagesKHR(foundation->device, swapchain, &actualImageCount, nullptr);
-      SDL_assert_release(actualImageCount >= requiredSwapchainImageCount);
-      swapchainImages.resize(actualImageCount);
-      swapchainViews.resize(actualImageCount);
-      SDL_assert_release(vkGetSwapchainImagesKHR(foundation->device, swapchain, &actualImageCount, swapchainImages.data()) == VK_SUCCESS);
-
-      for (int i = 0; i < swapchainImages.size(); i++) {
-        VkImageViewCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        createInfo.image = swapchainImages[i];
-        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        createInfo.format = requiredSwapchainFormat;
-        
-        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        createInfo.subresourceRange.baseMipLevel = 0;
-        createInfo.subresourceRange.levelCount = 1;
-        createInfo.subresourceRange.baseArrayLayer = 0;
-        createInfo.subresourceRange.layerCount = 1;
-        
-        SDL_assert_release(vkCreateImageView(foundation->device, &createInfo, nullptr, &swapchainViews[i]) == VK_SUCCESS);
-      }
-    }
+    createSwapchainImagesAndViews(swapchain, foundation);
 
     printf("\nInitialised Vulkan\n");
 
