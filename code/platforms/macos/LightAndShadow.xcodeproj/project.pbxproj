@@ -11,6 +11,10 @@
 		001AD456238FECB7009868CA /* GraphicsPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001AD451238FECB7009868CA /* GraphicsPipeline.cpp */; };
 		001AD457238FECB7009868CA /* graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001AD452238FECB7009868CA /* graphics.cpp */; };
 		001AD458238FECB7009868CA /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001AD454238FECB7009868CA /* main.cpp */; };
+		001AD459238FFDE2009868CA /* GraphicsFoundation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001AD450238FECB7009868CA /* GraphicsFoundation.cpp */; };
+		001AD45A238FFDE3009868CA /* GraphicsPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001AD451238FECB7009868CA /* GraphicsPipeline.cpp */; };
+		001AD45B238FFDE7009868CA /* graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001AD452238FECB7009868CA /* graphics.cpp */; };
+		001AD45C238FFDE9009868CA /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 001AD454238FECB7009868CA /* main.cpp */; };
 		00359D28238EB53D0076E82F /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D27238EB53C0076E82F /* CoreFoundation.framework */; };
 		00359D2A238EB54E0076E82F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D29238EB54E0076E82F /* CoreGraphics.framework */; };
 		00359D2C238EB5600076E82F /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D2B238EB5600076E82F /* IOKit.framework */; };
@@ -340,6 +344,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				001AD459238FFDE2009868CA /* GraphicsFoundation.cpp in Sources */,
+				001AD45C238FFDE9009868CA /* main.cpp in Sources */,
+				001AD45A238FFDE3009868CA /* GraphicsPipeline.cpp in Sources */,
+				001AD45B238FFDE7009868CA /* graphics.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
