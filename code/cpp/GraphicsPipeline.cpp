@@ -250,7 +250,7 @@ void GraphicsPipeline::createVkPipeline() {
   rasterInfo.depthClampEnable = VK_FALSE;
   rasterInfo.rasterizerDiscardEnable = VK_FALSE;
   rasterInfo.polygonMode = VK_POLYGON_MODE_FILL;
-  rasterInfo.lineWidth = 1; // TODO: unnecessary?
+  rasterInfo.lineWidth = 1;
   rasterInfo.cullMode = VK_CULL_MODE_NONE;
   rasterInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
   rasterInfo.depthBiasEnable = VK_FALSE;

@@ -249,7 +249,7 @@ void GraphicsFoundation::createDeviceAndQueues() {
   vkGetDeviceQueue(device, surfaceQueueInfo.queueFamilyIndex, queueIndex, &surfaceQueue);
   SDL_assert_release(surfaceQueue != VK_NULL_HANDLE);
   
-  // TODO: Handle different queues (VK_SHARING_MODE_EXCLUSIVE etc)
+  // TODO: Handle different queues (VK_SHARING_MODE_EXCLUSIVE etc)... graphics and surface queues may be different on other hardware
   SDL_assert_release(surfaceQueueInfo.queueFamilyIndex == 0);
   SDL_assert_release(graphicsQueue == surfaceQueue);
 }

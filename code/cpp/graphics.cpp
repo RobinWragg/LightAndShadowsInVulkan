@@ -101,7 +101,7 @@ namespace graphics {
     VkCommandBufferAllocateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     bufferInfo.commandPool = pipeline->commandPool;
-    bufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY; // TODO: optimise by reusing commands (secondary buffer level)?
+    bufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     bufferInfo.commandBufferCount = (int)commandBuffersOut->size();
     auto result = vkAllocateCommandBuffers(foundation->device, &bufferInfo, commandBuffersOut->data());
     SDL_assert(result == VK_SUCCESS);
@@ -123,7 +123,7 @@ namespace graphics {
     for (int i = 0; i < commandBuffersOut->size(); i++) {
       VkCommandBufferBeginInfo beginInfo = {};
       beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-      beginInfo.flags = 0; // TODO: optimisation possible?
+      beginInfo.flags = 0;
       beginInfo.pInheritanceInfo = nullptr;
       result = vkBeginCommandBuffer((*commandBuffersOut)[i], &beginInfo);
       SDL_assert(result == VK_SUCCESS);

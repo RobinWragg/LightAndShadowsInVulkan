@@ -5,33 +5,32 @@
 class GraphicsPipeline {
 public:
   // TODO: make these private
-  VkSwapchainKHR swapchain;
   vector<VkFramebuffer> framebuffers;
-  const GraphicsFoundation *foundation;
-  const int swapchainSize = 2; // Double buffered
-  vector<VkImage> swapchainImages;
-  vector<VkImageView> swapchainViews;
   VkRenderPass renderPass;
   VkCommandPool commandPool;
   bool enableDepthTesting;
   VkSemaphore imageAvailableSemaphore;
+  VkSwapchainKHR swapchain;
+  vector<VkImage> swapchainImages;
+  vector<VkImageView> swapchainViews;
   VkSemaphore renderCompletedSemaphore;
-  VkImage depthImage;
-  VkDeviceMemory depthImageMemory;
-  VkImageView depthImageView;
-  uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-  VkPipelineShaderStageCreateInfo createShaderStage(const char *spirVFilePath, VkShaderStageFlagBits stage);
-  vector<uint8_t> loadBinaryFile(const char *filename);
   VkPipeline vkPipeline;
   VkPipelineLayout pipelineLayout;
-  // VkRenderPass renderPass;
-  // VkSwapchainKHR swapchain;
+  uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
   
   GraphicsPipeline(const GraphicsFoundation *foundation, bool depthTest);
   
   VkExtent2D getSurfaceExtent();
   
 private:
+  const GraphicsFoundation *foundation;
+  const int swapchainSize = 2; // Double buffered
+  VkImage depthImage;
+  VkDeviceMemory depthImageMemory;
+  VkImageView depthImageView;
+  VkPipelineShaderStageCreateInfo createShaderStage(const char *spirVFilePath, VkShaderStageFlagBits stage);
+  vector<uint8_t> loadBinaryFile(const char *filename);
+  
   void createSemaphores();
   
   void setupDepthTesting();
