@@ -13,7 +13,7 @@
       "quiet": true,
       "word_wrap": true,
       "osx": {
-        "shell_cmd": "cd $project_path/code/platforms/macos && xcodebuild -scheme 'Debug, Full Validation' -quiet && DerivedData/Build/Debug/Debug.app/Contents/MacOS/Debug"
+        "shell_cmd": "echo Building... && cd $project_path/code/platforms/macos && xcodebuild -scheme 'Debug, Full Validation' -quiet && DerivedData/Build/Debug/Debug.app/Contents/MacOS/Debug"
       }
     }
   ]
