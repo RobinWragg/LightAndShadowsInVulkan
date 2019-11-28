@@ -6,6 +6,10 @@
 namespace graphics {
   GraphicsFoundation *foundation = nullptr;
   GraphicsPipeline *pipeline = nullptr;
+  
+  vector<VkBuffer> vertexBuffers;
+  vector<VkDeviceMemory> vertexBufferMemSlots;
+  vector<VkCommandBuffer> commandBuffers;
 
   void printAvailableDeviceLayers(VkPhysicalDevice device) {
     uint32_t layerCount;
@@ -163,46 +167,24 @@ namespace graphics {
     printf("\nInitialised Vulkan\n");
     
     pipeline = new GraphicsPipeline(foundation, true);
-  }
-
-  // Ephemeral render buffers
-  vector<VkBuffer> vertexBuffers;
-  vector<VkDeviceMemory> vertexBufferMemSlots;
-  vector<VkCommandBuffer> commandBuffers;
-
-  void freeRenderBuffers() {
-    vkFreeCommandBuffers(foundation->device, pipeline->commandPool, (uint32_t)commandBuffers.size(), commandBuffers.data());
-    commandBuffers.resize(0);
-
-    for (auto &buffer : vertexBuffers) vkDestroyBuffer(foundation->device, buffer, nullptr);
-    vertexBuffers.resize(0);
-
-    for (auto &slot : vertexBufferMemSlots) vkFreeMemory(foundation->device, slot, nullptr);
-    vertexBufferMemSlots.resize(0);
-  }
-
-  void render() {
+    
+    
+    
     uint32_t vertexCount = 6;
     float vertices[] = {
       -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, -0.5, 0.5,
       -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.6
     };
 
-
-    if (!commandBuffers.empty()) {
-      // The queues may not have finished their commands from the last frame yet,
-      // so we wait for everything to be finished before rebuilding the buffers.
-      vkQueueWaitIdle(foundation->graphicsQueue);
-      vkQueueWaitIdle(foundation->surfaceQueue);
-      freeRenderBuffers();
-    }
-
     createVertexBuffers(vertexCount, vertices, &vertexBuffers, &vertexBufferMemSlots);
     createCommandBuffers(vertexBuffers, vertexCount, &commandBuffers);
-
+  }
+  
+  void render() {
     // Submit commands
     uint32_t swapchainImageIndex = INT32_MAX;
-
+    
+    fflush(stdout);
     auto result = vkAcquireNextImageKHR(foundation->device, pipeline->swapchain, UINT64_MAX /* no timeout */, pipeline->imageAvailableSemaphore, VK_NULL_HANDLE, &swapchainImageIndex);
     SDL_assert(result == VK_SUCCESS);
     
@@ -219,7 +201,8 @@ namespace graphics {
 
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &pipeline->renderCompletedSemaphore;
-
+    
+    vkQueueWaitIdle(foundation->graphicsQueue);
     result = vkQueueSubmit(foundation->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
     SDL_assert(result == VK_SUCCESS);
 
@@ -234,6 +217,7 @@ namespace graphics {
     presentInfo.pSwapchains = &pipeline->swapchain;
     presentInfo.pImageIndices = &swapchainImageIndex;
 
+    vkQueueWaitIdle(foundation->surfaceQueue);
     result = vkQueuePresentKHR(foundation->surfaceQueue, &presentInfo);
     SDL_assert(result == VK_SUCCESS);
   }
@@ -242,7 +226,24 @@ namespace graphics {
     vkQueueWaitIdle(foundation->graphicsQueue);
     vkQueueWaitIdle(foundation->surfaceQueue);
     
-    freeRenderBuffers();
+    
+    
+    
+    
+    
+    
+    vkFreeCommandBuffers(foundation->device, pipeline->commandPool, (uint32_t)commandBuffers.size(), commandBuffers.data());
+    commandBuffers.resize(0);
+
+    for (auto &buffer : vertexBuffers) vkDestroyBuffer(foundation->device, buffer, nullptr);
+    vertexBuffers.resize(0);
+
+    for (auto &slot : vertexBufferMemSlots) vkFreeMemory(foundation->device, slot, nullptr);
+    vertexBufferMemSlots.resize(0);
+    
+    
+    
+    
 
     vkDestroyCommandPool(foundation->device, pipeline->commandPool, nullptr);
 
