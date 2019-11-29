@@ -21,8 +21,16 @@ GraphicsFoundation::GraphicsFoundation(
   createDeviceAndQueues();
 }
 
-GraphicsFoundation::~GraphicsFoundation() {
-  
+uint32_t GraphicsFoundation::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {
+  VkPhysicalDeviceMemoryProperties memoryProperties;
+  vkGetPhysicalDeviceMemoryProperties(physDevice, &memoryProperties);
+
+  for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
+    if ((typeFilter & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) return i;
+  }
+
+  SDL_assert_release(false);
+  return 0;
 }
 
 void GraphicsFoundation::printAvailableInstanceLayers() {

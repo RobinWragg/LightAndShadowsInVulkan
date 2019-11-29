@@ -21,18 +21,6 @@ GraphicsPipeline::GraphicsPipeline(const GraphicsFoundation *foundationIn, bool 
   createSemaphores();
 }
 
-uint32_t GraphicsPipeline::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-  VkPhysicalDeviceMemoryProperties memoryProperties;
-  vkGetPhysicalDeviceMemoryProperties(foundation->physDevice, &memoryProperties);
-
-  for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
-    if ((typeFilter & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) return i;
-  }
-
-  SDL_assert_release(false);
-  return 0;
-}
-
 void GraphicsPipeline::setupDepthTesting() {
   SDL_assert_release(commandPool != VK_NULL_HANDLE);
 
@@ -65,7 +53,7 @@ void GraphicsPipeline::setupDepthTesting() {
   VkMemoryAllocateInfo allocInfo = {};
   allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
   allocInfo.allocationSize = memoryReqs.size;
-  allocInfo.memoryTypeIndex = findMemoryType(memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+  allocInfo.memoryTypeIndex = foundation->findMemoryType(memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
   SDL_assert_release(vkAllocateMemory(foundation->device, &allocInfo, nullptr, &depthImageMemory) == VK_SUCCESS);
 

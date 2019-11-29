@@ -7,7 +7,8 @@
 class GraphicsFoundation {
   public:
     GraphicsFoundation(SDL_Window *window, PFN_vkDebugUtilsMessengerCallbackEXT debugCallback);
-    ~GraphicsFoundation();
+    
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
     
     VkInstance instance                = VK_NULL_HANDLE;
     VkDebugUtilsMessengerEXT debugMsgr = VK_NULL_HANDLE;

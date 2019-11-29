@@ -70,7 +70,7 @@ namespace graphics {
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memoryReqs.size;
-    allocInfo.memoryTypeIndex = pipeline->findMemoryType(
+    allocInfo.memoryTypeIndex = foundation->findMemoryType(
       memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     result = vkAllocateMemory(foundation->device, &allocInfo, nullptr, vertexBufferMemory);
