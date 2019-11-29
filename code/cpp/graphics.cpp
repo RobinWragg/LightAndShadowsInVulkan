@@ -7,19 +7,9 @@ namespace graphics {
   GraphicsFoundation *foundation = nullptr;
   GraphicsPipeline *pipeline = nullptr;
   
-  vector<VkBuffer> vertexBuffers;
-  vector<VkDeviceMemory> vertexBufferMemSlots;
+  VkBuffer vertexBuffer;
+  VkDeviceMemory vertexBufferMemory;
   vector<VkCommandBuffer> commandBuffers;
-
-  void printAvailableDeviceLayers(VkPhysicalDevice device) {
-    uint32_t layerCount;
-    vkEnumerateDeviceLayerProperties(device, &layerCount, nullptr);
-    vector<VkLayerProperties> deviceLayers(layerCount);
-    vkEnumerateDeviceLayerProperties(device, &layerCount, deviceLayers.data());
-
-    printf("\nAvailable device layers (deprecated API section):\n");
-    for (const auto& layer : deviceLayers) printf("\t%s\n", layer.layerName);
-  }
 
   VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT severity,
@@ -58,12 +48,12 @@ namespace graphics {
     return VK_FALSE;
   }
 
-  void createVertexBuffers(uint32_t vertexCount, float vertices[],
-    vector<VkBuffer> *vertexBuffers, vector<VkDeviceMemory> *vertexBufferMemSlots) {
+  void createVertexBuffer(const vector<vec3> &vertices,
+    VkBuffer *vertexBuffer, VkDeviceMemory *vertexBufferMemory) {
 
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(float) * 3 * vertexCount;
+    bufferInfo.size = sizeof(vertices[0]) * vertices.size();
     bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -71,12 +61,11 @@ namespace graphics {
 
 
 
-    vertexBuffers->push_back(VkBuffer());
-    auto result = vkCreateBuffer(foundation->device, &bufferInfo, nullptr, &vertexBuffers->back());
+    auto result = vkCreateBuffer(foundation->device, &bufferInfo, nullptr, vertexBuffer);
     SDL_assert(result == VK_SUCCESS);
 
     VkMemoryRequirements memoryReqs;
-    vkGetBufferMemoryRequirements(foundation->device, vertexBuffers->back(), &memoryReqs);
+    vkGetBufferMemoryRequirements(foundation->device, *vertexBuffer, &memoryReqs);
 
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -84,21 +73,20 @@ namespace graphics {
     allocInfo.memoryTypeIndex = pipeline->findMemoryType(
       memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    vertexBufferMemSlots->push_back(VkDeviceMemory());
-    result = vkAllocateMemory(foundation->device, &allocInfo, nullptr, &vertexBufferMemSlots->back());
+    result = vkAllocateMemory(foundation->device, &allocInfo, nullptr, vertexBufferMemory);
     SDL_assert(result == VK_SUCCESS);
-    result = vkBindBufferMemory(foundation->device, vertexBuffers->back(), vertexBufferMemSlots->back(), 0);
+    result = vkBindBufferMemory(foundation->device, *vertexBuffer, *vertexBufferMemory, 0);
     SDL_assert(result == VK_SUCCESS);
 
     uint8_t * mappedMemory;
-    result = vkMapMemory(foundation->device, vertexBufferMemSlots->back(), 0, bufferInfo.size, 0, (void**)&mappedMemory);
+    result = vkMapMemory(foundation->device, *vertexBufferMemory, 0, bufferInfo.size, 0, (void**)&mappedMemory);
         SDL_assert(result == VK_SUCCESS);
         
-    memcpy(mappedMemory, vertices, bufferInfo.size);
-    vkUnmapMemory(foundation->device, vertexBufferMemSlots->back());
+    memcpy(mappedMemory, vertices.data(), bufferInfo.size);
+    vkUnmapMemory(foundation->device, *vertexBufferMemory);
   }
   
-  void createCommandBuffers(vector<VkBuffer> vertexBuffers, uint32_t vertexCount, vector<VkCommandBuffer> *commandBuffersOut) {
+  void createCommandBuffers(VkBuffer vertexBuffer, uint64_t vertexCount, vector<VkCommandBuffer> *commandBuffersOut) {
 
     commandBuffersOut->resize(pipeline->framebuffers.size());
 
@@ -147,9 +135,9 @@ namespace graphics {
       vkCmdBindPipeline((*commandBuffersOut)[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline);
 
       vector<VkDeviceSize> offsets = {0,0,0,0};
-      vkCmdBindVertexBuffers((*commandBuffersOut)[i], 0, (uint32_t)vertexBuffers.size(), vertexBuffers.data(), offsets.data());
+      vkCmdBindVertexBuffers((*commandBuffersOut)[i], 0, 1, &vertexBuffer, offsets.data());
 
-      vkCmdDraw((*commandBuffersOut)[i], vertexCount, 1, 0, 0);
+      vkCmdDraw((*commandBuffersOut)[i], (uint32_t)vertexCount, 1, 0, 0);
 
       vkCmdEndRenderPass((*commandBuffersOut)[i]);
 
@@ -170,14 +158,13 @@ namespace graphics {
     
     
     
-    uint32_t vertexCount = 6;
-    float vertices[] = {
-      -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0, -0.5, 0.5,
-      -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.6
+    vector<vec3> vertices = {
+      {-0.5, 0.5, 0.5}, {0.5, 0.5, 0.5}, {0, -0.5, 0.5},
+      {-0.5, 0.5, 0.5}, {0.5, 0.5, 0.5}, {0.5, -0.5, 0.6}
     };
 
-    createVertexBuffers(vertexCount, vertices, &vertexBuffers, &vertexBufferMemSlots);
-    createCommandBuffers(vertexBuffers, vertexCount, &commandBuffers);
+    createVertexBuffer(vertices, &vertexBuffer, &vertexBufferMemory);
+    createCommandBuffers(vertexBuffer, vertices.size(), &commandBuffers);
   }
   
   void render() {
@@ -235,12 +222,9 @@ namespace graphics {
     vkFreeCommandBuffers(foundation->device, pipeline->commandPool, (uint32_t)commandBuffers.size(), commandBuffers.data());
     commandBuffers.resize(0);
 
-    for (auto &buffer : vertexBuffers) vkDestroyBuffer(foundation->device, buffer, nullptr);
-    vertexBuffers.resize(0);
+    vkDestroyBuffer(foundation->device, vertexBuffer, nullptr);
 
-    for (auto &slot : vertexBufferMemSlots) vkFreeMemory(foundation->device, slot, nullptr);
-    vertexBufferMemSlots.resize(0);
-    
+    vkFreeMemory(foundation->device, vertexBufferMemory, nullptr);
     
     
     
