@@ -1,4 +1,5 @@
 #include "GraphicsFoundation.h"
+#include <SDL2/SDL_vulkan.h>
 
 enum class GraphicsFoundation::QueueType {
   GRAPHICS,
@@ -19,6 +20,12 @@ GraphicsFoundation::GraphicsFoundation(
   physDevice = createPhysicalDevice(window);
   
   createDeviceAndQueues();
+}
+
+VkExtent2D GraphicsFoundation::getSurfaceExtent() const {
+  VkSurfaceCapabilitiesKHR capabilities;
+  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &capabilities);
+  return capabilities.currentExtent;
 }
 
 uint32_t GraphicsFoundation::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {

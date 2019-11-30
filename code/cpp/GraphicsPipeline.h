@@ -1,9 +1,10 @@
 #pragma once
-
 #include "GraphicsFoundation.h"
 
 class GraphicsPipeline {
 public:
+  const GraphicsFoundation *foundation;
+  
   // TODO: make these private
   vector<VkFramebuffer> framebuffers;
   VkRenderPass renderPass;
@@ -19,10 +20,7 @@ public:
   
   GraphicsPipeline(const GraphicsFoundation *foundation, bool depthTest);
   
-  VkExtent2D getSurfaceExtent();
-  
 private:
-  const GraphicsFoundation *foundation;
   const int swapchainSize = 2; // Double buffered
   VkImage depthImage;
   VkDeviceMemory depthImageMemory;

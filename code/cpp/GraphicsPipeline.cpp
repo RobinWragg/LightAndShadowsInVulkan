@@ -31,7 +31,7 @@ void GraphicsPipeline::setupDepthTesting() {
   imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   imageInfo.imageType = VK_IMAGE_TYPE_2D;
   
-  auto extent = getSurfaceExtent();
+  auto extent = foundation->getSurfaceExtent();
   imageInfo.extent.width = extent.width;
   imageInfo.extent.height = extent.height;
   imageInfo.extent.depth = 1;
@@ -214,7 +214,7 @@ void GraphicsPipeline::createVkPipeline() {
   viewport.x = 0;
   viewport.y = 0;
   
-  auto extent = getSurfaceExtent();
+  auto extent = foundation->getSurfaceExtent();
   viewport.width = (float)extent.width;
   viewport.height = (float)extent.height;
   
@@ -300,13 +300,6 @@ void GraphicsPipeline::createVkPipeline() {
   SDL_assert_release(vkCreateGraphicsPipelines(foundation->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkPipeline) == VK_SUCCESS);
 
   for (auto &stage : shaderStages) vkDestroyShaderModule(foundation->device, stage.module, nullptr);
-}
-
-VkExtent2D GraphicsPipeline::getSurfaceExtent() {
-  VkSurfaceCapabilitiesKHR capabilities;
-  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-    foundation->physDevice, foundation->surface, &capabilities);
-  return capabilities.currentExtent;
 }
 
 void GraphicsPipeline::createSwapchain() {
@@ -460,7 +453,7 @@ void GraphicsPipeline::createFramebuffers() {
     framebufferInfo.attachmentCount = (uint32_t)attachments.size();
     framebufferInfo.pAttachments = attachments.data();
     
-    auto extent = getSurfaceExtent();
+    auto extent = foundation->getSurfaceExtent();
     framebufferInfo.width = extent.width;
     framebufferInfo.height = extent.height;
     

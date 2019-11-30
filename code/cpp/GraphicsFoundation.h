@@ -1,7 +1,5 @@
 #pragma once
 #include "main.h"
-
-#include <SDL2/SDL_vulkan.h>
 #include <vulkan/vulkan.h>
 
 class GraphicsFoundation {
@@ -9,6 +7,8 @@ class GraphicsFoundation {
     GraphicsFoundation(SDL_Window *window, PFN_vkDebugUtilsMessengerCallbackEXT debugCallback);
     
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
+    
+    VkExtent2D getSurfaceExtent() const;
     
     VkInstance instance                = VK_NULL_HANDLE;
     VkDebugUtilsMessengerEXT debugMsgr = VK_NULL_HANDLE;
