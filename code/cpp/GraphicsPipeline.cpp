@@ -345,14 +345,11 @@ void GraphicsPipeline::createSwapchain() {
 void GraphicsPipeline::createSwapchainImagesAndViews() {
   uint32_t imageCount;
   vkGetSwapchainImagesKHR(foundation->device, swapchain, &imageCount, nullptr);
-  swapchainImages.resize(imageCount);
-  swapchainViews.resize(imageCount);
-  
   SDL_assert_release(imageCount == swapchainSize);
   
-  vkGetSwapchainImagesKHR(foundation->device, swapchain, &imageCount, swapchainImages.data());
+  vkGetSwapchainImagesKHR(foundation->device, swapchain, &imageCount, swapchainImages);
 
-  for (int i = 0; i < swapchainImages.size(); i++) {
+  for (int i = 0; i < swapchainSize; i++) {
     VkImageViewCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     createInfo.image = swapchainImages[i];
@@ -441,9 +438,8 @@ void GraphicsPipeline::createRenderPass() {
 }
 
 void GraphicsPipeline::createFramebuffers() {
-  framebuffers.resize(swapchainViews.size());
 
-  for (int i = 0; i < swapchainViews.size(); i++) {
+  for (int i = 0; i < swapchainSize; i++) {
     vector<VkImageView> attachments = { swapchainViews[i] };
     if (enableDepthTesting) attachments.push_back(depthImageView);
 

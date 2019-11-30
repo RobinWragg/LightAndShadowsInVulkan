@@ -5,15 +5,17 @@ class GraphicsPipeline {
 public:
   const GraphicsFoundation *foundation;
   
+  static const int swapchainSize = 2; // Double buffered
+  
   // TODO: make these private
-  vector<VkFramebuffer> framebuffers;
+  VkFramebuffer framebuffers[swapchainSize];
   VkRenderPass renderPass;
   VkCommandPool commandPool;
   bool enableDepthTesting;
   VkSemaphore imageAvailableSemaphore;
   VkSwapchainKHR swapchain;
-  vector<VkImage> swapchainImages;
-  vector<VkImageView> swapchainViews;
+  VkImage swapchainImages[swapchainSize];
+  VkImageView swapchainViews[swapchainSize];
   VkSemaphore renderCompletedSemaphore;
   VkPipeline vkPipeline;
   VkPipelineLayout pipelineLayout;
@@ -21,7 +23,6 @@ public:
   GraphicsPipeline(const GraphicsFoundation *foundation, bool depthTest);
   
 private:
-  const int swapchainSize = 2; // Double buffered
   VkImage depthImage;
   VkDeviceMemory depthImageMemory;
   VkImageView depthImageView;

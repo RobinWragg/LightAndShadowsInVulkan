@@ -106,8 +106,7 @@ namespace graphics {
     vkQueueWaitIdle(foundation->graphicsQueue);
     vkQueueWaitIdle(foundation->surfaceQueue);
     
-    vkFreeCommandBuffers(foundation->device, pipeline->commandPool, (uint32_t)drawCall->commandBuffers.size(), drawCall->commandBuffers.data());
-    drawCall->commandBuffers.resize(0);
+    vkFreeCommandBuffers(foundation->device, pipeline->commandPool, GraphicsPipeline::swapchainSize, drawCall->commandBuffers);
 
     vkDestroyBuffer(foundation->device, drawCall->vertexBuffer, nullptr);
 
@@ -120,16 +119,18 @@ namespace graphics {
     vkDestroySemaphore(foundation->device, pipeline->imageAvailableSemaphore, nullptr);
     vkDestroySemaphore(foundation->device, pipeline->renderCompletedSemaphore, nullptr);
 
-    for (auto &buffer : pipeline->framebuffers) vkDestroyFramebuffer(foundation->device, buffer, nullptr);
+    for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
+      vkDestroyFramebuffer(foundation->device, pipeline->framebuffers[i], nullptr);
+    }
     
     vkDestroyPipeline(foundation->device, pipeline->vkPipeline, nullptr);
     vkDestroyPipelineLayout(foundation->device, pipeline->pipelineLayout, nullptr);
     vkDestroyRenderPass(foundation->device, pipeline->renderPass, nullptr);
 
-    for (auto view : pipeline->swapchainViews) vkDestroyImageView(foundation->device, view, nullptr);
-    pipeline->swapchainViews.resize(0);
-
-    pipeline->swapchainImages.resize(0);
+    for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
+      vkDestroyImageView(foundation->device, pipeline->swapchainViews[i], nullptr);
+    }
+    
     vkDestroySwapchainKHR(foundation->device, pipeline->swapchain, nullptr);
     
     delete foundation;

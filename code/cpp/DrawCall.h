@@ -4,7 +4,7 @@
 class DrawCall {
 public:
   // TODO: make these private
-  vector<VkCommandBuffer> commandBuffers;
+  VkCommandBuffer commandBuffers[GraphicsPipeline::swapchainSize];
   VkBuffer vertexBuffer;
   VkDeviceMemory vertexBufferMemory;
   

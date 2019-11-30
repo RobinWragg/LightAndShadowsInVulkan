@@ -44,14 +44,12 @@ void DrawCall::createVertexBuffer(const vector<vec3> &vertices) {
 
 void DrawCall::createCommandBuffers(uint64_t vertexCount) {
 
-  commandBuffers.resize(pipeline->framebuffers.size());
-
   VkCommandBufferAllocateInfo bufferInfo = {};
   bufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   bufferInfo.commandPool = pipeline->commandPool;
   bufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-  bufferInfo.commandBufferCount = (int)commandBuffers.size();
-  auto result = vkAllocateCommandBuffers(device, &bufferInfo, commandBuffers.data());
+  bufferInfo.commandBufferCount = GraphicsPipeline::swapchainSize;
+  auto result = vkAllocateCommandBuffers(device, &bufferInfo, commandBuffers);
   SDL_assert(result == VK_SUCCESS);
 
   vector<VkClearValue> clearValues;
@@ -68,7 +66,7 @@ void DrawCall::createCommandBuffers(uint64_t vertexCount) {
     clearValues.back().depthStencil = { 1, 0 };
   }
 
-  for (int i = 0; i < commandBuffers.size(); i++) {
+  for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     
