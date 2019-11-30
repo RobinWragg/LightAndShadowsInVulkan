@@ -11,8 +11,8 @@ public:
   DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &vertices);
 
 private:
-  const GraphicsPipeline *pipeline;
-  VkDevice device;
+  const GraphicsPipeline *pipeline = nullptr;
+  VkDevice device = VK_NULL_HANDLE;
   
   void createVertexBuffer(const vector<vec3> &vertices);
   

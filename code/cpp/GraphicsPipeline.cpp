@@ -1,4 +1,5 @@
 #include "GraphicsPipeline.h"
+#include "DrawCall.h"
 
 GraphicsPipeline::GraphicsPipeline(const GraphicsFoundation *foundationIn, bool depthTest) {
   foundation = foundationIn;
@@ -435,6 +436,60 @@ void GraphicsPipeline::createRenderPass() {
   renderPassInfo.pDependencies = &dependency;
 
   SDL_assert_release(vkCreateRenderPass(foundation->device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS);
+}
+
+void GraphicsPipeline::submit(const DrawCall *drawCall) {
+  // Copy draw calls instead of passing by reference, in case a draw call is submitted multiple times with modifications.
+  DrawCallData data;
+  memcpy(data.commandBuffers, drawCall->commandBuffers, sizeof(drawCall->commandBuffers[0]) * swapchainSize);
+  drawCallDataToSubmit.push_back(data);
+}
+
+void GraphicsPipeline::present() {
+  // Get next swapchain image
+  uint32_t swapchainImageIndex = INT32_MAX;
+  auto result = vkAcquireNextImageKHR(foundation->device, swapchain, UINT64_MAX /* no timeout */, imageAvailableSemaphore, VK_NULL_HANDLE, &swapchainImageIndex);
+  SDL_assert(result == VK_SUCCESS);
+  
+  VkSubmitInfo submitInfo = {};
+  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  
+  vector<VkCommandBuffer> commandBuffers;
+  
+  // Collect and submit command buffers
+  for (auto &data : drawCallDataToSubmit) {
+    commandBuffers.push_back(data.commandBuffers[swapchainImageIndex]);
+  }
+  
+  drawCallDataToSubmit.resize(0);
+
+  submitInfo.commandBufferCount = (uint32_t)commandBuffers.size();
+  submitInfo.pCommandBuffers = commandBuffers.data();
+
+  submitInfo.waitSemaphoreCount = 1;
+  submitInfo.pWaitSemaphores = &imageAvailableSemaphore;
+  VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  submitInfo.pWaitDstStageMask = &waitStage;
+
+  submitInfo.signalSemaphoreCount = 1;
+  submitInfo.pSignalSemaphores = &renderCompletedSemaphore;
+  
+  result = vkQueueSubmit(foundation->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+  SDL_assert(result == VK_SUCCESS);
+
+  // Present
+  VkPresentInfoKHR presentInfo = {};
+  presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+  presentInfo.waitSemaphoreCount = 1;
+  presentInfo.pWaitSemaphores = &renderCompletedSemaphore;
+
+  presentInfo.swapchainCount = 1;
+  presentInfo.pSwapchains = &swapchain;
+  presentInfo.pImageIndices = &swapchainImageIndex;
+  
+  result = vkQueuePresentKHR(foundation->surfaceQueue, &presentInfo);
+  SDL_assert(result == VK_SUCCESS);
 }
 
 void GraphicsPipeline::createFramebuffers() {

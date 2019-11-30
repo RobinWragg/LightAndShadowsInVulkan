@@ -63,43 +63,8 @@ namespace graphics {
   }
   
   void render() {
-    // Submit commands
-    uint32_t swapchainImageIndex = INT32_MAX;
-    
-    fflush(stdout);
-    auto result = vkAcquireNextImageKHR(foundation->device, pipeline->swapchain, UINT64_MAX /* no timeout */, pipeline->imageAvailableSemaphore, VK_NULL_HANDLE, &swapchainImageIndex);
-    SDL_assert(result == VK_SUCCESS);
-    
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &drawCall->commandBuffers[swapchainImageIndex];
-
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &pipeline->imageAvailableSemaphore;
-    VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    submitInfo.pWaitDstStageMask = &waitStage;
-
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &pipeline->renderCompletedSemaphore;
-    
-    result = vkQueueSubmit(foundation->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    SDL_assert(result == VK_SUCCESS);
-
-    // Present
-    VkPresentInfoKHR presentInfo = {};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &pipeline->renderCompletedSemaphore;
-
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = &pipeline->swapchain;
-    presentInfo.pImageIndices = &swapchainImageIndex;
-    
-    result = vkQueuePresentKHR(foundation->surfaceQueue, &presentInfo);
-    SDL_assert(result == VK_SUCCESS);
+    pipeline->submit(drawCall);
+    pipeline->present();
   }
 
   void destroy() {

@@ -1,6 +1,8 @@
 #pragma once
 #include "GraphicsFoundation.h"
 
+class DrawCall;
+
 class GraphicsPipeline {
 public:
   const GraphicsFoundation *foundation;
@@ -22,11 +24,23 @@ public:
   
   GraphicsPipeline(const GraphicsFoundation *foundation, bool depthTest);
   
+  void submit(const DrawCall *drawCall);
+  
+  void present();
+  
 private:
   VkImage depthImage;
   VkDeviceMemory depthImageMemory;
   VkImageView depthImageView;
+  
+  struct DrawCallData {
+    VkCommandBuffer commandBuffers[swapchainSize];
+  };
+  
+  vector<DrawCallData> drawCallDataToSubmit;
+  
   VkPipelineShaderStageCreateInfo createShaderStage(const char *spirVFilePath, VkShaderStageFlagBits stage);
+  
   vector<uint8_t> loadBinaryFile(const char *filename);
   
   void createSemaphores();
