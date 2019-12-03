@@ -16,36 +16,10 @@ DrawCall::~DrawCall() {
 }
 
 void DrawCall::createVertexBuffer(const vector<vec3> &vertices) {
-
-  VkBufferCreateInfo bufferInfo = {};
-  bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  bufferInfo.size = sizeof(vertices[0]) * vertices.size();
-  bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-  bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   
-  auto result = vkCreateBuffer(device, &bufferInfo, nullptr, &vertexBuffer);
-  SDL_assert(result == VK_SUCCESS);
-
-  VkMemoryRequirements memoryReqs;
-  vkGetBufferMemoryRequirements(device, vertexBuffer, &memoryReqs);
-
-  VkMemoryAllocateInfo allocInfo = {};
-  allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  allocInfo.allocationSize = memoryReqs.size;
-  allocInfo.memoryTypeIndex = pipeline->foundation->findMemoryType(
-    memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-  result = vkAllocateMemory(device, &allocInfo, nullptr, &vertexBufferMemory);
-  SDL_assert(result == VK_SUCCESS);
-  result = vkBindBufferMemory(device, vertexBuffer, vertexBufferMemory, 0);
-  SDL_assert(result == VK_SUCCESS);
-
-  uint8_t * mappedMemory;
-  result = vkMapMemory(device, vertexBufferMemory, 0, bufferInfo.size, 0, (void**)&mappedMemory);
-      SDL_assert(result == VK_SUCCESS);
-      
-  memcpy(mappedMemory, vertices.data(), bufferInfo.size);
-  vkUnmapMemory(device, vertexBufferMemory);
+  uint64_t dataSize = sizeof(vertices[0]) * vertices.size();
+  uint8_t *data = (uint8_t*)vertices.data();
+  pipeline->foundation->createVkBuffer(dataSize, data, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, &vertexBuffer, &vertexBufferMemory);
 }
 
 void DrawCall::createCommandBuffers(uint64_t vertexCount) {
