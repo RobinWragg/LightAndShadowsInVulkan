@@ -25,7 +25,7 @@ public:
   GraphicsPipeline(const GraphicsFoundation *foundation, bool depthTest);
   ~GraphicsPipeline();
   
-  void submit(const DrawCall *drawCall);
+  void submit(DrawCall *drawCall);
   
   void present();
   
@@ -34,11 +34,7 @@ private:
   VkDeviceMemory depthImageMemory;
   VkImageView depthImageView;
   
-  struct DrawCallData {
-    VkCommandBuffer commandBuffers[swapchainSize];
-  };
-  
-  vector<DrawCallData> drawCallDataToSubmit;
+  vector<DrawCall*> drawCallsToSubmit;
   
   VkPipelineShaderStageCreateInfo createShaderStage(const char *spirVFilePath, VkShaderStageFlagBits stage);
   

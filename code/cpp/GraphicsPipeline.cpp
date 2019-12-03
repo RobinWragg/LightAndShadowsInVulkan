@@ -463,11 +463,8 @@ void GraphicsPipeline::createRenderPass() {
   SDL_assert_release(vkCreateRenderPass(foundation->device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS);
 }
 
-void GraphicsPipeline::submit(const DrawCall *drawCall) {
-  // Copy draw calls instead of passing by reference, in case a draw call is submitted multiple times with modifications.
-  DrawCallData data;
-  memcpy(data.commandBuffers, drawCall->commandBuffers, sizeof(drawCall->commandBuffers[0]) * swapchainSize);
-  drawCallDataToSubmit.push_back(data);
+void GraphicsPipeline::submit(DrawCall *drawCall) {
+  drawCallsToSubmit.push_back(drawCall);
 }
 
 void GraphicsPipeline::present() {
@@ -482,11 +479,11 @@ void GraphicsPipeline::present() {
   vector<VkCommandBuffer> commandBuffers;
   
   // Collect and submit command buffers
-  for (auto &data : drawCallDataToSubmit) {
-    commandBuffers.push_back(data.commandBuffers[swapchainImageIndex]);
+  for (auto &drawCall : drawCallsToSubmit) {
+    commandBuffers.push_back(drawCall->commandBuffers[swapchainImageIndex]);
   }
   
-  drawCallDataToSubmit.resize(0);
+  drawCallsToSubmit.resize(0);
 
   submitInfo.commandBufferCount = (uint32_t)commandBuffers.size();
   submitInfo.pCommandBuffers = commandBuffers.data();
