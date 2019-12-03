@@ -31,18 +31,13 @@ namespace graphics {
   }
 
   void destroy() {
-    vkQueueWaitIdle(foundation->graphicsQueue);
-    vkQueueWaitIdle(foundation->surfaceQueue);
     
-    vkFreeCommandBuffers(foundation->device, pipeline->commandPool, GraphicsPipeline::swapchainSize, drawCall->commandBuffers);
-
-    vkDestroyBuffer(foundation->device, drawCall->vertexBuffer, nullptr);
-
-    vkFreeMemory(foundation->device, drawCall->vertexBufferMemory, nullptr);
+    delete drawCall;
+    
+    
+    
     
     vkDestroyCommandPool(foundation->device, pipeline->commandPool, nullptr);
-
-    vkDeviceWaitIdle(foundation->device);
 
     vkDestroySemaphore(foundation->device, pipeline->imageAvailableSemaphore, nullptr);
     vkDestroySemaphore(foundation->device, pipeline->renderCompletedSemaphore, nullptr);

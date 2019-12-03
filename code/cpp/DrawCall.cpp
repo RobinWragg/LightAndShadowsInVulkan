@@ -9,6 +9,12 @@ DrawCall::DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &vertice
   createCommandBuffers(vertices.size());
 }
 
+DrawCall::~DrawCall() {
+  vkFreeCommandBuffers(device, pipeline->commandPool, GraphicsPipeline::swapchainSize, commandBuffers);
+  vkDestroyBuffer(device, vertexBuffer, nullptr);
+  vkFreeMemory(device, vertexBufferMemory, nullptr);
+}
+
 void DrawCall::createVertexBuffer(const vector<vec3> &vertices) {
 
   VkBufferCreateInfo bufferInfo = {};

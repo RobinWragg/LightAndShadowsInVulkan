@@ -9,6 +9,7 @@ public:
   VkDeviceMemory vertexBufferMemory;
   
   DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &vertices);
+  ~DrawCall();
 
 private:
   const GraphicsPipeline *pipeline = nullptr;
