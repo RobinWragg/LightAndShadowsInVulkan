@@ -3,7 +3,7 @@
 
 GraphicsPipeline::GraphicsPipeline(const GraphicsFoundation *foundationIn, bool depthTest) {
   foundation = foundationIn;
-  enableDepthTesting = depthTest;
+  depthTestingEnabled = depthTest;
   
   createSwapchain();
   
@@ -15,11 +15,36 @@ GraphicsPipeline::GraphicsPipeline(const GraphicsFoundation *foundationIn, bool 
   
   createCommandPool();
   
-  if (enableDepthTesting) setupDepthTesting();
+  depthImage = VK_NULL_HANDLE;
+  depthImageMemory = VK_NULL_HANDLE;
+  depthImageView = VK_NULL_HANDLE;
+  if (depthTestingEnabled) setupDepthTesting();
   
   createFramebuffers();
   
   createSemaphores();
+}
+
+GraphicsPipeline::~GraphicsPipeline() {
+  vkDestroyCommandPool(foundation->device, commandPool, nullptr);
+
+  vkDestroySemaphore(foundation->device, imageAvailableSemaphore, nullptr);
+  vkDestroySemaphore(foundation->device, renderCompletedSemaphore, nullptr);
+
+  for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
+    vkDestroyFramebuffer(foundation->device, framebuffers[i], nullptr);
+  }
+  
+  vkDestroyPipeline(foundation->device, vkPipeline, nullptr);
+  vkDestroyPipelineLayout(foundation->device, pipelineLayout, nullptr);
+  vkDestroyRenderPass(foundation->device, renderPass, nullptr);
+
+  for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
+    vkDestroyImageView(foundation->device, swapchainViews[i], nullptr);
+    vkDestroyImage(foundation->device, swapchainImages[i], nullptr);
+  }
+  
+  vkDestroySwapchainKHR(foundation->device, swapchain, nullptr);
 }
 
 void GraphicsPipeline::setupDepthTesting() {
@@ -280,9 +305,9 @@ void GraphicsPipeline::createVkPipeline() {
   pipelineInfo.pVertexInputState = &vertexInputInfo;
   pipelineInfo.pInputAssemblyState = &inputAssembly;
   pipelineInfo.pViewportState = &viewportInfo;
-      
-      VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
-  if (enableDepthTesting) {
+  
+  VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
+  if (depthTestingEnabled) {
     depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthStencilInfo.depthTestEnable = VK_TRUE;
     depthStencilInfo.depthWriteEnable = VK_TRUE;
@@ -416,7 +441,7 @@ void GraphicsPipeline::createRenderPass() {
   VkAttachmentDescription depthAttachment = {};
   VkAttachmentReference depthAttachmentRef = {};
   
-  if (enableDepthTesting) {
+  if (depthTestingEnabled) {
     depthAttachment = createAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     attachments.push_back(depthAttachment);
 
@@ -496,7 +521,7 @@ void GraphicsPipeline::createFramebuffers() {
 
   for (int i = 0; i < swapchainSize; i++) {
     vector<VkImageView> attachments = { swapchainViews[i] };
-    if (enableDepthTesting) attachments.push_back(depthImageView);
+    if (depthTestingEnabled) attachments.push_back(depthImageView);
 
     VkFramebufferCreateInfo framebufferInfo = {};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

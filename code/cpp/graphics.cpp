@@ -33,29 +33,7 @@ namespace graphics {
   void destroy() {
     
     delete drawCall;
-    
-    
-    
-    
-    vkDestroyCommandPool(foundation->device, pipeline->commandPool, nullptr);
-
-    vkDestroySemaphore(foundation->device, pipeline->imageAvailableSemaphore, nullptr);
-    vkDestroySemaphore(foundation->device, pipeline->renderCompletedSemaphore, nullptr);
-
-    for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
-      vkDestroyFramebuffer(foundation->device, pipeline->framebuffers[i], nullptr);
-    }
-    
-    vkDestroyPipeline(foundation->device, pipeline->vkPipeline, nullptr);
-    vkDestroyPipelineLayout(foundation->device, pipeline->pipelineLayout, nullptr);
-    vkDestroyRenderPass(foundation->device, pipeline->renderPass, nullptr);
-
-    for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
-      vkDestroyImageView(foundation->device, pipeline->swapchainViews[i], nullptr);
-    }
-    
-    vkDestroySwapchainKHR(foundation->device, pipeline->swapchain, nullptr);
-    
+    delete pipeline;
     delete foundation;
   }
 }

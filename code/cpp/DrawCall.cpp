@@ -65,7 +65,7 @@ void DrawCall::createCommandBuffers(uint64_t vertexCount) {
   clearValues.back().color = { 0, 1, 0, 1 };
   clearValues.back().depthStencil = {};
 
-  if (pipeline->enableDepthTesting) {
+  if (pipeline->depthTestingEnabled) {
     // Depth/stencil clear value
     clearValues.push_back(VkClearValue());
     clearValues.back().color = {};

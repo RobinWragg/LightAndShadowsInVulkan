@@ -13,7 +13,6 @@ public:
   VkFramebuffer framebuffers[swapchainSize];
   VkRenderPass renderPass;
   VkCommandPool commandPool;
-  bool enableDepthTesting;
   VkSemaphore imageAvailableSemaphore;
   VkSwapchainKHR swapchain;
   VkImage swapchainImages[swapchainSize];
@@ -21,8 +20,10 @@ public:
   VkSemaphore renderCompletedSemaphore;
   VkPipeline vkPipeline;
   VkPipelineLayout pipelineLayout;
+  bool depthTestingEnabled;
   
   GraphicsPipeline(const GraphicsFoundation *foundation, bool depthTest);
+  ~GraphicsPipeline();
   
   void submit(const DrawCall *drawCall);
   
