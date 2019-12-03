@@ -31,7 +31,6 @@ namespace graphics {
   }
 
   void destroy() {
-    
     delete drawCall;
     delete pipeline;
     delete foundation;

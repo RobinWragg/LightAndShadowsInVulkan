@@ -20,6 +20,17 @@ GraphicsFoundation::GraphicsFoundation(SDL_Window *window) {
   createDeviceAndQueues();
 }
 
+GraphicsFoundation::~GraphicsFoundation() {
+  vkDestroyDevice(device, nullptr); // Also destroys the queues
+  
+  vkDestroySurfaceKHR(instance, surface, nullptr);
+  
+  auto destroyDebugUtilsMessenger = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+  destroyDebugUtilsMessenger(instance, debugMsgr, nullptr);
+  
+  vkDestroyInstance(instance, nullptr); // Also destroys all physical devices
+}
+
 VKAPI_ATTR VkBool32 VKAPI_CALL GraphicsFoundation::debugCallback(
   VkDebugUtilsMessageSeverityFlagBitsEXT severity,
   VkDebugUtilsMessageTypeFlagsEXT msgType,
@@ -137,7 +148,6 @@ VkDebugUtilsMessengerEXT GraphicsFoundation::createDebugMessenger() {
     = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
       instance, "vkCreateDebugUtilsMessengerEXT");
   
-  VkDebugUtilsMessengerEXT debugMsgr = VK_NULL_HANDLE;
   auto result = createDebugUtilsMessenger(instance, &createInfo, nullptr, &debugMsgr);
   SDL_assert_release(result == VK_SUCCESS);
   return debugMsgr;
