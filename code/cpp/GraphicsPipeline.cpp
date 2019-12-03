@@ -11,6 +11,8 @@ GraphicsPipeline::GraphicsPipeline(const GraphicsFoundation *foundationIn, bool 
   
   createRenderPass();
   
+  createDescriptorSetLayout();
+  
   createVkPipeline();
   
   createCommandPool();
@@ -23,6 +25,12 @@ GraphicsPipeline::GraphicsPipeline(const GraphicsFoundation *foundationIn, bool 
   createFramebuffers();
   
   createSemaphores();
+  
+  createUniformBuffers();
+  
+  createDescriptorPool();
+  
+  createDescriptorSets();
 }
 
 GraphicsPipeline::~GraphicsPipeline() {
@@ -30,21 +38,96 @@ GraphicsPipeline::~GraphicsPipeline() {
 
   vkDestroySemaphore(foundation->device, imageAvailableSemaphore, nullptr);
   vkDestroySemaphore(foundation->device, renderCompletedSemaphore, nullptr);
-
-  for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
-    vkDestroyFramebuffer(foundation->device, framebuffers[i], nullptr);
-  }
   
   vkDestroyPipeline(foundation->device, vkPipeline, nullptr);
   vkDestroyPipelineLayout(foundation->device, pipelineLayout, nullptr);
   vkDestroyRenderPass(foundation->device, renderPass, nullptr);
 
   for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
+    vkDestroyFramebuffer(foundation->device, framebuffers[i], nullptr);
     vkDestroyImageView(foundation->device, swapchainViews[i], nullptr);
     vkDestroyImage(foundation->device, swapchainImages[i], nullptr);
+    vkDestroyBuffer(foundation->device, uniformBuffers[i], nullptr);
+    vkFreeMemory(foundation->device, uniformBuffersMemory[i], nullptr);
   }
   
+  vkDestroyDescriptorPool(foundation->device, descriptorPool, nullptr); // Also destroys the descriptor sets
+  
   vkDestroySwapchainKHR(foundation->device, swapchain, nullptr);
+  
+  vkDestroyDescriptorSetLayout(foundation->device, descriptorSetLayout, nullptr);
+}
+
+void GraphicsPipeline::createUniformBuffers() {
+  VkDeviceSize bufferSize = sizeof(PerFrameShaderData);
+  
+  for (int i = 0; i < swapchainSize; i++) {
+    foundation->createVkBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, bufferSize, &uniformBuffers[i], &uniformBuffersMemory[i]);
+  }
+}
+
+void GraphicsPipeline::createDescriptorPool() {
+  VkDescriptorPoolSize poolSize = {};
+  poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  poolSize.descriptorCount = swapchainSize;
+  
+  VkDescriptorPoolCreateInfo poolInfo = {};
+  poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+  poolInfo.poolSizeCount = 1;
+  poolInfo.maxSets = swapchainSize;
+  poolInfo.pPoolSizes = &poolSize;
+  poolInfo.flags = 0;
+  
+  auto result = vkCreateDescriptorPool(foundation->device, &poolInfo, nullptr, &descriptorPool);
+  SDL_assert_release(result == VK_SUCCESS);
+}
+
+void GraphicsPipeline::createDescriptorSets() {
+  VkDescriptorSetLayout layouts[swapchainSize];
+  for (int i = 0; i < swapchainSize; i++) layouts[i] = descriptorSetLayout;
+  
+  VkDescriptorSetAllocateInfo allocInfo = {};
+  allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  allocInfo.descriptorPool = descriptorPool;
+  allocInfo.descriptorSetCount = swapchainSize;
+  allocInfo.pSetLayouts = layouts;
+  
+  auto result = vkAllocateDescriptorSets(foundation->device, &allocInfo, descriptorSets);
+  SDL_assert_release(result == VK_SUCCESS);
+  
+  for (int i = 0; i < swapchainSize; i++) {
+    VkDescriptorBufferInfo bufferInfo = {};
+    bufferInfo.buffer = uniformBuffers[i];
+    bufferInfo.offset = 0;
+    bufferInfo.range = sizeof(PerFrameShaderData);
+    
+    VkWriteDescriptorSet writeDescriptorSet = {};
+    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSet.dstSet = descriptorSets[i];
+    writeDescriptorSet.dstBinding = 0;
+    writeDescriptorSet.dstArrayElement = 0;
+    writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    writeDescriptorSet.descriptorCount = 1;
+    writeDescriptorSet.pBufferInfo = &bufferInfo;
+    
+    vkUpdateDescriptorSets(foundation->device, 1, &writeDescriptorSet, 0, nullptr);
+  }
+}
+
+void GraphicsPipeline::createDescriptorSetLayout() {
+  VkDescriptorSetLayoutBinding layoutBinding = {};
+  layoutBinding.binding = 0;
+  layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  layoutBinding.descriptorCount = 1;
+  layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  
+  VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+  layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+  layoutInfo.bindingCount = 1;
+  layoutInfo.pBindings = &layoutBinding;
+  
+  auto result = vkCreateDescriptorSetLayout(foundation->device, &layoutInfo, nullptr, &descriptorSetLayout);
+  SDL_assert_release(result == VK_SUCCESS);
 }
 
 void GraphicsPipeline::setupDepthTesting() {
@@ -265,7 +348,7 @@ void GraphicsPipeline::createVkPipeline() {
   rasterInfo.rasterizerDiscardEnable = VK_FALSE;
   rasterInfo.polygonMode = VK_POLYGON_MODE_FILL;
   rasterInfo.lineWidth = 1;
-  rasterInfo.cullMode = VK_CULL_MODE_NONE;
+  rasterInfo.cullMode = VK_CULL_MODE_BACK_BIT;
   rasterInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
   rasterInfo.depthBiasEnable = VK_FALSE;
 
@@ -294,7 +377,10 @@ void GraphicsPipeline::createVkPipeline() {
 
   VkPipelineLayoutCreateInfo layoutInfo = {};
   layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  SDL_assert_release(vkCreatePipelineLayout(foundation->device, &layoutInfo, nullptr, &pipelineLayout) == VK_SUCCESS);
+  layoutInfo.setLayoutCount = 1;
+  layoutInfo.pSetLayouts = &descriptorSetLayout;
+  auto result = vkCreatePipelineLayout(foundation->device, &layoutInfo, nullptr, &pipelineLayout);
+  SDL_assert_release(result == VK_SUCCESS);
 
   VkGraphicsPipelineCreateInfo pipelineInfo = {};
   pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -464,13 +550,13 @@ void GraphicsPipeline::createRenderPass() {
 }
 
 void GraphicsPipeline::submit(DrawCall *drawCall) {
-  drawCallsToSubmit.push_back(drawCall);
+  submissions.push_back(drawCall);
 }
 
-void GraphicsPipeline::present() {
+void GraphicsPipeline::present(PerFrameShaderData *perFrameData) {
   // Get next swapchain image
-  uint32_t swapchainImageIndex = INT32_MAX;
-  auto result = vkAcquireNextImageKHR(foundation->device, swapchain, UINT64_MAX /* no timeout */, imageAvailableSemaphore, VK_NULL_HANDLE, &swapchainImageIndex);
+  uint32_t swapchainIndex = INT32_MAX;
+  auto result = vkAcquireNextImageKHR(foundation->device, swapchain, UINT64_MAX /* no timeout */, imageAvailableSemaphore, VK_NULL_HANDLE, &swapchainIndex);
   SDL_assert(result == VK_SUCCESS);
   
   VkSubmitInfo submitInfo = {};
@@ -478,18 +564,22 @@ void GraphicsPipeline::present() {
   
   vector<VkCommandBuffer> commandBuffers;
   
+  VkDeviceMemory &uniformMemory = uniformBuffersMemory[swapchainIndex];
+  foundation->setMemory(uniformMemory, sizeof(PerFrameShaderData), perFrameData);
+  
   // Collect and submit command buffers
-  for (auto &drawCall : drawCallsToSubmit) {
-    commandBuffers.push_back(drawCall->commandBuffers[swapchainImageIndex]);
+  for (auto &drawCall : submissions) {
+    commandBuffers.push_back(drawCall->commandBuffers[swapchainIndex]);
   }
   
-  drawCallsToSubmit.resize(0);
-
+  submissions.resize(0);
+  
   submitInfo.commandBufferCount = (uint32_t)commandBuffers.size();
   submitInfo.pCommandBuffers = commandBuffers.data();
 
   submitInfo.waitSemaphoreCount = 1;
   submitInfo.pWaitSemaphores = &imageAvailableSemaphore;
+  
   VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
   submitInfo.pWaitDstStageMask = &waitStage;
 
@@ -498,7 +588,7 @@ void GraphicsPipeline::present() {
   
   result = vkQueueSubmit(foundation->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
   SDL_assert(result == VK_SUCCESS);
-
+  
   // Present
   VkPresentInfoKHR presentInfo = {};
   presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -508,7 +598,7 @@ void GraphicsPipeline::present() {
 
   presentInfo.swapchainCount = 1;
   presentInfo.pSwapchains = &swapchain;
-  presentInfo.pImageIndices = &swapchainImageIndex;
+  presentInfo.pImageIndices = &swapchainIndex;
   
   result = vkQueuePresentKHR(foundation->surfaceQueue, &presentInfo);
   SDL_assert(result == VK_SUCCESS);

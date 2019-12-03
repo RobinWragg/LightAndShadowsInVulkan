@@ -56,7 +56,7 @@ void GraphicsFoundation::createVkBuffer(VkBufferUsageFlagBits usage, uint64_t da
   SDL_assert(result == VK_SUCCESS);
 }
 
-void GraphicsFoundation::setMemory(VkDeviceMemory memory, uint64_t dataSize, uint8_t *data) const {
+void GraphicsFoundation::setMemory(VkDeviceMemory memory, uint64_t dataSize, void *data) const {
   
   uint8_t *mappedMemory;
   auto result = vkMapMemory(device, memory, 0, dataSize, 0, (void**)&mappedMemory);

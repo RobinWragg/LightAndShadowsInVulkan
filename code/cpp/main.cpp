@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 
   // create a 4:3 SDL window
   int windowWidth = 600;
-  int windowHeight = 400;
+  int windowHeight = 600;
 
   SDL_Window *window = SDL_CreateWindow(
     "Light and Shadow", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,

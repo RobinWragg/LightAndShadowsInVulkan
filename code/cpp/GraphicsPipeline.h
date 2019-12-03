@@ -1,6 +1,10 @@
 #pragma once
 #include "GraphicsFoundation.h"
 
+struct PerFrameShaderData {
+  mat4 matrix;
+};
+
 class DrawCall;
 
 class GraphicsPipeline {
@@ -20,6 +24,7 @@ public:
   VkSemaphore renderCompletedSemaphore;
   VkPipeline vkPipeline;
   VkPipelineLayout pipelineLayout;
+  VkDescriptorSet descriptorSets[swapchainSize];
   bool depthTestingEnabled;
   
   GraphicsPipeline(const GraphicsFoundation *foundation, bool depthTest);
@@ -27,14 +32,19 @@ public:
   
   void submit(DrawCall *drawCall);
   
-  void present();
+  void present(PerFrameShaderData *perFrameData);
   
 private:
   VkImage depthImage;
   VkDeviceMemory depthImageMemory;
   VkImageView depthImageView;
+  VkBuffer uniformBuffers[swapchainSize];
+  VkDeviceMemory uniformBuffersMemory[swapchainSize];
   
-  vector<DrawCall*> drawCallsToSubmit;
+  VkDescriptorSetLayout descriptorSetLayout;
+  VkDescriptorPool descriptorPool;
+  
+  vector<DrawCall*> submissions;
   
   VkPipelineShaderStageCreateInfo createShaderStage(const char *spirVFilePath, VkShaderStageFlagBits stage);
   
@@ -46,7 +56,7 @@ private:
   
   void createCommandPool();
   
-  void  createSwapchain();
+  void createSwapchain();
   
   void createSwapchainImagesAndViews();
   
@@ -56,7 +66,15 @@ private:
   
   void createFramebuffers();
   
+  void createDescriptorSetLayout();
+  
   void createVkPipeline();
+  
+  void createUniformBuffers();
+  
+  void createDescriptorPool();
+  
+  void createDescriptorSets();
 };
 
 

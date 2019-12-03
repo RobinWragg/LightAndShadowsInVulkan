@@ -69,13 +69,15 @@ void DrawCall::createCommandBuffers(uint64_t vertexCount) {
 
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = pipeline->foundation->getSurfaceExtent();
-
+    
     vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->vkPipeline);
 
     vector<VkDeviceSize> offsets = {0,0,0,0};
     vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &vertexBuffer, offsets.data());
-
+    
+    vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipelineLayout, 0, 1, &pipeline->descriptorSets[i], 0, nullptr);
+    
     vkCmdDraw(commandBuffers[i], (uint32_t)vertexCount, 1, 0, 0);
 
     vkCmdEndRenderPass(commandBuffers[i]);

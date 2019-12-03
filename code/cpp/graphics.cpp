@@ -16,8 +16,10 @@ namespace graphics {
     pipeline = new GraphicsPipeline(foundation, true);
     
     vector<vec3> vertices = {
-      {-0.5, 0.5, 0.1}, {0.5, 0.5, 0.1}, {0, -0.5, 0.1},
-      {0, 0.5, 0.6}, {1, 0.5, 0.6}, {0.5, -0.5, 0.6},
+      {0, 0, 0}, {1, 0, 0}, {0, 1, 0},
+      {0, 0, 0}, {0, 0, 1}, {1, 0, 0},
+      {0, 0, 0}, {0, 1, 0}, {0, 0, 1},
+      {1, 0, 0}, {0, 0, 1}, {0, 1, 0},
     };
     
     drawCall = new DrawCall(pipeline, vertices);
@@ -26,8 +28,16 @@ namespace graphics {
   }
   
   void render() {
+    PerFrameShaderData shaderData;
+    shaderData.matrix = identity<mat4>();
+    
+    shaderData.matrix = translate(shaderData.matrix, vec3(0, 0, 0.5));
+    shaderData.matrix = scale(shaderData.matrix, vec3(1, 1, 0.5));
+    shaderData.matrix = rotate(shaderData.matrix, (float)getTime(), vec3(1.0f, 0.0f, 0.0f));
+    shaderData.matrix = rotate(shaderData.matrix, (float)getTime()*0.9f, vec3(0.0f, 1.0f, 0.0f));
+    
     pipeline->submit(drawCall);
-    pipeline->present();
+    pipeline->present(&shaderData);
   }
 
   void destroy() {
