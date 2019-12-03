@@ -4,7 +4,7 @@
 
 class GraphicsFoundation {
   public:
-    GraphicsFoundation(SDL_Window *window, PFN_vkDebugUtilsMessengerCallbackEXT debugCallback);
+    GraphicsFoundation(SDL_Window *window);
     
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
     
@@ -53,13 +53,19 @@ class GraphicsFoundation {
     
     VkInstance createInstance(SDL_Window *window);
     
-    VkDebugUtilsMessengerEXT createDebugMessenger(PFN_vkDebugUtilsMessengerCallbackEXT callback);
+    VkDebugUtilsMessengerEXT createDebugMessenger();
     
     VkPhysicalDevice createPhysicalDevice(SDL_Window *window);
     
     VkDeviceQueueCreateInfo createQueueInfo(QueueType queueType);
     
     void createDeviceAndQueues();
+    
+    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+      VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+      VkDebugUtilsMessageTypeFlagsEXT msgType,
+      const VkDebugUtilsMessengerCallbackDataEXT *data,
+      void *pUserData);
 };
 
 

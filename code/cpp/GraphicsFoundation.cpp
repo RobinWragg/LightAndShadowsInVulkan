@@ -6,13 +6,11 @@ enum class GraphicsFoundation::QueueType {
   SURFACE_SUPPORT
 };
 
-GraphicsFoundation::GraphicsFoundation(
-  SDL_Window *window,
-  PFN_vkDebugUtilsMessengerCallbackEXT debugCallback) {
+GraphicsFoundation::GraphicsFoundation(SDL_Window *window) {
   
   instance = createInstance(window);
   
-  if (!layers.empty()) createDebugMessenger(debugCallback);
+  if (!layers.empty()) createDebugMessenger();
   
   auto result = SDL_Vulkan_CreateSurface(window, instance, &surface);
   SDL_assert_release(result == SDL_TRUE);
@@ -20,6 +18,43 @@ GraphicsFoundation::GraphicsFoundation(
   physDevice = createPhysicalDevice(window);
   
   createDeviceAndQueues();
+}
+
+VKAPI_ATTR VkBool32 VKAPI_CALL GraphicsFoundation::debugCallback(
+  VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+  VkDebugUtilsMessageTypeFlagsEXT msgType,
+  const VkDebugUtilsMessengerCallbackDataEXT *data,
+  void *pUserData) {
+
+  printf("\n");
+
+  switch (severity) {
+  case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: printf("verbose, "); break;
+  case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: printf("info, "); break;
+  case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: printf("WARNING, "); break;
+  case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: printf("ERROR, "); break;
+  default: printf("unknown, "); break;
+  };
+
+  switch (msgType) {
+  case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT: printf("general: "); break;
+  case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT: printf("validation: "); break;
+  case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT: printf("performance: "); break;
+  default: printf("unknown: "); break;
+  };
+
+  printf("%s (%i objects reported)\n", data->pMessage, data->objectCount);
+  fflush(stdout);
+
+  switch (severity) {
+  case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+  case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+    SDL_assert_release(false);
+    break;
+  default: break;
+  };
+
+  return VK_FALSE;
 }
 
 VkExtent2D GraphicsFoundation::getSurfaceExtent() const {
@@ -82,8 +117,7 @@ VkInstance GraphicsFoundation::createInstance(SDL_Window *window) {
   return instance;
 }
 
-VkDebugUtilsMessengerEXT GraphicsFoundation::createDebugMessenger(
-  PFN_vkDebugUtilsMessengerCallbackEXT callback) {
+VkDebugUtilsMessengerEXT GraphicsFoundation::createDebugMessenger() {
   
   VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -97,7 +131,7 @@ VkDebugUtilsMessengerEXT GraphicsFoundation::createDebugMessenger(
   createInfo.messageType |= VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
   createInfo.messageType |= VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 
-  createInfo.pfnUserCallback = callback;
+  createInfo.pfnUserCallback = debugCallback;
 
   auto createDebugUtilsMessenger
     = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(

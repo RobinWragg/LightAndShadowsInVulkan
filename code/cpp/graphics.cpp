@@ -9,46 +9,9 @@ namespace graphics {
   GraphicsPipeline *pipeline = nullptr;
   DrawCall *drawCall = nullptr;
 
-  VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT severity,
-    VkDebugUtilsMessageTypeFlagsEXT msgType,
-    const VkDebugUtilsMessengerCallbackDataEXT *data,
-    void *pUserData) {
-
-    printf("\n");
-
-    switch (severity) {
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: printf("verbose, "); break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: printf("info, "); break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: printf("WARNING, "); break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: printf("ERROR, "); break;
-    default: printf("unknown, "); break;
-    };
-
-    switch (msgType) {
-    case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT: printf("general: "); break;
-    case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT: printf("validation: "); break;
-    case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT: printf("performance: "); break;
-    default: printf("unknown: "); break;
-    };
-
-    printf("%s (%i objects reported)\n", data->pMessage, data->objectCount);
-    fflush(stdout);
-
-    switch (severity) {
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-      SDL_assert_release(false);
-      break;
-    default: break;
-    };
-
-    return VK_FALSE;
-  }
-
   void init(SDL_Window *window) {
     
-    foundation = new GraphicsFoundation(window, debugCallback);
+    foundation = new GraphicsFoundation(window);
     
     pipeline = new GraphicsPipeline(foundation, true);
     
