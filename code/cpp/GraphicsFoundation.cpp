@@ -31,7 +31,7 @@ GraphicsFoundation::~GraphicsFoundation() {
   vkDestroyInstance(instance, nullptr); // Also destroys all physical devices
 }
 
-void GraphicsFoundation::createVkBuffer(uint64_t dataSize, uint8_t *data, VkBufferUsageFlagBits usage, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) const {
+void GraphicsFoundation::createVkBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) const {
   
   VkBufferCreateInfo bufferInfo = {};
   bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -41,27 +41,29 @@ void GraphicsFoundation::createVkBuffer(uint64_t dataSize, uint8_t *data, VkBuff
   
   auto result = vkCreateBuffer(device, &bufferInfo, nullptr, bufferOut);
   SDL_assert(result == VK_SUCCESS);
-
+  
   VkMemoryRequirements memoryReqs;
   vkGetBufferMemoryRequirements(device, *bufferOut, &memoryReqs);
 
   VkMemoryAllocateInfo allocInfo = {};
   allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
   allocInfo.allocationSize = memoryReqs.size;
-  allocInfo.memoryTypeIndex = findMemoryType(
-    memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+  allocInfo.memoryTypeIndex = findMemoryType(memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
   result = vkAllocateMemory(device, &allocInfo, nullptr, memoryOut);
   SDL_assert(result == VK_SUCCESS);
   result = vkBindBufferMemory(device, *bufferOut, *memoryOut, 0);
   SDL_assert(result == VK_SUCCESS);
+}
 
-  uint8_t * mappedMemory;
-  result = vkMapMemory(device, *memoryOut, 0, bufferInfo.size, 0, (void**)&mappedMemory);
-      SDL_assert(result == VK_SUCCESS);
+void GraphicsFoundation::setMemory(VkDeviceMemory memory, uint64_t dataSize, uint8_t *data) const {
+  
+  uint8_t *mappedMemory;
+  auto result = vkMapMemory(device, memory, 0, dataSize, 0, (void**)&mappedMemory);
+  SDL_assert(result == VK_SUCCESS);
       
-  memcpy(mappedMemory, data, bufferInfo.size);
-  vkUnmapMemory(device, *memoryOut);
+  memcpy(mappedMemory, data, dataSize);
+  vkUnmapMemory(device, memory);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL GraphicsFoundation::debugCallback(

@@ -18,8 +18,10 @@ DrawCall::~DrawCall() {
 void DrawCall::createVertexBuffer(const vector<vec3> &vertices) {
   
   uint64_t dataSize = sizeof(vertices[0]) * vertices.size();
+  pipeline->foundation->createVkBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, dataSize, &vertexBuffer, &vertexBufferMemory);
+  
   uint8_t *data = (uint8_t*)vertices.data();
-  pipeline->foundation->createVkBuffer(dataSize, data, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, &vertexBuffer, &vertexBufferMemory);
+  pipeline->foundation->setMemory(vertexBufferMemory, dataSize, data);
 }
 
 void DrawCall::createCommandBuffers(uint64_t vertexCount) {

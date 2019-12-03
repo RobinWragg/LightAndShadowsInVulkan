@@ -11,7 +11,9 @@ class GraphicsFoundation {
     
     VkExtent2D getSurfaceExtent() const;
     
-    void createVkBuffer(uint64_t dataSize, uint8_t *data, VkBufferUsageFlagBits usage, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) const;
+    void createVkBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) const;
+    
+    void setMemory(VkDeviceMemory memory, uint64_t dataSize, uint8_t *data) const;
     
     VkInstance instance                = VK_NULL_HANDLE;
     VkDebugUtilsMessengerEXT debugMsgr = VK_NULL_HANDLE;
