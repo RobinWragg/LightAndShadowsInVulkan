@@ -11,6 +11,7 @@ namespace graphics {
   DrawCall *pyramid = nullptr;
   DrawCall *ground = nullptr;
   vec3 cameraPosition;
+  vec2 cameraAngle;
 
   void init(SDL_Window *window) {
     foundation = new GraphicsFoundation(window);
@@ -19,6 +20,9 @@ namespace graphics {
     cameraPosition.x = 0;
     cameraPosition.y = 1;
     cameraPosition.z = 3;
+    
+    cameraAngle.x = 0;
+    cameraAngle.y = 0;
     
     vector<vec3> pyramidVertices = {
       {0, 0, 0}, {1, 0, 0}, {0, 1, 0},
@@ -40,7 +44,11 @@ namespace graphics {
   }
   
   void updateAndRender(float dt) {
-    vec2 lateralMovement = input::getKeyVector() * (dt * 2);
+    cameraAngle += input::getViewAngleInput();
+    
+    vec2 lateralMovement = input::getMovementVector() * (dt * 2);
+    
+    lateralMovement = rotate(lateralMovement, -cameraAngle.x);
     
     cameraPosition.x += lateralMovement.x;
     cameraPosition.z -= lateralMovement.y;
@@ -53,10 +61,10 @@ namespace graphics {
     shaderData.matrix = perspective(radians(50.0f), aspect, 0.1f, 10.0f);
     shaderData.matrix = scale(shaderData.matrix, vec3(1, -1, 1));
     
-    // TODO: viewing angle rotation goes here
+    shaderData.matrix = rotate(shaderData.matrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
+    shaderData.matrix = rotate(shaderData.matrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
     
     shaderData.matrix = translate(shaderData.matrix, -cameraPosition);
-    shaderData.matrix = rotate(shaderData.matrix, (float)getTime()*0.5f, vec3(0.0f, 1.0f, 0.0f));
     
     pipeline->submit(pyramid);
     pipeline->submit(ground);

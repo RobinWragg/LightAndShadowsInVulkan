@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
 
   SDL_Window *window = SDL_CreateWindow(
     windowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-    windowWidth, windowHeight, SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI);
+    windowWidth, windowHeight, SDL_WINDOW_VULKAN);
   SDL_assert_release(window != NULL);
   printf("Created window\n");
   fflush(stdout);
@@ -81,6 +81,7 @@ int main(int argc, char* argv[]) {
     }
     
     SDL_Event event;
+    input::handleMouseMotion(0, 0);
     while (SDL_PollEvent(&event)) {
       switch (event.type) {
         case SDL_KEYDOWN: {
@@ -90,6 +91,12 @@ int main(int argc, char* argv[]) {
         } break;
         case SDL_KEYUP: {
           input::handleKeyRelease(event.key.keysym.sym);
+        } break;
+        case SDL_MOUSEMOTION: {
+          input::handleMouseMotion(event.motion.xrel, event.motion.yrel);
+        } break;
+        case SDL_MOUSEBUTTONDOWN: {
+          input::handleMouseClick(window);
         } break;
         case SDL_QUIT: running = false; break;
       }
