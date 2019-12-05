@@ -31,9 +31,11 @@ int main(int argc, char* argv[]) {
   #ifdef DEBUG
   printf("Debug build\n");
   printf("Validation enabled\n");
+  const char *windowTitle = "Light and Shadow (debug build)";
   #else
   printf("Release build\n");
   printf("Validation disabled\n");
+  const char *windowTitle = "Light and Shadow (release build)";
   #endif
   
   printf("main()\n");
@@ -44,13 +46,20 @@ int main(int argc, char* argv[]) {
   
   setWorkingDir();
 
-  // create a 4:3 SDL window
-  int windowWidth = 600;
-  int windowHeight = 600;
+  // create a window slightly smaller than the display resolution
+  int windowWidth;
+  int windowHeight;
+  {
+    SDL_DisplayMode displayMode;
+    SDL_GetCurrentDisplayMode(0, &displayMode);
+    int extraRoom = 200;
+    windowWidth = displayMode.w - extraRoom;
+    windowHeight = displayMode.h - extraRoom;
+  }
 
   SDL_Window *window = SDL_CreateWindow(
-    "Light and Shadow", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-    windowWidth, windowHeight, SDL_WINDOW_VULKAN);
+    windowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+    windowWidth, windowHeight, SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI);
   SDL_assert_release(window != NULL);
   printf("Created window\n");
   fflush(stdout);
