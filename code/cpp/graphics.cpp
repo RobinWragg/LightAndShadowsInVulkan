@@ -27,14 +27,14 @@ namespace graphics {
       {1, 0, 0}, {0, 0, 1}, {0, 1, 0},
     };
     
-    pyramid = new DrawCall(pipeline, pyramidVertices);
+    pyramid = new DrawCall(foundation, pyramidVertices);
     
     vector<vec3> groundVertices = {
       {-3, 0, -3}, {3, 0, -3}, {-3, 0, 3},
       {-3, 0, 3}, {3, 0, -3}, {3, 0, 3}
     };
     
-    ground = new DrawCall(pipeline, groundVertices);
+    ground = new DrawCall(foundation, groundVertices);
     
     printf("\nInitialised Vulkan\n");
   }
