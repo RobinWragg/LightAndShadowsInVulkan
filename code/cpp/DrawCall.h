@@ -3,19 +3,15 @@
 
 class DrawCall {
 public:
-  // TODO: make these private
-  VkCommandBuffer commandBuffers[GraphicsPipeline::swapchainSize];
   VkBuffer vertexBuffer;
-  VkDeviceMemory vertexBufferMemory;
+  uint32_t vertexCount;
   
   DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &vertices);
   ~DrawCall();
 
 private:
   const GraphicsPipeline *pipeline = nullptr;
-  VkDevice device = VK_NULL_HANDLE;
+  VkDeviceMemory vertexBufferMemory;
   
   void createVertexBuffer(const vector<vec3> &vertices);
-  
-  void createCommandBuffers(uint64_t vertexCount);
 };

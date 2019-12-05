@@ -30,7 +30,6 @@ namespace graphics {
   void render() {
     PerFrameShaderData shaderData;
     shaderData.matrix = identity<mat4>();
-    
     shaderData.matrix = translate(shaderData.matrix, vec3(0, 0, 0.5));
     shaderData.matrix = scale(shaderData.matrix, vec3(1, 1, 0.5));
     shaderData.matrix = rotate(shaderData.matrix, (float)getTime(), vec3(1.0f, 0.0f, 0.0f));

@@ -31,9 +31,15 @@ GraphicsPipeline::GraphicsPipeline(const GraphicsFoundation *foundationIn, bool 
   createDescriptorPool();
   
   createDescriptorSets();
+  
+  createCommandBuffers();
+  
+  createFences();
 }
 
 GraphicsPipeline::~GraphicsPipeline() {
+  vkFreeCommandBuffers(foundation->device, commandPool, swapchainSize, commandBuffers);
+  
   vkDestroyCommandPool(foundation->device, commandPool, nullptr);
 
   vkDestroySemaphore(foundation->device, imageAvailableSemaphore, nullptr);
@@ -49,13 +55,24 @@ GraphicsPipeline::~GraphicsPipeline() {
     vkDestroyImage(foundation->device, swapchainImages[i], nullptr);
     vkDestroyBuffer(foundation->device, uniformBuffers[i], nullptr);
     vkFreeMemory(foundation->device, uniformBuffersMemory[i], nullptr);
+    vkDestroyFence(foundation->device, fences[i], nullptr);
   }
   
   vkDestroyDescriptorPool(foundation->device, descriptorPool, nullptr); // Also destroys the descriptor sets
   
   vkDestroySwapchainKHR(foundation->device, swapchain, nullptr);
   
-  vkDestroyDescriptorSetLayout(foundation->device, descriptorSetLayout, nullptr);
+  vkDestroyDescriptorSetLayout(foundation->device, perFrameDescriptorSetLayout, nullptr);
+}
+
+void GraphicsPipeline::createFences() {
+  VkFenceCreateInfo createInfo = {};
+  createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+  createInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+  
+  for (int i = 0; i < swapchainSize; i++) {
+    vkCreateFence(foundation->device, &createInfo, nullptr, &fences[i]);
+  }
 }
 
 void GraphicsPipeline::createUniformBuffers() {
@@ -83,8 +100,9 @@ void GraphicsPipeline::createDescriptorPool() {
 }
 
 void GraphicsPipeline::createDescriptorSets() {
+  
   VkDescriptorSetLayout layouts[swapchainSize];
-  for (int i = 0; i < swapchainSize; i++) layouts[i] = descriptorSetLayout;
+  for (int i = 0; i < swapchainSize; i++) layouts[i] = perFrameDescriptorSetLayout;
   
   VkDescriptorSetAllocateInfo allocInfo = {};
   allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -126,8 +144,75 @@ void GraphicsPipeline::createDescriptorSetLayout() {
   layoutInfo.bindingCount = 1;
   layoutInfo.pBindings = &layoutBinding;
   
-  auto result = vkCreateDescriptorSetLayout(foundation->device, &layoutInfo, nullptr, &descriptorSetLayout);
+  auto result = vkCreateDescriptorSetLayout(foundation->device, &layoutInfo, nullptr, &perFrameDescriptorSetLayout);
   SDL_assert_release(result == VK_SUCCESS);
+}
+
+void GraphicsPipeline::createCommandBuffers() {
+  VkCommandBufferAllocateInfo bufferInfo = {};
+  bufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  bufferInfo.commandPool = commandPool;
+  bufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  bufferInfo.commandBufferCount = GraphicsPipeline::swapchainSize;
+  auto result = vkAllocateCommandBuffers(foundation->device, &bufferInfo, commandBuffers);
+  SDL_assert(result == VK_SUCCESS);
+}
+
+void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
+  
+  VkCommandBuffer &cmdBuffer = commandBuffers[swapchainIndex];
+  
+  vector<VkClearValue> clearValues;
+
+  // Color clear value
+  clearValues.push_back(VkClearValue());
+  clearValues.back().color = { 0.0f, 1.0f, 0.0f, 1.0f };
+  clearValues.back().depthStencil = {};
+
+  if (depthTestingEnabled) {
+    // Depth/stencil clear value
+    clearValues.push_back(VkClearValue());
+    clearValues.back().color = { 0.0f, 0.0f, 1.0f, 1.0f };
+    clearValues.back().depthStencil = { 1, 0 };
+  }
+  
+  VkCommandBufferBeginInfo beginInfo = {};
+  beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+  beginInfo.pInheritanceInfo = nullptr;
+  
+  // This call will implicitly reset the command buffer if it has previously been filled
+  auto result = vkBeginCommandBuffer(cmdBuffer, &beginInfo);
+  SDL_assert(result == VK_SUCCESS);
+
+  VkRenderPassBeginInfo renderPassInfo = {};
+  renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  renderPassInfo.renderPass = renderPass;
+  renderPassInfo.framebuffer = framebuffers[swapchainIndex];
+
+  renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
+  renderPassInfo.pClearValues = clearValues.data();
+
+  renderPassInfo.renderArea.offset = { 0, 0 };
+  renderPassInfo.renderArea.extent = foundation->getSurfaceExtent();
+  
+  vkCmdBeginRenderPass(cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+  vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
+
+  vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[swapchainIndex], 0, nullptr);
+  
+  for (auto &drawCall : submissions) {
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &drawCall->vertexBuffer, offsets);
+    vkCmdDraw(cmdBuffer, drawCall->vertexCount, 1, 0, 0);
+  }
+  
+  submissions.resize(0);
+  
+  vkCmdEndRenderPass(commandBuffers[swapchainIndex]);
+
+  result = vkEndCommandBuffer(commandBuffers[swapchainIndex]);
+  SDL_assert(result == VK_SUCCESS);
 }
 
 void GraphicsPipeline::setupDepthTesting() {
@@ -274,10 +359,9 @@ VkPipelineShaderStageCreateInfo GraphicsPipeline::createShaderStage(const char *
 
 void GraphicsPipeline::createCommandPool() {
   VkCommandPoolCreateInfo poolInfo = {};
-
   poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
   poolInfo.queueFamilyIndex = 0; // TODO: This is crap!
-  poolInfo.flags = 0;
+  poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
   poolInfo.pNext = nullptr;
 
   SDL_assert_release(vkCreateCommandPool(foundation->device, &poolInfo, nullptr, &commandPool) == VK_SUCCESS);
@@ -378,7 +462,7 @@ void GraphicsPipeline::createVkPipeline() {
   VkPipelineLayoutCreateInfo layoutInfo = {};
   layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   layoutInfo.setLayoutCount = 1;
-  layoutInfo.pSetLayouts = &descriptorSetLayout;
+  layoutInfo.pSetLayouts = &perFrameDescriptorSetLayout;
   auto result = vkCreatePipelineLayout(foundation->device, &layoutInfo, nullptr, &pipelineLayout);
   SDL_assert_release(result == VK_SUCCESS);
 
@@ -559,23 +643,23 @@ void GraphicsPipeline::present(PerFrameShaderData *perFrameData) {
   auto result = vkAcquireNextImageKHR(foundation->device, swapchain, UINT64_MAX /* no timeout */, imageAvailableSemaphore, VK_NULL_HANDLE, &swapchainIndex);
   SDL_assert(result == VK_SUCCESS);
   
-  VkSubmitInfo submitInfo = {};
-  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  // Wait for the command buffer to finish executing
+  vkWaitForFences(foundation->device, 1, &fences[swapchainIndex], VK_TRUE, INT64_MAX);
+  vkResetFences(foundation->device, 1, &fences[swapchainIndex]);
   
-  vector<VkCommandBuffer> commandBuffers;
+  // Fill the command buffer
+  fillCommandBuffer(swapchainIndex);
   
+  // Set per-frame shader data
   VkDeviceMemory &uniformMemory = uniformBuffersMemory[swapchainIndex];
   foundation->setMemory(uniformMemory, sizeof(PerFrameShaderData), perFrameData);
   
-  // Collect and submit command buffers
-  for (auto &drawCall : submissions) {
-    commandBuffers.push_back(drawCall->commandBuffers[swapchainIndex]);
-  }
+  // Submit the command buffer
+  VkSubmitInfo submitInfo = {};
+  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   
-  submissions.resize(0);
-  
-  submitInfo.commandBufferCount = (uint32_t)commandBuffers.size();
-  submitInfo.pCommandBuffers = commandBuffers.data();
+  submitInfo.commandBufferCount = 1;
+  submitInfo.pCommandBuffers = &commandBuffers[swapchainIndex];
 
   submitInfo.waitSemaphoreCount = 1;
   submitInfo.pWaitSemaphores = &imageAvailableSemaphore;
@@ -586,7 +670,7 @@ void GraphicsPipeline::present(PerFrameShaderData *perFrameData) {
   submitInfo.signalSemaphoreCount = 1;
   submitInfo.pSignalSemaphores = &renderCompletedSemaphore;
   
-  result = vkQueueSubmit(foundation->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+  result = vkQueueSubmit(foundation->graphicsQueue, 1, &submitInfo, fences[swapchainIndex]);
   SDL_assert(result == VK_SUCCESS);
   
   // Present

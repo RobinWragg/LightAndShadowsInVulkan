@@ -17,6 +17,8 @@ public:
   VkFramebuffer framebuffers[swapchainSize];
   VkRenderPass renderPass;
   VkCommandPool commandPool;
+  VkCommandBuffer commandBuffers[swapchainSize];
+  VkFence fences[swapchainSize];
   VkSemaphore imageAvailableSemaphore;
   VkSwapchainKHR swapchain;
   VkImage swapchainImages[swapchainSize];
@@ -41,7 +43,7 @@ private:
   VkBuffer uniformBuffers[swapchainSize];
   VkDeviceMemory uniformBuffersMemory[swapchainSize];
   
-  VkDescriptorSetLayout descriptorSetLayout;
+  VkDescriptorSetLayout perFrameDescriptorSetLayout;
   VkDescriptorPool descriptorPool;
   
   vector<DrawCall*> submissions;
@@ -75,6 +77,12 @@ private:
   void createDescriptorPool();
   
   void createDescriptorSets();
+  
+  void createCommandBuffers();
+  
+  void fillCommandBuffer(uint32_t swapchainIndex);
+  
+  void createFences();
 };
 
 
