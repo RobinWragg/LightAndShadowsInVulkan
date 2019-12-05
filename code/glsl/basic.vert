@@ -11,5 +11,5 @@ layout(binding = 0) uniform PerFrameData {
 void main() {
   gl_Position = perFrameData.matrix * vec4(pos, 1.0);
   
-  fragmentColor = vec3(1, 1, 1) * (1 - gl_Position.z);
+  fragmentColor = vec3(1, 1, 1) * (1 - gl_Position.z*0.2);
 }
