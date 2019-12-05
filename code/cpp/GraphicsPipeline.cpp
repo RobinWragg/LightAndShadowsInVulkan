@@ -162,19 +162,12 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
   
   VkCommandBuffer &cmdBuffer = commandBuffers[swapchainIndex];
   
-  vector<VkClearValue> clearValues;
-
   // Color clear value
-  clearValues.push_back(VkClearValue());
-  clearValues.back().color = { 0.0f, 1.0f, 0.0f, 1.0f };
-  clearValues.back().depthStencil = {};
-
-  if (depthTestingEnabled) {
-    // Depth/stencil clear value
-    clearValues.push_back(VkClearValue());
-    clearValues.back().color = { 0.0f, 0.0f, 1.0f, 1.0f };
-    clearValues.back().depthStencil = { 1, 0 };
-  }
+  
+  VkClearValue clearValues[2] = {
+    {.color.float32 = 0.5f, 0.7f, 1.0f, 1.0f },
+    {.depthStencil = { 1, 0 }}
+  };
   
   VkCommandBufferBeginInfo beginInfo = {};
   beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -189,9 +182,9 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
   renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   renderPassInfo.renderPass = renderPass;
   renderPassInfo.framebuffer = framebuffers[swapchainIndex];
-
-  renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
-  renderPassInfo.pClearValues = clearValues.data();
+  
+  renderPassInfo.clearValueCount = depthTestingEnabled ? 2 : 1;
+  renderPassInfo.pClearValues = clearValues;
 
   renderPassInfo.renderArea.offset = { 0, 0 };
   renderPassInfo.renderArea.extent = foundation->getSurfaceExtent();

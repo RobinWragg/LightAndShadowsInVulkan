@@ -5,6 +5,7 @@
 #endif
 
 #include "main.h"
+#include "input.h"
 
 double getTime() {
   static uint64_t startCount = SDL_GetPerformanceCounter();
@@ -73,12 +74,21 @@ int main(int argc, char* argv[]) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       switch (event.type) {
-      case SDL_QUIT: running = false; break;
+        case SDL_KEYDOWN: {
+          if (!event.key.repeat) {
+            input::handleKeyPress(event.key.keysym.sym);
+          }
+        } break;
+        case SDL_KEYUP: {
+          input::handleKeyRelease(event.key.keysym.sym);
+        } break;
+        case SDL_QUIT: running = false; break;
       }
     }
     
-        graphics::render();
+    graphics::updateAndRender(deltaTime);
     // printf("fps: %.1f\n", 1 / deltaTime);
+    
     fflush(stdout);
   }
   
