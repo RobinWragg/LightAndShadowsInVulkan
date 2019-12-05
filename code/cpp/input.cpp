@@ -25,7 +25,7 @@ namespace input {
   }
   
   vec2 getKeyVector() {
-    vec2 v;
+    vec2 v = {};
     
     if (up) v.y = 1;
     else if (down) v.y = -1;

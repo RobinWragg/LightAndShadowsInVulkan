@@ -31,6 +31,7 @@ GraphicsFoundation::~GraphicsFoundation() {
   vkDestroyInstance(instance, nullptr); // Also destroys all physical devices
 }
 
+// TODO: can VkBuffers be created without being associated with a GraphicsPipeline?
 void GraphicsFoundation::createVkBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) const {
   
   VkBufferCreateInfo bufferInfo = {};
