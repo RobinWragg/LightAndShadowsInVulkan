@@ -44,7 +44,7 @@ namespace input {
   
   void handleMouseMotion(int x, int y) {
     if (firstPersonMode) {
-      float scale = 0.005;
+      float scale = 0.005f;
       viewAngleInput.x = x * scale;
       viewAngleInput.y = y * scale;
     } else {

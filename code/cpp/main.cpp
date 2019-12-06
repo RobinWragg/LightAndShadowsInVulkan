@@ -1,7 +1,8 @@
 #ifdef __APPLE__
 #include <unistd.h>
 #else
-#include <windows.h>
+#include <direct.h>
+#define chdir _chdir
 #endif
 
 #include "main.h"
@@ -18,11 +19,8 @@ int rendererWidth, rendererHeight;
 void setWorkingDir() {
   char *path = SDL_GetBasePath();
   string assetsPath = string(path) + "/assets";
-#ifdef __APPLE__
-  SDL_assert_release(chdir(assetsPath.c_str()) == 0);
-#else
-  SDL_assert_release(SetCurrentDirectory(assetsPath));
-#endif
+  auto result = chdir(assetsPath.c_str());
+  SDL_assert_release(result == 0);
   SDL_free(path);
 }
 

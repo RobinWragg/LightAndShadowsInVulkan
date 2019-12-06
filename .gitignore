@@ -8,3 +8,4 @@ code/assets/*.spv
 *.user
 *.tlog/
 *.log
+x64/
