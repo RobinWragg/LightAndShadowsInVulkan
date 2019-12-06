@@ -46,8 +46,8 @@ namespace graphics {
   void updateAndRender(float dt) {
     cameraAngle += input::getViewAngleInput();
     
+    // Get player input for walking and take into account the direction the player is facing
     vec2 lateralMovement = input::getMovementVector() * (dt * 2);
-    
     lateralMovement = rotate(lateralMovement, -cameraAngle.x);
     
     cameraPosition.x += lateralMovement.x;
