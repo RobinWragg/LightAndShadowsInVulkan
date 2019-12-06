@@ -16,7 +16,11 @@
 #include <glm/ext.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-#include <SDL2/SDL.h>
+#ifdef __APPLE__
+#include <SDL2/SDL.h> // This is the include syntax for macOS frameworks
+#else
+#include <SDL.h>
+#endif
 
 using namespace glm;
 using namespace std;
