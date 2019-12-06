@@ -18,6 +18,24 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\cpp\DrawCall.cpp" />
+    <ClCompile Include="..\..\..\cpp\graphics.cpp" />
+    <ClCompile Include="..\..\..\cpp\GraphicsFoundation.cpp" />
+    <ClCompile Include="..\..\..\cpp\GraphicsPipeline.cpp" />
+    <ClCompile Include="..\..\..\cpp\input.cpp" />
+    <ClCompile Include="..\..\..\cpp\main.cpp">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\libs\glm-0.9.9.6;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\libs\glm-0.9.9.6;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\cpp\DrawCall.h" />
+    <ClInclude Include="..\..\..\cpp\GraphicsFoundation.h" />
+    <ClInclude Include="..\..\..\cpp\GraphicsPipeline.h" />
+    <ClInclude Include="..\..\..\cpp\input.h" />
+    <ClInclude Include="..\..\..\cpp\main.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{7DCBCA74-6FC4-45FC-93FA-80B352ACB6E1}</ProjectGuid>
@@ -91,6 +109,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>D:\1702406\LightAndShadowsInVulkan\code\libs\glm-0.9.9.6;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

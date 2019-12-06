@@ -6,3 +6,5 @@ DerivedData/
 code/assets/*.spv
 .vs/
 *.user
+*.tlog/
+*.log
