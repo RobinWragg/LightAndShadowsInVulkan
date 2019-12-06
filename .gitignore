@@ -4,3 +4,5 @@ xcuserdata/
 build/
 DerivedData/
 code/assets/*.spv
+.vs/
+*.user
