@@ -302,8 +302,8 @@ void GraphicsPipeline::setupDepthTesting() {
   submitInfo.commandBufferCount = 1;
   submitInfo.pCommandBuffers = &commandBuffer;
 
-  vkQueueSubmit(foundation->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-  vkQueueWaitIdle(foundation->graphicsQueue);
+  vkQueueSubmit(foundation->queue, 1, &submitInfo, VK_NULL_HANDLE);
+  vkQueueWaitIdle(foundation->queue);
 
   vkFreeCommandBuffers(foundation->device, commandPool, 1, &commandBuffer);
 }
@@ -353,7 +353,7 @@ VkPipelineShaderStageCreateInfo GraphicsPipeline::createShaderStage(const char *
 void GraphicsPipeline::createCommandPool() {
   VkCommandPoolCreateInfo poolInfo = {};
   poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-  poolInfo.queueFamilyIndex = 0; // TODO: This is crap!
+  poolInfo.queueFamilyIndex = foundation->queueFamilyIndex;
   poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
   poolInfo.pNext = nullptr;
 
@@ -663,7 +663,7 @@ void GraphicsPipeline::present(PerFrameShaderData *perFrameData) {
   submitInfo.signalSemaphoreCount = 1;
   submitInfo.pSignalSemaphores = &renderCompletedSemaphore;
   
-  result = vkQueueSubmit(foundation->graphicsQueue, 1, &submitInfo, fences[swapchainIndex]);
+  result = vkQueueSubmit(foundation->queue, 1, &submitInfo, fences[swapchainIndex]);
   SDL_assert(result == VK_SUCCESS);
   
   // Present
@@ -677,7 +677,7 @@ void GraphicsPipeline::present(PerFrameShaderData *perFrameData) {
   presentInfo.pSwapchains = &swapchain;
   presentInfo.pImageIndices = &swapchainIndex;
   
-  result = vkQueuePresentKHR(foundation->surfaceQueue, &presentInfo);
+  result = vkQueuePresentKHR(foundation->queue, &presentInfo);
   SDL_assert(result == VK_SUCCESS);
 }
 

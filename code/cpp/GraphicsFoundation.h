@@ -20,8 +20,8 @@ class GraphicsFoundation {
     VkSurfaceKHR surface               = VK_NULL_HANDLE;
     VkPhysicalDevice physDevice        = VK_NULL_HANDLE;
     VkDevice device                    = VK_NULL_HANDLE;
-    VkQueue graphicsQueue              = VK_NULL_HANDLE;
-    VkQueue surfaceQueue               = VK_NULL_HANDLE;
+    VkQueue queue                      = VK_NULL_HANDLE;
+    int queueFamilyIndex               = -1;
     
     const VkFormat surfaceFormat            = VK_FORMAT_B8G8R8A8_UNORM;
     const VkColorSpaceKHR surfaceColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
@@ -52,8 +52,6 @@ class GraphicsFoundation {
     };
     
   private:
-    enum class QueueType;
-    
     void printAvailableInstanceLayers();
     
     VkInstance createInstance(SDL_Window *window);
@@ -62,9 +60,9 @@ class GraphicsFoundation {
     
     VkPhysicalDevice createPhysicalDevice(SDL_Window *window);
     
-    VkDeviceQueueCreateInfo createQueueInfo(QueueType queueType);
+    VkDeviceQueueCreateInfo createQueueInfo();
     
-    void createDeviceAndQueues();
+    void createDeviceAndQueue();
     
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
       VkDebugUtilsMessageSeverityFlagBitsEXT severity,

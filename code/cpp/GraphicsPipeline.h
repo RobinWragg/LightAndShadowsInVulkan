@@ -13,7 +13,6 @@ public:
   
   static const int swapchainSize = 2; // Double buffered
   
-  // TODO: make these private
   VkFramebuffer framebuffers[swapchainSize];
   VkRenderPass renderPass;
   VkCommandPool commandPool;

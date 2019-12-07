@@ -1,11 +1,6 @@
 #include "GraphicsFoundation.h"
 #include <SDL2/SDL_vulkan.h>
 
-enum class GraphicsFoundation::QueueType {
-  GRAPHICS,
-  SURFACE_SUPPORT
-};
-
 GraphicsFoundation::GraphicsFoundation(SDL_Window *window) {
   
   instance = createInstance(window);
@@ -17,7 +12,7 @@ GraphicsFoundation::GraphicsFoundation(SDL_Window *window) {
   
   physDevice = createPhysicalDevice(window);
   
-  createDeviceAndQueues();
+  createDeviceAndQueue();
 }
 
 GraphicsFoundation::~GraphicsFoundation() {
@@ -264,7 +259,7 @@ VkPhysicalDevice GraphicsFoundation::createPhysicalDevice(SDL_Window *window) {
   return suitableDevices[0];
 }
 
-VkDeviceQueueCreateInfo GraphicsFoundation::createQueueInfo(QueueType queueType) {
+VkDeviceQueueCreateInfo GraphicsFoundation::createQueueInfo() {
   SDL_assert_release(surface != VK_NULL_HANDLE);
   
   uint32_t familyCount = 0;
@@ -272,30 +267,24 @@ VkDeviceQueueCreateInfo GraphicsFoundation::createQueueInfo(QueueType queueType)
   std::vector<VkQueueFamilyProperties> families(familyCount);
   vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &familyCount, families.data());
 
-  int selectedIndex = -1;
 
   // Choose the first queue family of the required type
-  for (int familyIndex = 0; familyIndex < families.size(); familyIndex++) {
-    switch (queueType) {
-      case QueueType::GRAPHICS:
-        if (families[familyIndex].queueFlags & VK_QUEUE_GRAPHICS_BIT) selectedIndex = familyIndex;
-      break;
-      case QueueType::SURFACE_SUPPORT:
-        VkBool32 hasSurfaceSupport;
-        vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, familyIndex, surface, &hasSurfaceSupport);
-        if (hasSurfaceSupport == VK_TRUE) selectedIndex = familyIndex;
-      break;
-      default: SDL_assert_release(false); break;
-    }
+  int familyIndex;
+  for (familyIndex = 0; familyIndex < families.size(); familyIndex++) {
+    VkBool32 hasSurfaceSupport;
+    vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, familyIndex, surface, &hasSurfaceSupport);
     
-    if (selectedIndex >= 0) break;
+    if (hasSurfaceSupport == VK_TRUE
+      && families[familyIndex].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+      break;
+    }
   }
 
-  SDL_assert_release(selectedIndex >= 0);
+  SDL_assert_release(familyIndex < families.size());
 
   VkDeviceQueueCreateInfo info = {};
   info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-  info.queueFamilyIndex = selectedIndex;
+  info.queueFamilyIndex = familyIndex;
   info.queueCount = 1;
   
   static float defaultPriority = 1.0f;
@@ -304,21 +293,16 @@ VkDeviceQueueCreateInfo GraphicsFoundation::createQueueInfo(QueueType queueType)
   return info;
 }
 
-void GraphicsFoundation::createDeviceAndQueues() {
+void GraphicsFoundation::createDeviceAndQueue() {
   
-  auto graphicsQueueInfo = createQueueInfo(QueueType::GRAPHICS);
-  auto surfaceQueueInfo = createQueueInfo(QueueType::SURFACE_SUPPORT);
-  vector<VkDeviceQueueCreateInfo> queueInfos = {graphicsQueueInfo};
-  
-  if (surfaceQueueInfo.queueFamilyIndex != queueInfos[0].queueFamilyIndex) {
-    queueInfos.push_back(surfaceQueueInfo);
-  }
+  auto queueInfo = createQueueInfo();
+  queueFamilyIndex = queueInfo.queueFamilyIndex;
   
   VkDeviceCreateInfo deviceCreateInfo = {};
   deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   
-  deviceCreateInfo.queueCreateInfoCount = (int)queueInfos.size();
-  deviceCreateInfo.pQueueCreateInfos = queueInfos.data();
+  deviceCreateInfo.queueCreateInfoCount = 1;
+  deviceCreateInfo.pQueueCreateInfos = &queueInfo;
   
   VkPhysicalDeviceFeatures enabledDeviceFeatures = {};
   deviceCreateInfo.pEnabledFeatures = &enabledDeviceFeatures;
@@ -334,18 +318,9 @@ void GraphicsFoundation::createDeviceAndQueues() {
   auto result = vkCreateDevice(physDevice, &deviceCreateInfo, nullptr, &device);
   SDL_assert_release(result == VK_SUCCESS);
   
-  // Get handles to the new queue(s)
-  int queueIndex = 0; // Only one queue per VkDeviceQueueCreateInfo was created, so this is 0.
-  
-  vkGetDeviceQueue(device, graphicsQueueInfo.queueFamilyIndex, queueIndex, &graphicsQueue);
-  SDL_assert_release(graphicsQueue != VK_NULL_HANDLE);
-  
-  vkGetDeviceQueue(device, surfaceQueueInfo.queueFamilyIndex, queueIndex, &surfaceQueue);
-  SDL_assert_release(surfaceQueue != VK_NULL_HANDLE);
-  
-  // TODO: Handle different queues (VK_SHARING_MODE_EXCLUSIVE etc)... graphics and surface queues may be different on other hardware
-  SDL_assert_release(surfaceQueueInfo.queueFamilyIndex == 0);
-  SDL_assert_release(graphicsQueue == surfaceQueue);
+  // Get a handle to the new queue
+  vkGetDeviceQueue(device, queueInfo.queueFamilyIndex, 0, &queue);
+  SDL_assert_release(queue != VK_NULL_HANDLE);
 }
 
 
