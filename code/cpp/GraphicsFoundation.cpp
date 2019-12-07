@@ -251,7 +251,6 @@ VkPhysicalDevice GraphicsFoundation::createPhysicalDevice(SDL_Window *window) {
     suitableDevices.push_back(availableDevice);
   }
   
-  
   SDL_assert_release(suitableDevices.size() == 1);
   VkPhysicalDeviceProperties properties;
   vkGetPhysicalDeviceProperties(suitableDevices[0], &properties);

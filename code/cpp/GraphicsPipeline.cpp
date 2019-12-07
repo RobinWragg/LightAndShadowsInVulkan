@@ -11,7 +11,7 @@ GraphicsPipeline::GraphicsPipeline(const GraphicsFoundation *foundationIn, bool 
   
   createRenderPass();
   
-  createDescriptorSetLayout();
+  perFrameDescriptorSetLayout = createDescriptorSetLayout(0);
   
   createVkPipeline();
   
@@ -132,9 +132,9 @@ void GraphicsPipeline::createDescriptorSets() {
   }
 }
 
-void GraphicsPipeline::createDescriptorSetLayout() {
+VkDescriptorSetLayout GraphicsPipeline::createDescriptorSetLayout(int bindingIndex) {
   VkDescriptorSetLayoutBinding layoutBinding = {};
-  layoutBinding.binding = 0;
+  layoutBinding.binding = bindingIndex;
   layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
   layoutBinding.descriptorCount = 1;
   layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -144,8 +144,11 @@ void GraphicsPipeline::createDescriptorSetLayout() {
   layoutInfo.bindingCount = 1;
   layoutInfo.pBindings = &layoutBinding;
   
-  auto result = vkCreateDescriptorSetLayout(foundation->device, &layoutInfo, nullptr, &perFrameDescriptorSetLayout);
+  VkDescriptorSetLayout layout;
+  auto result = vkCreateDescriptorSetLayout(foundation->device, &layoutInfo, nullptr, &layout);
   SDL_assert_release(result == VK_SUCCESS);
+  
+  return layout;
 }
 
 void GraphicsPipeline::createCommandBuffers() {

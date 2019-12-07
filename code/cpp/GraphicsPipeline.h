@@ -67,7 +67,7 @@ private:
   
   void createFramebuffers();
   
-  void createDescriptorSetLayout();
+  VkDescriptorSetLayout createDescriptorSetLayout(int bindingIndex);
   
   void createVkPipeline();
   
