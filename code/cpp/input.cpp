@@ -36,6 +36,7 @@ namespace input {
     } else {
       SDL_SetRelativeMouseMode(SDL_FALSE);
       
+      // Position mouse in centre of window
       int w, h;
       SDL_GetWindowSize(window, &w, &h);
       SDL_WarpMouseInWindow(window, w/2, h/2);
@@ -44,9 +45,9 @@ namespace input {
   
   void handleMouseMotion(int x, int y) {
     if (firstPersonMode) {
-      float scale = 0.005f;
-      viewAngleInput.x = x * scale;
-      viewAngleInput.y = y * scale;
+      float sensitivity = 0.002f;
+      viewAngleInput.x = x * sensitivity;
+      viewAngleInput.y = y * sensitivity;
     } else {
       viewAngleInput.x = 0;
       viewAngleInput.y = 0;
