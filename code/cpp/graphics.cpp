@@ -53,22 +53,22 @@ namespace graphics {
     cameraPosition.x += lateralMovement.x;
     cameraPosition.z -= lateralMovement.y;
     
-    PerFrameShaderData shaderData;
-    shaderData.matrix = identity<mat4>();
+    PerFrameUniform perFrameUniform;
+    perFrameUniform.matrix = identity<mat4>();
     
     VkExtent2D extent = foundation->getSurfaceExtent();
     float aspect = extent.width / (float)extent.height;
-    shaderData.matrix = perspective(radians(50.0f), aspect, 0.1f, 10.0f);
-    shaderData.matrix = scale(shaderData.matrix, vec3(1, -1, 1));
+    perFrameUniform.matrix = perspective(radians(50.0f), aspect, 0.1f, 10.0f);
+    perFrameUniform.matrix = scale(perFrameUniform.matrix, vec3(1, -1, 1));
     
-    shaderData.matrix = rotate(shaderData.matrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
-    shaderData.matrix = rotate(shaderData.matrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
+    perFrameUniform.matrix = rotate(perFrameUniform.matrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
+    perFrameUniform.matrix = rotate(perFrameUniform.matrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
     
-    shaderData.matrix = translate(shaderData.matrix, -cameraPosition);
+    perFrameUniform.matrix = translate(perFrameUniform.matrix, -cameraPosition);
     
     pipeline->submit(pyramid);
     pipeline->submit(ground);
-    pipeline->present(&shaderData);
+    pipeline->present(&perFrameUniform);
   }
 
   void destroy() {

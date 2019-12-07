@@ -1,7 +1,11 @@
 #pragma once
 #include "GraphicsFoundation.h"
 
-struct PerFrameShaderData {
+struct PerFrameUniform {
+  mat4 matrix;
+};
+
+struct PerVboUniform {
   mat4 matrix;
 };
 
@@ -12,6 +16,7 @@ public:
   const GraphicsFoundation *foundation;
   
   static const int swapchainSize = 2; // Double buffered
+  static const int maxDescriptors = 1024;
   
   VkFramebuffer framebuffers[swapchainSize];
   VkRenderPass renderPass;
@@ -25,7 +30,6 @@ public:
   VkSemaphore renderCompletedSemaphore;
   VkPipeline vkPipeline;
   VkPipelineLayout pipelineLayout;
-  VkDescriptorSet descriptorSets[swapchainSize];
   bool depthTestingEnabled;
   
   GraphicsPipeline(const GraphicsFoundation *foundation, bool depthTest);
@@ -33,23 +37,31 @@ public:
   
   void submit(DrawCall *drawCall);
   
-  void present(PerFrameShaderData *perFrameData);
+  void present(const PerFrameUniform *perFrameUniform);
   
 private:
   VkImage depthImage;
   VkDeviceMemory depthImageMemory;
   VkImageView depthImageView;
-  VkBuffer uniformBuffers[swapchainSize];
-  VkDeviceMemory uniformBuffersMemory[swapchainSize];
   
-  VkDescriptorSetLayout perFrameDescriptorSetLayout;
   VkDescriptorPool descriptorPool;
+  
+  struct UniformData {
+    uint32_t              binding;
+    VkDescriptorSetLayout layout;
+    VkDescriptorSet       descriptorSets[swapchainSize];
+    VkDeviceSize          bufferSize;
+    VkBuffer              buffers[swapchainSize];
+    VkDeviceMemory        buffersMemory[swapchainSize];
+  } perFrameDescriptor, perVboDescriptor;
   
   vector<DrawCall*> submissions;
   
   VkPipelineShaderStageCreateInfo createShaderStage(const char *spirVFilePath, VkShaderStageFlagBits stage);
   
   vector<uint8_t> loadBinaryFile(const char *filename);
+  
+  void destroyUniformData(UniformData uniform);
   
   void createSemaphores();
   
@@ -67,15 +79,15 @@ private:
   
   void createFramebuffers();
   
-  VkDescriptorSetLayout createDescriptorSetLayout(int bindingIndex);
+  void createDescriptorSetLayout(UniformData *uniform, int binding);
   
   void createVkPipeline();
   
-  void createUniformBuffers();
+  void createUniformBuffers(UniformData *uniform, uint64_t bufferSize);
   
   void createDescriptorPool();
   
-  void createDescriptorSets();
+  void createDescriptorSets(UniformData *uniform);
   
   void createCommandBuffers();
   

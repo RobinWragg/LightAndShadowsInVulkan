@@ -13,7 +13,7 @@ class GraphicsFoundation {
     
     void createVkBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) const;
     
-    void setMemory(VkDeviceMemory memory, uint64_t dataSize, void *data) const;
+    void setMemory(VkDeviceMemory memory, uint64_t dataSize, const void *data) const;
     
     VkInstance instance                = VK_NULL_HANDLE;
     VkDebugUtilsMessengerEXT debugMsgr = VK_NULL_HANDLE;
