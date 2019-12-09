@@ -126,7 +126,6 @@ void GraphicsPipeline::createDescriptorSet(VkDescriptorSetLayout layout, int bin
   vkUpdateDescriptorSets(foundation->device, 1, &writeDescriptorSet, 0, nullptr);
 }
 
-// TODO: this can be const; take a binding number and return a layout. Simples.
 void GraphicsPipeline::createDescriptorSetLayout(int bindingIndex, VkDescriptorSetLayout *layoutOut) const {
   VkDescriptorSetLayoutBinding layoutBinding = {};
   layoutBinding.binding = bindingIndex;
@@ -452,8 +451,15 @@ void GraphicsPipeline::createVkPipeline() {
 
   VkPipelineLayoutCreateInfo layoutInfo = {};
   layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  layoutInfo.setLayoutCount = 1;
-  layoutInfo.pSetLayouts = &perFrameDescriptorLayout; // TODO add vbo descriptor here
+  
+  const int descriptorSetLayoutCount = 2;
+  VkDescriptorSetLayout descriptorSetLayouts[descriptorSetLayoutCount] = {
+    perFrameDescriptorLayout,
+    drawCallDescriptorLayout
+  };
+  layoutInfo.setLayoutCount = descriptorSetLayoutCount;
+  layoutInfo.pSetLayouts = descriptorSetLayouts;
+  
   auto result = vkCreatePipelineLayout(foundation->device, &layoutInfo, nullptr, &pipelineLayout);
   SDL_assert_release(result == VK_SUCCESS);
 
