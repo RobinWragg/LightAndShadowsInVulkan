@@ -11,8 +11,10 @@ GraphicsPipeline::GraphicsPipeline(const GraphicsFoundation *foundationIn, bool 
   
   createRenderPass();
   
-  createDescriptorSetLayout(&perFrameDescriptor, 0);
-  createDescriptorSetLayout(&perVboDescriptor, 1);
+  perFrameDescriptorBinding = 0;
+  createDescriptorSetLayout(perFrameDescriptorBinding, &perFrameDescriptorLayout);
+  drawCallDescriptorBinding = 1;
+  createDescriptorSetLayout(drawCallDescriptorBinding, &drawCallDescriptorLayout);
   
   createVkPipeline();
   
@@ -27,13 +29,13 @@ GraphicsPipeline::GraphicsPipeline(const GraphicsFoundation *foundationIn, bool 
   
   createSemaphores();
   
-  createUniformBuffers(&perFrameDescriptor, sizeof(PerFrameUniform));
-  createUniformBuffers(&perVboDescriptor, sizeof(PerVboUniform));
-  
   createDescriptorPool();
   
-  createDescriptorSets(&perFrameDescriptor);
-  createDescriptorSets(&perVboDescriptor);
+  perFrameDescriptorBufferSize = sizeof(PerFrameUniform);
+  for (int i = 0; i < swapchainSize; i++) {
+    foundation->createVkBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, perFrameDescriptorBufferSize, &perFrameDescriptorBuffers[i], &perFrameDescriptorBuffersMemory[i]);
+    createDescriptorSet(perFrameDescriptorLayout, perFrameDescriptorBinding, perFrameDescriptorBuffers[i], &perFrameDescriptorSets[i]);
+  }
   
   createCommandBuffers();
   
@@ -57,24 +59,17 @@ GraphicsPipeline::~GraphicsPipeline() {
     vkDestroyImageView(foundation->device, swapchainViews[i], nullptr);
     vkDestroyImage(foundation->device, swapchainImages[i], nullptr);
     vkDestroyFence(foundation->device, fences[i], nullptr);
+    
+    vkDestroyBuffer(foundation->device, perFrameDescriptorBuffers[i], nullptr);
+    vkFreeMemory(foundation->device, perFrameDescriptorBuffersMemory[i], nullptr);
   }
   
-  destroyUniformData(perFrameDescriptor);
-  destroyUniformData(perVboDescriptor);
+  vkDestroyDescriptorSetLayout(foundation->device, perFrameDescriptorLayout, nullptr);
+  vkDestroyDescriptorSetLayout(foundation->device, drawCallDescriptorLayout, nullptr);
   
   vkDestroyDescriptorPool(foundation->device, descriptorPool, nullptr); // Also destroys the descriptor sets
   
   vkDestroySwapchainKHR(foundation->device, swapchain, nullptr);
-}
-
-void GraphicsPipeline::destroyUniformData(UniformData uniform) {
-  
-  for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
-    vkDestroyBuffer(foundation->device, uniform.buffers[i], nullptr);
-    vkFreeMemory(foundation->device, uniform.buffersMemory[i], nullptr);
-  }
-  
-  vkDestroyDescriptorSetLayout(foundation->device, uniform.layout, nullptr);
 }
 
 void GraphicsPipeline::createFences() {
@@ -84,14 +79,6 @@ void GraphicsPipeline::createFences() {
   
   for (int i = 0; i < swapchainSize; i++) {
     vkCreateFence(foundation->device, &createInfo, nullptr, &fences[i]);
-  }
-}
-
-void GraphicsPipeline::createUniformBuffers(UniformData *uniform, uint64_t bufferSize) {
-  uniform->bufferSize = bufferSize;
-  
-  for (int i = 0; i < swapchainSize; i++) {
-    foundation->createVkBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, bufferSize, &uniform->buffers[i], &uniform->buffersMemory[i]);
   }
 }
 
@@ -111,54 +98,48 @@ void GraphicsPipeline::createDescriptorPool() {
   SDL_assert_release(result == VK_SUCCESS);
 }
 
-void GraphicsPipeline::createDescriptorSets(UniformData *uniform) {
-  
-  VkDescriptorSetLayout layouts[swapchainSize];
-  for (int i = 0; i < swapchainSize; i++) layouts[i] = uniform->layout;
+void GraphicsPipeline::createDescriptorSet(VkDescriptorSetLayout layout, int bindingIndex, VkBuffer buffer, VkDescriptorSet *setOut) const {
   
   VkDescriptorSetAllocateInfo allocInfo = {};
   allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
   allocInfo.descriptorPool = descriptorPool;
-  allocInfo.descriptorSetCount = swapchainSize;
-  allocInfo.pSetLayouts = layouts;
+  allocInfo.descriptorSetCount = 1;
+  allocInfo.pSetLayouts = &layout;
   
-  auto result = vkAllocateDescriptorSets(foundation->device, &allocInfo, uniform->descriptorSets);
+  auto result = vkAllocateDescriptorSets(foundation->device, &allocInfo, setOut);
   SDL_assert_release(result == VK_SUCCESS);
   
-  for (int i = 0; i < swapchainSize; i++) {
-    VkDescriptorBufferInfo bufferInfo = {};
-    bufferInfo.buffer = uniform->buffers[i];
-    bufferInfo.offset = 0;
-    bufferInfo.range = VK_WHOLE_SIZE;
-    
-    VkWriteDescriptorSet writeDescriptorSet = {};
-    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writeDescriptorSet.dstSet = uniform->descriptorSets[i];
-    writeDescriptorSet.dstBinding = uniform->binding;
-    writeDescriptorSet.dstArrayElement = 0;
-    writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    writeDescriptorSet.descriptorCount = 1;
-    writeDescriptorSet.pBufferInfo = &bufferInfo;
-    
-    vkUpdateDescriptorSets(foundation->device, 1, &writeDescriptorSet, 0, nullptr);
-  }
+  VkDescriptorBufferInfo bufferInfo = {};
+  bufferInfo.buffer = buffer;
+  bufferInfo.offset = 0;
+  bufferInfo.range = VK_WHOLE_SIZE;
+  
+  VkWriteDescriptorSet writeDescriptorSet = {};
+  writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  writeDescriptorSet.dstSet = *setOut;
+  writeDescriptorSet.dstBinding = bindingIndex;
+  writeDescriptorSet.dstArrayElement = 0;
+  writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  writeDescriptorSet.descriptorCount = 1;
+  writeDescriptorSet.pBufferInfo = &bufferInfo;
+  
+  vkUpdateDescriptorSets(foundation->device, 1, &writeDescriptorSet, 0, nullptr);
 }
 
-void GraphicsPipeline::createDescriptorSetLayout(UniformData *uniform, int binding) {
-  uniform->binding = binding;
-  
+// TODO: this can be const; take a binding number and return a layout. Simples.
+void GraphicsPipeline::createDescriptorSetLayout(int bindingIndex, VkDescriptorSetLayout *layoutOut) const {
   VkDescriptorSetLayoutBinding layoutBinding = {};
-  layoutBinding.binding = uniform->binding;
+  layoutBinding.binding = bindingIndex;
   layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
   layoutBinding.descriptorCount = 1;
-  layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  layoutBinding.stageFlags = VK_SHADER_STAGE_ALL;
   
   VkDescriptorSetLayoutCreateInfo layoutInfo = {};
   layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
   layoutInfo.bindingCount = 1;
   layoutInfo.pBindings = &layoutBinding;
   
-  auto result = vkCreateDescriptorSetLayout(foundation->device, &layoutInfo, nullptr, &uniform->layout);
+  auto result = vkCreateDescriptorSetLayout(foundation->device, &layoutInfo, nullptr, layoutOut);
   SDL_assert_release(result == VK_SUCCESS);
 }
 
@@ -206,10 +187,9 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
   vkCmdBeginRenderPass(cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
   vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
 
-  vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &perFrameDescriptor.descriptorSets[swapchainIndex], 0, nullptr);
+  vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &perFrameDescriptorSets[swapchainIndex], 0, nullptr);
   
   for (auto &drawCall : submissions) {
-    // TODO setMemory() vbo
     // TODO vkCmdBindDescriptorSets() vbo
     
     VkDeviceSize offsets[] = {0};
@@ -473,7 +453,7 @@ void GraphicsPipeline::createVkPipeline() {
   VkPipelineLayoutCreateInfo layoutInfo = {};
   layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   layoutInfo.setLayoutCount = 1;
-  layoutInfo.pSetLayouts = &perFrameDescriptor.layout; // TODO add vbo descriptor here
+  layoutInfo.pSetLayouts = &perFrameDescriptorLayout; // TODO add vbo descriptor here
   auto result = vkCreatePipelineLayout(foundation->device, &layoutInfo, nullptr, &pipelineLayout);
   SDL_assert_release(result == VK_SUCCESS);
 
@@ -663,8 +643,10 @@ void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
   fillCommandBuffer(swapchainIndex);
   
   // Set per-frame shader data
-  VkDeviceMemory &uniformMemory = perFrameDescriptor.buffersMemory[swapchainIndex];
+  VkDeviceMemory &uniformMemory = perFrameDescriptorBuffersMemory[swapchainIndex];
   foundation->setMemory(uniformMemory, sizeof(PerFrameUniform), perFrameUniform);
+  
+  // TODO setMemory() for all VBOs
   
   // Submit the command buffer
   VkSubmitInfo submitInfo = {};

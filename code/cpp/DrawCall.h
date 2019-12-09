@@ -1,5 +1,5 @@
 #pragma once
-#include "GraphicsFoundation.h"
+#include "GraphicsPipeline.h"
 
 class DrawCall {
 public:
@@ -12,6 +12,10 @@ public:
 private:
   const GraphicsFoundation *foundation = nullptr;
   VkDeviceMemory vertexBufferMemory;
+  
+  VkDescriptorSet descriptorSets[GraphicsPipeline::swapchainSize];
+  VkBuffer        buffers[GraphicsPipeline::swapchainSize];
+  VkDeviceMemory  buffersMemory[GraphicsPipeline::swapchainSize];
   
   void createVertexBuffer(const vector<vec3> &vertices);
 };

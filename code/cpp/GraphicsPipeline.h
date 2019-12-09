@@ -5,7 +5,7 @@ struct PerFrameUniform {
   mat4 matrix;
 };
 
-struct PerVboUniform {
+struct DrawCallUniform {
   mat4 matrix;
 };
 
@@ -40,28 +40,29 @@ public:
   void present(const PerFrameUniform *perFrameUniform);
   
 private:
-  VkImage depthImage;
+  VkImage        depthImage;
   VkDeviceMemory depthImageMemory;
-  VkImageView depthImageView;
+  VkImageView    depthImageView;
   
   VkDescriptorPool descriptorPool;
   
-  struct UniformData {
-    uint32_t              binding;
-    VkDescriptorSetLayout layout;
-    VkDescriptorSet       descriptorSets[swapchainSize];
-    VkDeviceSize          bufferSize;
-    VkBuffer              buffers[swapchainSize];
-    VkDeviceMemory        buffersMemory[swapchainSize];
-  } perFrameDescriptor, perVboDescriptor;
+  uint32_t              drawCallDescriptorBinding;
+  VkDescriptorSetLayout drawCallDescriptorLayout;
+  VkDeviceSize          drawCallDescriptorBufferSize;
+  
+  uint32_t              perFrameDescriptorBinding;
+  VkDescriptorSetLayout perFrameDescriptorLayout;
+  VkDeviceSize          perFrameDescriptorBufferSize;
+  
+  VkDescriptorSet       perFrameDescriptorSets[swapchainSize];
+  VkBuffer              perFrameDescriptorBuffers[swapchainSize];
+  VkDeviceMemory        perFrameDescriptorBuffersMemory[swapchainSize];
   
   vector<DrawCall*> submissions;
   
   VkPipelineShaderStageCreateInfo createShaderStage(const char *spirVFilePath, VkShaderStageFlagBits stage);
   
   vector<uint8_t> loadBinaryFile(const char *filename);
-  
-  void destroyUniformData(UniformData uniform);
   
   void createSemaphores();
   
@@ -79,15 +80,13 @@ private:
   
   void createFramebuffers();
   
-  void createDescriptorSetLayout(UniformData *uniform, int binding);
+  void createDescriptorSetLayout(int bindingIndex, VkDescriptorSetLayout *layoutOut) const;
   
   void createVkPipeline();
   
-  void createUniformBuffers(UniformData *uniform, uint64_t bufferSize);
-  
   void createDescriptorPool();
   
-  void createDescriptorSets(UniformData *uniform);
+  void createDescriptorSet(VkDescriptorSetLayout layout, int bindingIndex, VkBuffer buffer, VkDescriptorSet *setOut) const;
   
   void createCommandBuffers();
   

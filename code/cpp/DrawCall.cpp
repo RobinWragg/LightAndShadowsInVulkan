@@ -10,6 +10,9 @@ DrawCall::DrawCall(const GraphicsFoundation *foundation, const vector<vec3> &ver
 DrawCall::~DrawCall() {
   vkDestroyBuffer(foundation->device, vertexBuffer, nullptr);
   vkFreeMemory(foundation->device, vertexBufferMemory, nullptr);
+  
+  // TODO: destroy descriptor buffers
+  // TODO: free the descriptor buffers memory
 }
 
 void DrawCall::createVertexBuffer(const vector<vec3> &vertices) {
