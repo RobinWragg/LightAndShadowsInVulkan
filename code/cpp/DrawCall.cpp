@@ -5,7 +5,7 @@ DrawCall::DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &vertice
   this->foundation = pipeline->foundation;
   
   vertexCount = (uint32_t)vertices.size();
-  createVertexBuffer(vertices);
+  createVec3Buffer(vertices, &vertexBuffer, &vertexBufferMemory);
   
   DrawCallUniform identityUniform;
   identityUniform.matrix = identity<mat4>();
@@ -29,13 +29,13 @@ DrawCall::~DrawCall() {
   }
 }
 
-void DrawCall::createVertexBuffer(const vector<vec3> &vertices) {
+void DrawCall::createVec3Buffer(const vector<vec3> &vec3s, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) const {
   
-  uint64_t dataSize = sizeof(vertices[0]) * vertices.size();
-  foundation->createVkBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, dataSize, &vertexBuffer, &vertexBufferMemory);
+  uint64_t dataSize = sizeof(vec3s[0]) * vec3s.size();
+  foundation->createVkBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, dataSize, bufferOut, memoryOut);
   
-  uint8_t *data = (uint8_t*)vertices.data();
-  foundation->setMemory(vertexBufferMemory, dataSize, data);
+  uint8_t *data = (uint8_t*)vec3s.data();
+  foundation->setMemory(*memoryOut, dataSize, data);
 }
 
 
