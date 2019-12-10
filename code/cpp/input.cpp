@@ -59,6 +59,8 @@ namespace input {
   }
   
   vec2 getMovementVector() {
+    const float speed = 2;
+    
     vec2 v = {};
     
     if (firstPersonMode) {
@@ -71,7 +73,7 @@ namespace input {
       if (length(v) > 0.0001) v = normalize(v);
     }
     
-    return v;
+    return v * speed;
   }
 }
 

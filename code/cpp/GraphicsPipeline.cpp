@@ -191,8 +191,13 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
     
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1 /*drawcall set index*/, 1, &sub.drawCall->descriptorSets[swapchainIndex], 0, nullptr);
     
-    VkDeviceSize offsets[] = {0};
-    vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &sub.drawCall->vertexBuffer, offsets);
+    const int bufferCount = 2;
+    VkBuffer buffers[bufferCount] = {
+      sub.drawCall->positionBuffer,
+      sub.drawCall->normalBuffer
+    };
+    VkDeviceSize offsets[bufferCount] = {0, 0};
+    vkCmdBindVertexBuffers(cmdBuffer, 0, bufferCount, buffers, offsets);
     
     vkCmdDraw(cmdBuffer, sub.drawCall->vertexCount, 1, 0, 0);
   }
@@ -361,18 +366,35 @@ void GraphicsPipeline::createVkPipeline() {
   
   // TODO: refactor this function?
   
-  // This binding and attribute specify one vec3 per vertex.
-  VkVertexInputBindingDescription bindingDesc = {};
-  bindingDesc.binding = 0;
-  bindingDesc.stride = sizeof(float) * 3;
-  bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-  VkVertexInputAttributeDescription attribDesc = {};
-  attribDesc.binding = 0;
-  attribDesc.location = 0;
-  attribDesc.format = VK_FORMAT_R32G32B32_SFLOAT;
-  attribDesc.offset = 0;
+  vector<VkVertexInputBindingDescription> vertBindingDescs;
   
+  VkVertexInputBindingDescription positionBindingDesc = {};
+  positionBindingDesc.binding = 0;
+  positionBindingDesc.stride = sizeof(vec3);
+  positionBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+  vertBindingDescs.push_back(positionBindingDesc);
+  
+  VkVertexInputBindingDescription normalBindingDesc = {};
+  normalBindingDesc.binding = 1;
+  normalBindingDesc.stride = sizeof(vec3);
+  normalBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+  vertBindingDescs.push_back(normalBindingDesc);
+  
+  vector<VkVertexInputAttributeDescription> vertAttribDescs;
+  
+  VkVertexInputAttributeDescription positionAttribDesc = {};
+  positionAttribDesc.binding = 0;
+  positionAttribDesc.location = 0;
+  positionAttribDesc.format = VK_FORMAT_R32G32B32_SFLOAT;
+  positionAttribDesc.offset = 0;
+  vertAttribDescs.push_back(positionAttribDesc);
+  
+  VkVertexInputAttributeDescription normalAttribDesc = {};
+  normalAttribDesc.binding = 1;
+  normalAttribDesc.location = 1;
+  normalAttribDesc.format = VK_FORMAT_R32G32B32_SFLOAT;
+  normalAttribDesc.offset = 0;
+  vertAttribDescs.push_back(normalAttribDesc);
   
   vector<VkPipelineShaderStageCreateInfo> shaderStages = {
     createShaderStage("basic.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
@@ -382,11 +404,11 @@ void GraphicsPipeline::createVkPipeline() {
   VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
   vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-  vertexInputInfo.vertexBindingDescriptionCount = 1;
-  vertexInputInfo.pVertexBindingDescriptions = &bindingDesc;
+  vertexInputInfo.vertexBindingDescriptionCount = (uint32_t)vertBindingDescs.size();
+  vertexInputInfo.pVertexBindingDescriptions = vertBindingDescs.data();
 
-  vertexInputInfo.vertexAttributeDescriptionCount = 1;
-  vertexInputInfo.pVertexAttributeDescriptions = &attribDesc;
+  vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)vertAttribDescs.size();
+  vertexInputInfo.pVertexAttributeDescriptions = vertAttribDescs.data();
 
   VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
   inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

@@ -10,7 +10,8 @@ namespace graphics {
   GraphicsPipeline *pipeline = nullptr;
   DrawCall *pyramid = nullptr;
   DrawCall *ground = nullptr;
-  DrawCall *sphere = nullptr;
+  DrawCall *sphereAngularNormals = nullptr;
+  DrawCall *sphereSmoothNormals = nullptr;
   vec3 cameraPosition;
   vec2 cameraAngle;
   
@@ -37,7 +38,7 @@ namespace graphics {
     }
   }
   
-  DrawCall * newSphereDrawCall(int resolution) {
+  DrawCall * newSphereDrawCall(int resolution, bool smoothNormals) {
     vector<vec3> verts;
     
     for (int i = 0; i < resolution; i++) {
@@ -53,7 +54,14 @@ namespace graphics {
       addRingVertices(vec3(0, btmY, 0), resolution*2, topY - btmY, btmRadius, topRadius, &verts);
     }
     
-    return new DrawCall(pipeline, verts);
+    if (smoothNormals) {
+      
+      // For a unit sphere centred on the origin, the vertex positions are identical to the normals.
+      vector<vec3> normals;
+      for (auto &vert : verts) normals.push_back(vert);
+      
+      return new DrawCall(pipeline, verts, normals);
+    } else return new DrawCall(pipeline, verts);
   }
 
   void init(SDL_Window *window) {
@@ -61,8 +69,8 @@ namespace graphics {
     pipeline = new GraphicsPipeline(foundation, true);
     
     cameraPosition.x = 0;
-    cameraPosition.y = 1;
-    cameraPosition.z = 3;
+    cameraPosition.y = 2;
+    cameraPosition.z = 7;
     
     cameraAngle.x = 0;
     cameraAngle.y = 0;
@@ -83,7 +91,8 @@ namespace graphics {
     
     ground = new DrawCall(pipeline, groundVertices);
     
-    sphere = newSphereDrawCall(8);
+    sphereAngularNormals = newSphereDrawCall(8, false);
+    sphereSmoothNormals = newSphereDrawCall(8, true);
     
     printf("\nInitialised Vulkan\n");
   }
@@ -103,7 +112,7 @@ namespace graphics {
     
     VkExtent2D extent = foundation->getSurfaceExtent();
     float aspect = extent.width / (float)extent.height;
-    perFrameUniform.matrix = perspective(radians(50.0f), aspect, 0.1f, 10.0f);
+    perFrameUniform.matrix = perspective(radians(50.0f), aspect, 0.1f, 100.0f);
     perFrameUniform.matrix = scale(perFrameUniform.matrix, vec3(1, -1, 1));
     
     perFrameUniform.matrix = rotate(perFrameUniform.matrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
@@ -116,11 +125,17 @@ namespace graphics {
     // pyramidUniform.matrix = rotate(pyramidUniform.matrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
     // pipeline->submit(pyramid, &pyramidUniform);
     
-    DrawCallUniform sphereUniform;
-    sphereUniform.matrix = identity<mat4>();
-    sphereUniform.matrix = translate(sphereUniform.matrix, vec3(0.0f, 1.0f, 0.0f));
-    sphereUniform.matrix = rotate(sphereUniform.matrix, (float)getTime(), vec3(0.4f, 1.0f, 0.0f));
-    pipeline->submit(sphere, &sphereUniform);
+    DrawCallUniform sphereAngularUniform;
+    sphereAngularUniform.matrix = identity<mat4>();
+    sphereAngularUniform.matrix = translate(sphereAngularUniform.matrix, vec3(-1.0f, 1.0f, 0.0f));
+    sphereAngularUniform.matrix = rotate(sphereAngularUniform.matrix, (float)getTime(), vec3(0.0f, 0.4f, 1.0f));
+    pipeline->submit(sphereAngularNormals, &sphereAngularUniform);
+    
+    DrawCallUniform sphereSmoothUniform;
+    sphereSmoothUniform.matrix = identity<mat4>();
+    sphereSmoothUniform.matrix = translate(sphereSmoothUniform.matrix, vec3(1.0f, 1.0f, 0.0f));
+    sphereSmoothUniform.matrix = rotate(sphereSmoothUniform.matrix, (float)getTime()*0.7f, vec3(0.0f, 0.5f, 0.8f));
+    pipeline->submit(sphereSmoothNormals, &sphereSmoothUniform);
     
     DrawCallUniform groundUniform;
     groundUniform.matrix = identity<mat4>();
@@ -131,7 +146,8 @@ namespace graphics {
   void destroy() {
     delete pyramid;
     delete ground;
-    delete sphere;
+    delete sphereAngularNormals;
+    delete sphereSmoothNormals;
     delete pipeline;
     delete foundation;
   }
