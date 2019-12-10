@@ -32,8 +32,13 @@ public:
   VkPipelineLayout pipelineLayout;
   bool depthTestingEnabled;
   
+  uint32_t              drawCallDescriptorBinding;
+  VkDescriptorSetLayout drawCallDescriptorLayout;
+  
   GraphicsPipeline(const GraphicsFoundation *foundation, bool depthTest);
   ~GraphicsPipeline();
+  
+  void createDescriptorSet(VkDescriptorSetLayout layout, int bindingIndex, VkBuffer buffer, VkDescriptorSet *setOut) const;
   
   void submit(DrawCall *drawCall);
   
@@ -46,13 +51,8 @@ private:
   
   VkDescriptorPool descriptorPool;
   
-  uint32_t              drawCallDescriptorBinding;
-  VkDescriptorSetLayout drawCallDescriptorLayout;
-  VkDeviceSize          drawCallDescriptorBufferSize;
-  
   uint32_t              perFrameDescriptorBinding;
   VkDescriptorSetLayout perFrameDescriptorLayout;
-  VkDeviceSize          perFrameDescriptorBufferSize;
   
   VkDescriptorSet       perFrameDescriptorSets[swapchainSize];
   VkBuffer              perFrameDescriptorBuffers[swapchainSize];
@@ -85,8 +85,6 @@ private:
   void createVkPipeline();
   
   void createDescriptorPool();
-  
-  void createDescriptorSet(VkDescriptorSetLayout layout, int bindingIndex, VkBuffer buffer, VkDescriptorSet *setOut) const;
   
   void createCommandBuffers();
   

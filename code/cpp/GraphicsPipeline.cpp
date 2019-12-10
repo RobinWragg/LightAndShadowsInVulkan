@@ -31,9 +31,8 @@ GraphicsPipeline::GraphicsPipeline(const GraphicsFoundation *foundationIn, bool 
   
   createDescriptorPool();
   
-  perFrameDescriptorBufferSize = sizeof(PerFrameUniform);
   for (int i = 0; i < swapchainSize; i++) {
-    foundation->createVkBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, perFrameDescriptorBufferSize, &perFrameDescriptorBuffers[i], &perFrameDescriptorBuffersMemory[i]);
+    foundation->createVkBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(PerFrameUniform), &perFrameDescriptorBuffers[i], &perFrameDescriptorBuffersMemory[i]);
     createDescriptorSet(perFrameDescriptorLayout, perFrameDescriptorBinding, perFrameDescriptorBuffers[i], &perFrameDescriptorSets[i]);
   }
   
@@ -186,10 +185,11 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
   vkCmdBeginRenderPass(cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
   vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
 
-  vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &perFrameDescriptorSets[swapchainIndex], 0, nullptr);
+  vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, perFrameDescriptorBinding, 1, &perFrameDescriptorSets[swapchainIndex], 0, nullptr);
   
-  for (auto &drawCall : submissions) {
+  for (DrawCall *drawCall : submissions) {
     // TODO vkCmdBindDescriptorSets() vbo
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, drawCallDescriptorBinding, 1, &drawCall->descriptorSets[swapchainIndex], 0, nullptr);
     
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &drawCall->vertexBuffer, offsets);

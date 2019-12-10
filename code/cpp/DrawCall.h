@@ -6,16 +6,17 @@ public:
   VkBuffer vertexBuffer;
   uint32_t vertexCount;
   
-  DrawCall(const GraphicsFoundation *foundation, const vector<vec3> &vertices);
+  VkDescriptorSet descriptorSets[GraphicsPipeline::swapchainSize];
+  VkBuffer        descriptorBuffers[GraphicsPipeline::swapchainSize];
+  VkDeviceMemory  descriptorBuffersMemory[GraphicsPipeline::swapchainSize];
+  
+  DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &vertices);
   ~DrawCall();
 
 private:
   const GraphicsFoundation *foundation = nullptr;
+  const GraphicsPipeline *pipeline = nullptr;
   VkDeviceMemory vertexBufferMemory;
-  
-  VkDescriptorSet descriptorSets[GraphicsPipeline::swapchainSize];
-  VkBuffer        buffers[GraphicsPipeline::swapchainSize];
-  VkDeviceMemory  buffersMemory[GraphicsPipeline::swapchainSize];
   
   void createVertexBuffer(const vector<vec3> &vertices);
 };
