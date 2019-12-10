@@ -120,23 +120,24 @@ namespace graphics {
     
     perFrameUniform.matrix = translate(perFrameUniform.matrix, -cameraPosition);
     
-    // DrawCallUniform pyramidUniform;
-    // pyramidUniform.matrix = identity<mat4>();
-    // pyramidUniform.matrix = rotate(pyramidUniform.matrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
-    // pipeline->submit(pyramid, &pyramidUniform);
+    DrawCallUniform pyramidUniform;
+    pyramidUniform.matrix = identity<mat4>();
+    pyramidUniform.matrix = translate(pyramidUniform.matrix, vec3(0, 0, -2));
+    pyramidUniform.matrix = rotate(pyramidUniform.matrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
+    pipeline->submit(pyramid, &pyramidUniform);
     
     DrawCallUniform sphere0Uniform;
     sphere0Uniform.matrix = identity<mat4>();
     sphere0Uniform.matrix = translate(sphere0Uniform.matrix, vec3(-1.0f, 1.0f, 0.0f));
     sphere0Uniform.matrix = rotate(sphere0Uniform.matrix, (float)getTime(), vec3(0, 1, 0));
-    sphere0Uniform.matrix = scale(sphere0Uniform.matrix, vec3(0.2, 1, 1));
+    sphere0Uniform.matrix = scale(sphere0Uniform.matrix, vec3(0.3, 1, 1));
     pipeline->submit(sphere0, &sphere0Uniform);
     
     DrawCallUniform sphere1Uniform;
     sphere1Uniform.matrix = identity<mat4>();
     sphere1Uniform.matrix = translate(sphere1Uniform.matrix, vec3(1.0f, 1.0f, 0.0f));
     sphere1Uniform.matrix = rotate(sphere1Uniform.matrix, (float)getTime(), vec3(0, 0, 1));
-    sphere1Uniform.matrix = scale(sphere1Uniform.matrix, vec3(0.2, 1, 1));
+    sphere1Uniform.matrix = scale(sphere1Uniform.matrix, vec3(0.3, 1, 1));
     pipeline->submit(sphere1, &sphere1Uniform);
     
     DrawCallUniform groundUniform;
