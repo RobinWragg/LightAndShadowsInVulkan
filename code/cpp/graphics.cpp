@@ -10,8 +10,8 @@ namespace graphics {
   GraphicsPipeline *pipeline = nullptr;
   DrawCall *pyramid = nullptr;
   DrawCall *ground = nullptr;
-  DrawCall *sphereAngularNormals = nullptr;
-  DrawCall *sphereSmoothNormals = nullptr;
+  DrawCall *sphere0 = nullptr;
+  DrawCall *sphere1 = nullptr;
   vec3 cameraPosition;
   vec2 cameraAngle;
   
@@ -91,8 +91,8 @@ namespace graphics {
     
     ground = new DrawCall(pipeline, groundVertices);
     
-    sphereAngularNormals = newSphereDrawCall(32, true);
-    sphereSmoothNormals = newSphereDrawCall(32, true);
+    sphere0 = newSphereDrawCall(32, true);
+    sphere1 = newSphereDrawCall(32, true);
     
     printf("\nInitialised Vulkan\n");
   }
@@ -125,31 +125,32 @@ namespace graphics {
     // pyramidUniform.matrix = rotate(pyramidUniform.matrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
     // pipeline->submit(pyramid, &pyramidUniform);
     
-    DrawCallUniform sphereAngularUniform;
-    sphereAngularUniform.matrix = identity<mat4>();
-    sphereAngularUniform.matrix = translate(sphereAngularUniform.matrix, vec3(-1.0f, 1.0f, 0.0f));
-    sphereAngularUniform.matrix = rotate(sphereAngularUniform.matrix, (float)getTime(), vec3(0, 1, 0));
-    sphereAngularUniform.matrix = scale(sphereAngularUniform.matrix, vec3(0.2, 1, 1));
-    pipeline->submit(sphereAngularNormals, &sphereAngularUniform);
+    DrawCallUniform sphere0Uniform;
+    sphere0Uniform.matrix = identity<mat4>();
+    sphere0Uniform.matrix = translate(sphere0Uniform.matrix, vec3(-1.0f, 1.0f, 0.0f));
+    sphere0Uniform.matrix = rotate(sphere0Uniform.matrix, (float)getTime(), vec3(0, 1, 0));
+    sphere0Uniform.matrix = scale(sphere0Uniform.matrix, vec3(0.2, 1, 1));
+    pipeline->submit(sphere0, &sphere0Uniform);
     
-    DrawCallUniform sphereSmoothUniform;
-    sphereSmoothUniform.matrix = identity<mat4>();
-    sphereSmoothUniform.matrix = translate(sphereSmoothUniform.matrix, vec3(1.0f, 1.0f, 0.0f));
-    sphereSmoothUniform.matrix = rotate(sphereSmoothUniform.matrix, (float)getTime(), vec3(0, 0, 1));
-    sphereSmoothUniform.matrix = scale(sphereSmoothUniform.matrix, vec3(0.2, 1, 1));
-    pipeline->submit(sphereSmoothNormals, &sphereSmoothUniform);
+    DrawCallUniform sphere1Uniform;
+    sphere1Uniform.matrix = identity<mat4>();
+    sphere1Uniform.matrix = translate(sphere1Uniform.matrix, vec3(1.0f, 1.0f, 0.0f));
+    sphere1Uniform.matrix = rotate(sphere1Uniform.matrix, (float)getTime(), vec3(0, 0, 1));
+    sphere1Uniform.matrix = scale(sphere1Uniform.matrix, vec3(0.2, 1, 1));
+    pipeline->submit(sphere1, &sphere1Uniform);
     
     DrawCallUniform groundUniform;
     groundUniform.matrix = identity<mat4>();
     pipeline->submit(ground, &groundUniform);
+    
     pipeline->present(&perFrameUniform);
   }
 
   void destroy() {
     delete pyramid;
     delete ground;
-    delete sphereAngularNormals;
-    delete sphereSmoothNormals;
+    delete sphere0;
+    delete sphere1;
     delete pipeline;
     delete foundation;
   }
