@@ -70,7 +70,7 @@ namespace graphics {
     
     cameraPosition.x = 0;
     cameraPosition.y = 2;
-    cameraPosition.z = 7;
+    cameraPosition.z = 5;
     
     cameraAngle.x = 0;
     cameraAngle.y = 0;
@@ -91,8 +91,8 @@ namespace graphics {
     
     ground = new DrawCall(pipeline, groundVertices);
     
-    sphereAngularNormals = newSphereDrawCall(8, false);
-    sphereSmoothNormals = newSphereDrawCall(8, true);
+    sphereAngularNormals = newSphereDrawCall(32, true);
+    sphereSmoothNormals = newSphereDrawCall(32, true);
     
     printf("\nInitialised Vulkan\n");
   }
@@ -128,13 +128,15 @@ namespace graphics {
     DrawCallUniform sphereAngularUniform;
     sphereAngularUniform.matrix = identity<mat4>();
     sphereAngularUniform.matrix = translate(sphereAngularUniform.matrix, vec3(-1.0f, 1.0f, 0.0f));
-    sphereAngularUniform.matrix = rotate(sphereAngularUniform.matrix, (float)getTime(), vec3(0.0f, 0.4f, 1.0f));
+    sphereAngularUniform.matrix = rotate(sphereAngularUniform.matrix, (float)getTime(), vec3(0, 1, 0));
+    sphereAngularUniform.matrix = scale(sphereAngularUniform.matrix, vec3(0.2, 1, 1));
     pipeline->submit(sphereAngularNormals, &sphereAngularUniform);
     
     DrawCallUniform sphereSmoothUniform;
     sphereSmoothUniform.matrix = identity<mat4>();
     sphereSmoothUniform.matrix = translate(sphereSmoothUniform.matrix, vec3(1.0f, 1.0f, 0.0f));
-    sphereSmoothUniform.matrix = rotate(sphereSmoothUniform.matrix, (float)getTime()*0.7f, vec3(0.0f, 0.5f, 0.8f));
+    sphereSmoothUniform.matrix = rotate(sphereSmoothUniform.matrix, (float)getTime(), vec3(0, 0, 1));
+    sphereSmoothUniform.matrix = scale(sphereSmoothUniform.matrix, vec3(0.2, 1, 1));
     pipeline->submit(sphereSmoothNormals, &sphereSmoothUniform);
     
     DrawCallUniform groundUniform;

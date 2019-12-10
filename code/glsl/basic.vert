@@ -16,7 +16,12 @@ layout(set = 1, binding = 0) uniform DrawCallData {
 void main() {
   gl_Position = perFrameData.matrix * drawCallData.matrix * vec4(pos, 1.0);
   
+  // Transform the normal to world space
+  mat3 normalMatrix = mat3(drawCallData.matrix);
+  normalMatrix = transpose(inverse(normalMatrix));
+  vec3 worldNormal = normalize(normalMatrix * normal);
+  
   // fragmentColor = vec3(1, 1, 1) * (1 - gl_Position.z*0.2);
-  fragmentColor = vec3(1, 1, 1) * dot(normal, vec3(0.707, 0.707, 0));
+  fragmentColor = vec3(1, 1, 1) * dot(worldNormal, vec3(0.707, 0.707, 0));
   // fragmentColor = normal;
 }
