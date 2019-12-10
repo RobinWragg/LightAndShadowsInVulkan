@@ -66,8 +66,14 @@ namespace graphics {
     
     perFrameUniform.matrix = translate(perFrameUniform.matrix, -cameraPosition);
     
-    pipeline->submit(pyramid);
-    pipeline->submit(ground);
+    DrawCallUniform pyramidUniform;
+    pyramidUniform.matrix = identity<mat4>();
+    pyramidUniform.matrix = rotate(pyramidUniform.matrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
+    pipeline->submit(pyramid, &pyramidUniform);
+    
+    DrawCallUniform groundUniform;
+    groundUniform.matrix = identity<mat4>();
+    pipeline->submit(ground, &groundUniform);
     pipeline->present(&perFrameUniform);
   }
 

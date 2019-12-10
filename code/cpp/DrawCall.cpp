@@ -12,7 +12,7 @@ DrawCall::DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &vertice
   
   for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
     foundation->createVkBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(DrawCallUniform), &descriptorBuffers[i], &descriptorBuffersMemory[i]);
-    pipeline->createDescriptorSet(pipeline->drawCallDescriptorLayout, pipeline->drawCallDescriptorBinding, descriptorBuffers[i], &descriptorSets[i]);
+    pipeline->createDescriptorSet(pipeline->drawCallDescriptorLayout, descriptorBuffers[i], &descriptorSets[i]);
     
     // Set identity as default
     foundation->setMemory(descriptorBuffersMemory[i], sizeof(DrawCallUniform), &identityUniform);
@@ -23,8 +23,6 @@ DrawCall::~DrawCall() {
   vkDestroyBuffer(foundation->device, vertexBuffer, nullptr);
   vkFreeMemory(foundation->device, vertexBufferMemory, nullptr);
   
-  // TODO: destroy descriptor buffers
-  // TODO: free the descriptor buffers memory
   for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
    vkDestroyBuffer(foundation->device, descriptorBuffers[i], nullptr);
    vkFreeMemory(foundation->device, descriptorBuffersMemory[i], nullptr); 

@@ -8,7 +8,7 @@ layout(set = 0, binding = 0) uniform PerFrameData {
   mat4 matrix;
 } perFrameData;
 
-layout(set = 1, binding = 1) uniform DrawCallData {
+layout(set = 1, binding = 0) uniform DrawCallData {
   mat4 matrix;
 } drawCallData;
 

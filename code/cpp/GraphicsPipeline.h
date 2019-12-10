@@ -32,15 +32,14 @@ public:
   VkPipelineLayout pipelineLayout;
   bool depthTestingEnabled;
   
-  uint32_t              drawCallDescriptorBinding;
   VkDescriptorSetLayout drawCallDescriptorLayout;
   
   GraphicsPipeline(const GraphicsFoundation *foundation, bool depthTest);
   ~GraphicsPipeline();
   
-  void createDescriptorSet(VkDescriptorSetLayout layout, int bindingIndex, VkBuffer buffer, VkDescriptorSet *setOut) const;
+  void createDescriptorSet(VkDescriptorSetLayout layout, VkBuffer buffer, VkDescriptorSet *setOut) const;
   
-  void submit(DrawCall *drawCall);
+  void submit(DrawCall *drawCall, const DrawCallUniform *uniform);
   
   void present(const PerFrameUniform *perFrameUniform);
   
@@ -51,14 +50,17 @@ private:
   
   VkDescriptorPool descriptorPool;
   
-  uint32_t              perFrameDescriptorBinding;
   VkDescriptorSetLayout perFrameDescriptorLayout;
   
   VkDescriptorSet       perFrameDescriptorSets[swapchainSize];
   VkBuffer              perFrameDescriptorBuffers[swapchainSize];
   VkDeviceMemory        perFrameDescriptorBuffersMemory[swapchainSize];
   
-  vector<DrawCall*> submissions;
+  struct Submission {
+    DrawCall *drawCall;
+    DrawCallUniform uniform;
+  };
+  vector<Submission> submissions;
   
   VkPipelineShaderStageCreateInfo createShaderStage(const char *spirVFilePath, VkShaderStageFlagBits stage);
   
@@ -80,7 +82,7 @@ private:
   
   void createFramebuffers();
   
-  void createDescriptorSetLayout(int bindingIndex, VkDescriptorSetLayout *layoutOut) const;
+  void createDescriptorSetLayout(VkDescriptorSetLayout *layoutOut) const;
   
   void createVkPipeline();
   
