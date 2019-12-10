@@ -10,8 +10,51 @@ namespace graphics {
   GraphicsPipeline *pipeline = nullptr;
   DrawCall *pyramid = nullptr;
   DrawCall *ground = nullptr;
+  DrawCall *sphere = nullptr;
   vec3 cameraPosition;
   vec2 cameraAngle;
+  
+  void addRingVertices(vec3 translation, int sideCount, float height, float btmRadius, float topRadius, vector<vec3> *verts) {
+    
+    const vec3 normal = vec3(0, 1, 0);
+    
+    for (int i = 0; i < sideCount; i++) {
+      float angle0 = (i / (float)sideCount) * M_TAU;
+      float angle1 = ((i+1) / (float)sideCount) * M_TAU;
+      
+      vec3 vert00 = rotate(vec3(btmRadius, 0, 0), angle0, normal);
+      vec3 vert10 = rotate(vec3(btmRadius, 0, 0), angle1, normal);
+      vec3 vert01 = rotate(vec3(topRadius, height, 0), angle0, normal);
+      vec3 vert11 = rotate(vec3(topRadius, height, 0), angle1, normal);
+      
+      verts->push_back(vert10 + translation);
+      verts->push_back(vert00 + translation);
+      verts->push_back(vert01 + translation);
+      
+      verts->push_back(vert10 + translation);
+      verts->push_back(vert01 + translation);
+      verts->push_back(vert11 + translation);
+    }
+  }
+  
+  DrawCall * newSphereDrawCall(int resolution) {
+    vector<vec3> verts;
+    
+    for (int i = 0; i < resolution; i++) {
+      float verticalAngle0 = (i / (float)resolution) * M_PI;
+      float verticalAngle1 = ((i+1) / (float)resolution) * M_PI;
+      
+      float btmRadius = sinf(verticalAngle0);
+      float topRadius = sinf(verticalAngle1);
+      
+      float btmY = -cosf(verticalAngle0);
+      float topY = -cosf(verticalAngle1);
+      
+      addRingVertices(vec3(0, btmY, 0), resolution*2, topY - btmY, btmRadius, topRadius, &verts);
+    }
+    
+    return new DrawCall(pipeline, verts);
+  }
 
   void init(SDL_Window *window) {
     foundation = new GraphicsFoundation(window);
@@ -40,6 +83,8 @@ namespace graphics {
     
     ground = new DrawCall(pipeline, groundVertices);
     
+    sphere = newSphereDrawCall(8);
+    
     printf("\nInitialised Vulkan\n");
   }
   
@@ -66,10 +111,16 @@ namespace graphics {
     
     perFrameUniform.matrix = translate(perFrameUniform.matrix, -cameraPosition);
     
-    DrawCallUniform pyramidUniform;
-    pyramidUniform.matrix = identity<mat4>();
-    pyramidUniform.matrix = rotate(pyramidUniform.matrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
-    pipeline->submit(pyramid, &pyramidUniform);
+    // DrawCallUniform pyramidUniform;
+    // pyramidUniform.matrix = identity<mat4>();
+    // pyramidUniform.matrix = rotate(pyramidUniform.matrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
+    // pipeline->submit(pyramid, &pyramidUniform);
+    
+    DrawCallUniform sphereUniform;
+    sphereUniform.matrix = identity<mat4>();
+    sphereUniform.matrix = translate(sphereUniform.matrix, vec3(0.0f, 1.0f, 0.0f));
+    sphereUniform.matrix = rotate(sphereUniform.matrix, (float)getTime(), vec3(0.4f, 1.0f, 0.0f));
+    pipeline->submit(sphere, &sphereUniform);
     
     DrawCallUniform groundUniform;
     groundUniform.matrix = identity<mat4>();
@@ -80,6 +131,7 @@ namespace graphics {
   void destroy() {
     delete pyramid;
     delete ground;
+    delete sphere;
     delete pipeline;
     delete foundation;
   }

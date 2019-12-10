@@ -8,6 +8,8 @@
 #include <fstream>
 #include <random>
 
+#define M_TAU (2*M_PI)
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/vec3.hpp>

@@ -55,9 +55,7 @@ int main(int argc, char* argv[]) {
     windowHeight = displayMode.h - extraRoom;
   }
 
-  SDL_Window *window = SDL_CreateWindow(
-    windowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-    windowWidth, windowHeight, SDL_WINDOW_VULKAN);
+  SDL_Window *window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI);
   SDL_assert_release(window != NULL);
   printf("Created window\n");
   fflush(stdout);
