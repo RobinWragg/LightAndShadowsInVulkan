@@ -1,5 +1,7 @@
 #pragma once
 
+#pragma warning( disable : 4244 )
+
 #include <cstdio>
 #include <vector>
 #include <set>
@@ -20,8 +22,10 @@
 
 #ifdef __APPLE__
 #include <SDL2/SDL.h> // This is the include syntax for macOS frameworks
+#include <SDL2/SDL_vulkan.h>
 #else
 #include <SDL.h>
+#include <SDL_vulkan.h>
 #endif
 
 using namespace glm;

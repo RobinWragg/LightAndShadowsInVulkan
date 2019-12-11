@@ -1,5 +1,4 @@
 #include "GraphicsFoundation.h"
-#include <SDL2/SDL_vulkan.h>
 
 GraphicsFoundation::GraphicsFoundation(SDL_Window *window) {
   

@@ -159,6 +159,8 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
     {.color.float32 = 0.5f, 0.7f, 1.0f, 1.0f },
     {.depthStencil = { 1, 0 }}
   };
+
+  clearValues[0].color.float32[0] = 0.5; todo
   
   VkCommandBufferBeginInfo beginInfo = {};
   beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

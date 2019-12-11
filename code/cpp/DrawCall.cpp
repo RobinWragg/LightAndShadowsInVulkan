@@ -47,7 +47,7 @@ void DrawCall::initCommon(const GraphicsPipeline *pipeline, const vector<vec3> &
   createVec3Buffer(normals, &normalBuffer, &normalBufferMemory);
   
   DrawCallUniform identityUniform;
-  identityUniform.matrix = identity<mat4>();
+  identityUniform.matrix = glm::identity<mat4>();
   
   for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
     foundation->createVkBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(DrawCallUniform), &descriptorBuffers[i], &descriptorBuffersMemory[i]);
