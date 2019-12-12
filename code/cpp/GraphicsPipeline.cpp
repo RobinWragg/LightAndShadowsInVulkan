@@ -325,6 +325,7 @@ void GraphicsPipeline::createSemaphores() {
 vector<uint8_t> GraphicsPipeline::loadBinaryFile(const char *filename) {
   ifstream file(filename, ios::ate | ios::binary);
 
+  printf("LOADING: %s\n", filename);
   SDL_assert_release(file.is_open());
 
   vector<uint8_t> bytes(file.tellg());

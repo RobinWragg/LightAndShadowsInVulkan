@@ -36,6 +36,9 @@
     <ClInclude Include="..\..\..\cpp\input.h" />
     <ClInclude Include="..\..\..\cpp\main.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="compile_shaders.bat" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{7DCBCA74-6FC4-45FC-93FA-80B352ACB6E1}</ProjectGuid>
