@@ -18,7 +18,7 @@ void main() {
   
   // Transform the normal to world space
   mat3 normalMatrix = mat3(drawCallData.matrix);
-  normalMatrix = transpose(inverse(normalMatrix));
+  normalMatrix = transpose(inverse(normalMatrix)); // TODO: Learn why this works. Inverting and transposing the matrix is required to handle scaled normals correctly, but I don't understand how it works at this time.
   vec3 worldNormal = normalize(normalMatrix * normal);
   
   // fragmentColor = vec3(1, 1, 1) * (1 - gl_Position.z*0.2);
