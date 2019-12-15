@@ -1,7 +1,6 @@
 .DS_Store
 *.sublime-workspace
 xcuserdata/
-build/
 DerivedData/
 code/assets/*.spv
 .vs/
