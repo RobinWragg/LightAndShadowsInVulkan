@@ -56,7 +56,7 @@ namespace graphics {
     
     if (smoothNormals) {
       
-      // For a unit sphere centred on the origin, the vertex positions are identical to the normals.
+      // For a unit sphere centered on the origin, the vertex positions are identical to the normals.
       vector<vec3> normals;
       for (auto &vert : verts) normals.push_back(vert);
       

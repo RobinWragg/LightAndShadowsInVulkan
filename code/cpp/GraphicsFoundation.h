@@ -1,6 +1,5 @@
 #pragma once
-#include "main.h"
-#include <vulkan/vulkan.h>
+#include "graphics.h"
 
 class GraphicsFoundation {
   public:
@@ -23,52 +22,8 @@ class GraphicsFoundation {
     VkQueue queue                      = VK_NULL_HANDLE;
     int queueFamilyIndex               = -1;
     
-    const VkFormat surfaceFormat            = VK_FORMAT_B8G8R8A8_UNORM;
-    const VkColorSpaceKHR surfaceColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-    
-    const vector<const char*> layers = {
-#ifdef __APPLE__
-  #ifdef DEBUG
-      // macOS with validation (Vulkan SDK installation required)
-      "VK_LAYER_LUNARG_standard_validation",
-      "VK_LAYER_KHRONOS_validation"
-  #else
-      // macOS without validation
-      "MoltenVK"
-  #endif
-#else
-  #ifdef DEBUG
-      // Windows with validation
-      "VK_LAYER_KHRONOS_validation"
-  #else
-      // Windows with no validation
-      // (no layers necessary)
-  #endif
-#endif
-    };
-    
-    const vector<const char *> deviceExtensions = {
-      VK_KHR_SWAPCHAIN_EXTENSION_NAME
-    };
-    
   private:
-    void printAvailableInstanceLayers();
-    
-    VkInstance createInstance(SDL_Window *window);
-    
     VkDebugUtilsMessengerEXT createDebugMessenger();
-    
-    VkPhysicalDevice createPhysicalDevice(SDL_Window *window);
-    
-    VkDeviceQueueCreateInfo createQueueInfo();
-    
-    void createDeviceAndQueue();
-    
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-      VkDebugUtilsMessageSeverityFlagBitsEXT severity,
-      VkDebugUtilsMessageTypeFlagsEXT msgType,
-      const VkDebugUtilsMessengerCallbackDataEXT *data,
-      void *pUserData);
 };
 
 

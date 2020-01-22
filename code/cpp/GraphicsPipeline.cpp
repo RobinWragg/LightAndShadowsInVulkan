@@ -540,8 +540,8 @@ void GraphicsPipeline::createSwapchain() {
   createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
   createInfo.surface = foundation->surface;
   createInfo.minImageCount = swapchainSize;
-  createInfo.imageFormat = foundation->surfaceFormat;
-  createInfo.imageColorSpace = foundation->surfaceColorSpace;
+  createInfo.imageFormat = gfx::surfaceFormat;
+  createInfo.imageColorSpace = gfx::surfaceColorSpace;
   createInfo.imageExtent = capabilities.currentExtent;
   createInfo.imageArrayLayers = 1; // 1 == not stereoscopic
   createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // Suitable for VkFrameBuffer
@@ -575,7 +575,7 @@ void GraphicsPipeline::createSwapchainImagesAndViews() {
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     createInfo.image = swapchainImages[i];
     createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    createInfo.format = foundation->surfaceFormat;
+    createInfo.format = gfx::surfaceFormat;
     
     createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
     createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -621,7 +621,7 @@ void GraphicsPipeline::createRenderPass() {
 
   vector<VkAttachmentDescription> attachments = {};
 
-  VkAttachmentDescription colorAttachment = createAttachmentDescription(foundation->surfaceFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+  VkAttachmentDescription colorAttachment = createAttachmentDescription(gfx::surfaceFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
   attachments.push_back(colorAttachment);
 
   VkAttachmentReference colorAttachmentRef = {};
