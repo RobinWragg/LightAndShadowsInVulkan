@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
   printf("Created window\n");
   fflush(stdout);
   
-  graphics::init(window);
+  scene::init(window);
   
   bool running = true;
   
@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
       }
     }
     
-    graphics::updateAndRender(deltaTime);
+    scene::updateAndRender(deltaTime);
     // printf("fps: %.1f\n", 1 / deltaTime);
     
     fflush(stdout);

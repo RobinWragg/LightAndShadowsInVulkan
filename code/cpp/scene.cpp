@@ -4,7 +4,7 @@
 #include "DrawCall.h"
 #include "input.h"
 
-namespace graphics {
+namespace scene {
   GraphicsPipeline *pipeline = nullptr;
   DrawCall *pyramid = nullptr;
   DrawCall *ground = nullptr;

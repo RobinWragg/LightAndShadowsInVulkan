@@ -35,8 +35,6 @@ using namespace std;
 
 double getTime();
 
-namespace graphics {
-  void init(SDL_Window *window);
-  void updateAndRender(float dt);
-  void destroy();
-}
+#include "scene.h"
+
+
