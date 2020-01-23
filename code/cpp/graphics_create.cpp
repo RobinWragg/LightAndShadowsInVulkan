@@ -2,15 +2,6 @@
 
 namespace gfx {
   
-  const VkFormat surfaceFormat            = VK_FORMAT_B8G8R8A8_UNORM;
-  const VkColorSpaceKHR surfaceColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-  
-  const vector<const char *> requiredDeviceExtensions = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
-  };
-  
-  // const int swapchainSize = 2; // Double buffered
-  
   VkInstance               instance         = VK_NULL_HANDLE;
   VkDebugUtilsMessengerEXT debugMsgr        = VK_NULL_HANDLE;
   VkSurfaceKHR             surface          = VK_NULL_HANDLE;
@@ -18,7 +9,10 @@ namespace gfx {
   VkDevice                 device           = VK_NULL_HANDLE;
   VkQueue                  queue            = VK_NULL_HANDLE;
   int                      queueFamilyIndex = -1;
-  VkSwapchainKHR           swapchain        = VK_NULL_HANDLE;
+  
+  VkSwapchainKHR swapchain                      = VK_NULL_HANDLE;
+  VkImage        swapchainImages[swapchainSize] = {VK_NULL_HANDLE};
+  VkImageView    swapchainViews[swapchainSize]  = {VK_NULL_HANDLE};
   
   VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT msgType, const VkDebugUtilsMessengerCallbackDataEXT *data, void *pUserData) {
 
@@ -203,6 +197,18 @@ namespace gfx {
     SDL_assert(result == VK_SUCCESS);
   }
   
+  static void createSwapchainImagesAndViews() {
+    uint32_t imageCount;
+    vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
+    SDL_assert_release(imageCount == swapchainSize);
+    
+    vkGetSwapchainImagesKHR(device, swapchain, &imageCount, swapchainImages);
+
+    for (int i = 0; i < swapchainSize; i++) {
+      swapchainViews[i] = createImageView(swapchainImages[i], surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+    }
+  }
+  
   void createSwapchain() {
     VkSurfaceCapabilitiesKHR capabilities;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &capabilities);
@@ -237,28 +243,38 @@ namespace gfx {
     
     auto result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchain);
     SDL_assert_release(result == VK_SUCCESS);
+    
+    createSwapchainImagesAndViews();
   }
   
   void createCoreHandles(SDL_Window *window) {
     instance = createInstance(window);
+    SDL_assert_release(instance != VK_NULL_HANDLE);
     
     #ifdef DEBUG
       createDebugMessenger();
+      SDL_assert_release(debugMsgr != VK_NULL_HANDLE);
     #endif
     
     auto result = SDL_Vulkan_CreateSurface(window, instance, &surface);
     SDL_assert_release(result == SDL_TRUE);
+    SDL_assert_release(surface != VK_NULL_HANDLE);
     
     physDevice = getPhysicalDevice(window);
+    SDL_assert_release(physDevice != VK_NULL_HANDLE);
     
     createDeviceAndQueue();
-    
-    SDL_assert_release(instance != VK_NULL_HANDLE);
-    SDL_assert_release(surface != VK_NULL_HANDLE);
-    SDL_assert_release(physDevice != VK_NULL_HANDLE);
     SDL_assert_release(device != VK_NULL_HANDLE);
     SDL_assert_release(queue != VK_NULL_HANDLE);
     SDL_assert_release(queueFamilyIndex >= 0);
+    
+    createSwapchain();
+    SDL_assert_release(swapchain != VK_NULL_HANDLE);
+    
+    for (int i = 0; i < swapchainSize; i++) {
+      SDL_assert_release(swapchainImages[i] != VK_NULL_HANDLE);
+      SDL_assert_release(swapchainViews[i] != VK_NULL_HANDLE);
+    }
   }
   
   VkImage createImage(VkFormat format) {

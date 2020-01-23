@@ -23,8 +23,6 @@ public:
   VkCommandBuffer commandBuffers[swapchainSize];
   VkFence fences[swapchainSize];
   VkSemaphore imageAvailableSemaphore;
-  VkImage swapchainImages[swapchainSize];
-  VkImageView swapchainViews[swapchainSize];
   VkSemaphore renderCompletedSemaphore;
   VkPipeline vkPipeline;
   VkPipelineLayout pipelineLayout;
@@ -69,8 +67,6 @@ private:
   void setupDepthTesting();
   
   void createCommandPool();
-  
-  void createSwapchainImagesAndViews();
   
   VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout);
   

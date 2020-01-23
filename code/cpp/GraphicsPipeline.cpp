@@ -6,8 +6,6 @@ GraphicsPipeline::GraphicsPipeline(bool depthTest) {
   
   createSwapchain();
   
-  createSwapchainImagesAndViews();
-  
   createRenderPass();
   
   createDescriptorSetLayout(&perFrameDescriptorLayout);
@@ -488,18 +486,6 @@ void GraphicsPipeline::createVkPipeline() {
   SDL_assert_release(vkCreateGraphicsPipelines(gfx::device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkPipeline) == VK_SUCCESS);
 
   for (auto &stage : shaderStages) vkDestroyShaderModule(gfx::device, stage.module, nullptr);
-}
-
-void GraphicsPipeline::createSwapchainImagesAndViews() {
-  uint32_t imageCount;
-  vkGetSwapchainImagesKHR(gfx::device, swapchain, &imageCount, nullptr);
-  SDL_assert_release(imageCount == swapchainSize);
-  
-  vkGetSwapchainImagesKHR(gfx::device, swapchain, &imageCount, swapchainImages);
-
-  for (int i = 0; i < swapchainSize; i++) {
-    swapchainViews[i] = gfx::createImageView(swapchainImages[i], gfx::surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-  }
 }
 
 VkAttachmentDescription GraphicsPipeline::createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout) {
