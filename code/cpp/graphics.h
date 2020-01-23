@@ -19,15 +19,17 @@ namespace gfx {
   extern int                      queueFamilyIndex;
   
   // creators
-  void createCoreHandles(SDL_Window *window);
-  void createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
+  void        createCoreHandles(SDL_Window *window);
+  void        createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
+  VkImage     createImage(VkFormat format);
+  VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
   
   // getters
   vector<const char*> getRequiredLayers();
-  void getAvailableInstanceLayers(vector<VkLayerProperties> *layerProperties);
-  VkExtent2D getSurfaceExtent();
-  VkPhysicalDevice getPhysicalDevice(SDL_Window *window);
-  uint32_t getMemoryType(uint32_t memTypeBits, VkMemoryPropertyFlags properties);
+  void                getAvailableInstanceLayers(vector<VkLayerProperties> *layerProperties);
+  VkExtent2D          getSurfaceExtent();
+  VkPhysicalDevice    getPhysicalDevice(SDL_Window *window);
+  uint32_t            getMemoryType(uint32_t memTypeBits, VkMemoryPropertyFlags properties);
   
   // miscellaneous
   void setMemory(VkDeviceMemory memory, uint64_t dataSize, const void *data);

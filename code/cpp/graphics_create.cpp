@@ -221,6 +221,57 @@ namespace gfx {
     SDL_assert_release(queue != VK_NULL_HANDLE);
     SDL_assert_release(queueFamilyIndex >= 0);
   }
+  
+  VkImage createImage(VkFormat format) {
+    
+    VkImageCreateInfo imageInfo = {};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    
+    auto extent = getSurfaceExtent();
+    imageInfo.extent.width = extent.width;
+    imageInfo.extent.height = extent.height;
+    imageInfo.extent.depth = 1;
+    
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = format;
+    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    
+    VkImage image;
+    auto result = vkCreateImage(device, &imageInfo, nullptr, &image);
+    SDL_assert_release(result == VK_SUCCESS);
+    
+    return image;
+  }
+  
+  VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask) {
+    
+    VkImageViewCreateInfo viewInfo = {};
+    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    
+    viewInfo.image = image;
+    viewInfo.format = format;
+    viewInfo.subresourceRange.aspectMask = aspectMask;
+    
+    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    
+    viewInfo.subresourceRange.baseMipLevel = 0;
+    viewInfo.subresourceRange.levelCount = 1;
+    
+    viewInfo.subresourceRange.baseArrayLayer = 0;
+    viewInfo.subresourceRange.layerCount = 1;
+    
+    VkImageView view;
+    auto result = vkCreateImageView(device, &viewInfo, nullptr, &view);
+    SDL_assert_release(result == VK_SUCCESS);
+    
+    return view;
+  }
 }
 
 
