@@ -1,6 +1,5 @@
 #include "main.h"
 
-#include "GraphicsFoundation.h"
 #include "GraphicsPipeline.h"
 #include "DrawCall.h"
 #include "input.h"

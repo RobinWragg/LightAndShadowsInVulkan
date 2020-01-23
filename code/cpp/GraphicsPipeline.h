@@ -1,5 +1,4 @@
 #pragma once
-#include "GraphicsFoundation.h"
 #include "graphics.h"
 
 struct PerFrameUniform {
