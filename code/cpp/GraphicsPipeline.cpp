@@ -50,7 +50,7 @@ GraphicsPipeline::~GraphicsPipeline() {
   vkDestroyPipelineLayout(gfx::device, pipelineLayout, nullptr);
   vkDestroyRenderPass(gfx::device, renderPass, nullptr);
 
-  for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
+  for (int i = 0; i < swapchainSize; i++) {
     vkDestroyFramebuffer(gfx::device, framebuffers[i], nullptr);
     vkDestroyImageView(gfx::device, swapchainViews[i], nullptr);
     vkDestroyImage(gfx::device, swapchainImages[i], nullptr);
@@ -143,7 +143,7 @@ void GraphicsPipeline::createCommandBuffers() {
   bufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   bufferInfo.commandPool = commandPool;
   bufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-  bufferInfo.commandBufferCount = GraphicsPipeline::swapchainSize;
+  bufferInfo.commandBufferCount = swapchainSize;
   auto result = vkAllocateCommandBuffers(gfx::device, &bufferInfo, commandBuffers);
   SDL_assert(result == VK_SUCCESS);
 }
@@ -488,46 +488,6 @@ void GraphicsPipeline::createVkPipeline() {
   SDL_assert_release(vkCreateGraphicsPipelines(gfx::device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkPipeline) == VK_SUCCESS);
 
   for (auto &stage : shaderStages) vkDestroyShaderModule(gfx::device, stage.module, nullptr);
-}
-
-void GraphicsPipeline::createSwapchain() {
-  VkSurfaceCapabilitiesKHR capabilities;
-  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-    gfx::physDevice, gfx::surface, &capabilities);
-
-  uint32_t presentModeCount;
-  vkGetPhysicalDeviceSurfacePresentModesKHR(
-    gfx::physDevice, gfx::surface, &presentModeCount, nullptr);
-  
-  vector<VkPresentModeKHR> presentModes(presentModeCount);
-  vkGetPhysicalDeviceSurfacePresentModesKHR(
-    gfx::physDevice, gfx::surface, &presentModeCount, presentModes.data());
-
-  VkSwapchainCreateInfoKHR createInfo = {};
-  createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-  createInfo.surface = gfx::surface;
-  createInfo.minImageCount = swapchainSize;
-  createInfo.imageFormat = gfx::surfaceFormat;
-  createInfo.imageColorSpace = gfx::surfaceColorSpace;
-  createInfo.imageExtent = capabilities.currentExtent;
-  createInfo.imageArrayLayers = 1; // 1 == not stereoscopic
-  createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // Suitable for VkFrameBuffer
-  
-  // If the graphics and surface queues are the same, no sharing is necessary.
-  createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  
-  createInfo.preTransform = capabilities.currentTransform;
-  createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // Opaque window
-  createInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR; // vsync
-  
-  // Vulkan may not renderall pixels if some are osbscured by other windows.
-  createInfo.clipped = VK_TRUE;
-  
-  // I don't currently support swapchain recreation.
-  createInfo.oldSwapchain = VK_NULL_HANDLE;
-  
-  auto result = vkCreateSwapchainKHR(gfx::device, &createInfo, nullptr, &swapchain);
-  SDL_assert_release(result == VK_SUCCESS);
 }
 
 void GraphicsPipeline::createSwapchainImagesAndViews() {

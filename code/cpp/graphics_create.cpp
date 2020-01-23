@@ -9,6 +9,8 @@ namespace gfx {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
   };
   
+  // const int swapchainSize = 2; // Double buffered
+  
   VkInstance               instance         = VK_NULL_HANDLE;
   VkDebugUtilsMessengerEXT debugMsgr        = VK_NULL_HANDLE;
   VkSurfaceKHR             surface          = VK_NULL_HANDLE;
@@ -16,6 +18,7 @@ namespace gfx {
   VkDevice                 device           = VK_NULL_HANDLE;
   VkQueue                  queue            = VK_NULL_HANDLE;
   int                      queueFamilyIndex = -1;
+  VkSwapchainKHR           swapchain        = VK_NULL_HANDLE;
   
   VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT msgType, const VkDebugUtilsMessengerCallbackDataEXT *data, void *pUserData) {
 
@@ -198,6 +201,42 @@ namespace gfx {
     SDL_assert(result == VK_SUCCESS);
     result = vkBindBufferMemory(device, *bufferOut, *memoryOut, 0);
     SDL_assert(result == VK_SUCCESS);
+  }
+  
+  void createSwapchain() {
+    VkSurfaceCapabilitiesKHR capabilities;
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &capabilities);
+
+    uint32_t presentModeCount;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModeCount, nullptr);
+    vector<VkPresentModeKHR> presentModes(presentModeCount);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice, surface, &presentModeCount, presentModes.data());
+
+    VkSwapchainCreateInfoKHR createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    createInfo.surface = surface;
+    createInfo.minImageCount = swapchainSize;
+    createInfo.imageFormat = surfaceFormat;
+    createInfo.imageColorSpace = surfaceColorSpace;
+    createInfo.imageExtent = capabilities.currentExtent;
+    createInfo.imageArrayLayers = 1; // 1 == not stereoscopic
+    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // Suitable for VkFrameBuffer
+    
+    // If the graphics and surface queues are the same, no sharing is necessary.
+    createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    
+    createInfo.preTransform = capabilities.currentTransform;
+    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // Opaque window
+    createInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR; // vsync
+    
+    // Vulkan may not renderall pixels if some are osbscured by other windows.
+    createInfo.clipped = VK_TRUE;
+    
+    // I don't currently support swapchain recreation.
+    createInfo.oldSwapchain = VK_NULL_HANDLE;
+    
+    auto result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchain);
+    SDL_assert_release(result == VK_SUCCESS);
   }
   
   void createCoreHandles(SDL_Window *window) {

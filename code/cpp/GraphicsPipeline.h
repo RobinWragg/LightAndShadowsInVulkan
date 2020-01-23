@@ -1,6 +1,8 @@
 #pragma once
 #include "graphics.h"
 
+using namespace gfx;
+
 struct PerFrameUniform {
   mat4 matrix;
 };
@@ -13,7 +15,6 @@ class DrawCall;
 
 class GraphicsPipeline {
 public:
-  static const int swapchainSize = 2; // Double buffered
   static const int maxDescriptors = 1024;
   
   VkFramebuffer framebuffers[swapchainSize];
@@ -22,7 +23,6 @@ public:
   VkCommandBuffer commandBuffers[swapchainSize];
   VkFence fences[swapchainSize];
   VkSemaphore imageAvailableSemaphore;
-  VkSwapchainKHR swapchain;
   VkImage swapchainImages[swapchainSize];
   VkImageView swapchainViews[swapchainSize];
   VkSemaphore renderCompletedSemaphore;
@@ -69,8 +69,6 @@ private:
   void setupDepthTesting();
   
   void createCommandPool();
-  
-  void createSwapchain();
   
   void createSwapchainImagesAndViews();
   

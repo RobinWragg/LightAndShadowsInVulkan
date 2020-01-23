@@ -10,6 +10,8 @@ namespace gfx {
   
   extern const vector<const char *> requiredDeviceExtensions;
   
+  const int swapchainSize = 2;
+  
   extern VkInstance               instance;
   extern VkDebugUtilsMessengerEXT debugMsgr;
   extern VkSurfaceKHR             surface;
@@ -17,6 +19,7 @@ namespace gfx {
   extern VkDevice                 device;
   extern VkQueue                  queue;
   extern int                      queueFamilyIndex;
+  extern VkSwapchainKHR           swapchain;
   
   // creators
   void        createCoreHandles(SDL_Window *window);
@@ -33,6 +36,11 @@ namespace gfx {
   
   // miscellaneous
   void setMemory(VkDeviceMemory memory, uint64_t dataSize, const void *data);
+  
+  
+  
+  
+  void createSwapchain();
 }
 
 
