@@ -6,7 +6,6 @@
 #include "input.h"
 
 namespace graphics {
-  GraphicsFoundation *foundation = nullptr;
   GraphicsPipeline *pipeline = nullptr;
   DrawCall *pyramid = nullptr;
   DrawCall *ground = nullptr;
@@ -65,8 +64,9 @@ namespace graphics {
   }
 
   void init(SDL_Window *window) {
-    foundation = new GraphicsFoundation(window);
-    pipeline = new GraphicsPipeline(foundation, true);
+    gfx::createCoreHandles(window);
+    
+    pipeline = new GraphicsPipeline(true);
     
     cameraPosition.x = 0;
     cameraPosition.y = 2;
@@ -110,7 +110,7 @@ namespace graphics {
     PerFrameUniform perFrameUniform;
     perFrameUniform.matrix = glm::identity<mat4>();
     
-    VkExtent2D extent = foundation->getSurfaceExtent();
+    VkExtent2D extent = gfx::getSurfaceExtent();
     float aspect = extent.width / (float)extent.height;
     perFrameUniform.matrix = perspective(radians(50.0f), aspect, 0.1f, 100.0f);
     perFrameUniform.matrix = scale(perFrameUniform.matrix, vec3(1, -1, 1));
@@ -153,7 +153,6 @@ namespace graphics {
     delete sphere0;
     delete sphere1;
     delete pipeline;
-    delete foundation;
   }
 }
 

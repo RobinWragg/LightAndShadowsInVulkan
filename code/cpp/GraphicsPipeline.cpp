@@ -1,8 +1,7 @@
 #include "GraphicsPipeline.h"
 #include "DrawCall.h"
 
-GraphicsPipeline::GraphicsPipeline(const GraphicsFoundation *foundationIn, bool depthTest) {
-  foundation = foundationIn;
+GraphicsPipeline::GraphicsPipeline(bool depthTest) {
   depthTestingEnabled = depthTest;
   
   createSwapchain();
@@ -183,7 +182,7 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
   renderPassInfo.pClearValues = clearValues;
 
   renderPassInfo.renderArea.offset = { 0, 0 };
-  renderPassInfo.renderArea.extent = foundation->getSurfaceExtent();
+  renderPassInfo.renderArea.extent = gfx::getSurfaceExtent();
   
   vkCmdBeginRenderPass(cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
   vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
@@ -192,7 +191,7 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
   
   for (auto &sub : submissions) {
     // Set per-drawcall shader data
-    foundation->setMemory(sub.drawCall->descriptorBuffersMemory[swapchainIndex], sizeof(DrawCallUniform), &sub.uniform);
+    gfx::setMemory(sub.drawCall->descriptorBuffersMemory[swapchainIndex], sizeof(DrawCallUniform), &sub.uniform);
     
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1 /*drawcall set index*/, 1, &sub.drawCall->descriptorSets[swapchainIndex], 0, nullptr);
     
@@ -225,7 +224,7 @@ void GraphicsPipeline::setupDepthTesting() {
   imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   imageInfo.imageType = VK_IMAGE_TYPE_2D;
   
-  auto extent = foundation->getSurfaceExtent();
+  auto extent = gfx::getSurfaceExtent();
   imageInfo.extent.width = extent.width;
   imageInfo.extent.height = extent.height;
   imageInfo.extent.depth = 1;
@@ -425,7 +424,7 @@ void GraphicsPipeline::createVkPipeline() {
   viewport.x = 0;
   viewport.y = 0;
   
-  auto extent = foundation->getSurfaceExtent();
+  auto extent = gfx::getSurfaceExtent();
   viewport.width = (float)extent.width;
   viewport.height = (float)extent.height;
   
@@ -678,7 +677,7 @@ void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
   
   // Set per-frame shader data
   VkDeviceMemory &uniformMemory = perFrameDescriptorBuffersMemory[swapchainIndex];
-  foundation->setMemory(uniformMemory, sizeof(PerFrameUniform), perFrameUniform);
+  gfx::setMemory(uniformMemory, sizeof(PerFrameUniform), perFrameUniform);
   
   // Fill the command buffer
   fillCommandBuffer(swapchainIndex);
@@ -729,7 +728,7 @@ void GraphicsPipeline::createFramebuffers() {
     framebufferInfo.attachmentCount = (uint32_t)attachments.size();
     framebufferInfo.pAttachments = attachments.data();
     
-    auto extent = foundation->getSurfaceExtent();
+    auto extent = gfx::getSurfaceExtent();
     framebufferInfo.width = extent.width;
     framebufferInfo.height = extent.height;
     

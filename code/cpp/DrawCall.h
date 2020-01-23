@@ -20,7 +20,6 @@ public:
   ~DrawCall();
 
 private:
-  const GraphicsFoundation *foundation = nullptr;
   const GraphicsPipeline *pipeline = nullptr;
   VkDeviceMemory positionBufferMemory;
   VkDeviceMemory normalBufferMemory;

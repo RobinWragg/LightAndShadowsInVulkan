@@ -14,8 +14,6 @@ class DrawCall;
 
 class GraphicsPipeline {
 public:
-  const GraphicsFoundation *foundation;
-  
   static const int swapchainSize = 2; // Double buffered
   static const int maxDescriptors = 1024;
   
@@ -35,7 +33,7 @@ public:
   
   VkDescriptorSetLayout drawCallDescriptorLayout;
   
-  GraphicsPipeline(const GraphicsFoundation *foundation, bool depthTest);
+  GraphicsPipeline(bool depthTest);
   ~GraphicsPipeline();
   
   void createDescriptorSet(VkDescriptorSetLayout layout, VkBuffer buffer, VkDescriptorSet *setOut) const;
