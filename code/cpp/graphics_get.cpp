@@ -37,7 +37,9 @@ namespace gfx {
     vkEnumerateInstanceLayerProperties(&layerCount, layerProperties->data());
   }
   
-  VkPhysicalDevice getPhysicalDevice(SDL_Window *window, VkInstance instance, VkSurfaceKHR surface) {
+  VkPhysicalDevice getPhysicalDevice(SDL_Window *window) {
+    
+    if (physDevice != VK_NULL_HANDLE) return physDevice;
     
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
@@ -110,6 +112,18 @@ namespace gfx {
     vkGetPhysicalDeviceProperties(suitableDevices[0], &properties);
     printf("\nChosen device: %s\n", properties.deviceName);
     return suitableDevices[0];
+  }
+  
+  uint32_t getMemoryType(uint32_t memTypeBits, VkMemoryPropertyFlags properties) {
+    VkPhysicalDeviceMemoryProperties memoryProperties;
+    vkGetPhysicalDeviceMemoryProperties(physDevice, &memoryProperties);
+
+    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
+      if ((memTypeBits& (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) return i;
+    }
+
+    SDL_assert_release(false);
+    return 0;
   }
 }
 

@@ -12,14 +12,23 @@ namespace gfx {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
   };
   
+  extern VkInstance               instance;
+  extern VkDebugUtilsMessengerEXT debugMsgr;
+  extern VkSurfaceKHR             surface;
+  extern VkPhysicalDevice         physDevice;
+  extern VkDevice                 device;
+  extern VkQueue                  queue;
+  extern int                      queueFamilyIndex;
+  
   // creators
-  VkInstance createInstance(SDL_Window *window, VkDebugUtilsMessengerEXT *optionalDebugMsgrOut);
-  void createDeviceAndQueue(VkSurfaceKHR surface, VkPhysicalDevice physDevice, VkDevice *deviceOut, VkQueue *queueOut, int *queueFamilyIndexOut);
+  void createCoreHandles(SDL_Window *window);
+  void createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
   
   // getters
   vector<const char*> getRequiredLayers();
   void getAvailableInstanceLayers(vector<VkLayerProperties> *layerProperties);
-  VkPhysicalDevice getPhysicalDevice(SDL_Window *window, VkInstance instance, VkSurfaceKHR surface);
+  VkPhysicalDevice getPhysicalDevice(SDL_Window *window);
+  uint32_t getMemoryType(uint32_t memTypeBits, VkMemoryPropertyFlags properties);
 }
 
 

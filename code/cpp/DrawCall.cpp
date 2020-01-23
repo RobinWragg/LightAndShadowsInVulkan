@@ -29,12 +29,12 @@ DrawCall::DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &positio
 }
 
 DrawCall::~DrawCall() {
-  vkDestroyBuffer(foundation->device, positionBuffer, nullptr);
-  vkFreeMemory(foundation->device, positionBufferMemory, nullptr);
+  vkDestroyBuffer(gfx::device, positionBuffer, nullptr);
+  vkFreeMemory(gfx::device, positionBufferMemory, nullptr);
   
   for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
-   vkDestroyBuffer(foundation->device, descriptorBuffers[i], nullptr);
-   vkFreeMemory(foundation->device, descriptorBuffersMemory[i], nullptr); 
+   vkDestroyBuffer(gfx::device, descriptorBuffers[i], nullptr);
+   vkFreeMemory(gfx::device, descriptorBuffersMemory[i], nullptr); 
   }
 }
 
@@ -50,7 +50,7 @@ void DrawCall::initCommon(const GraphicsPipeline *pipeline, const vector<vec3> &
   identityUniform.matrix = glm::identity<mat4>();
   
   for (int i = 0; i < GraphicsPipeline::swapchainSize; i++) {
-    foundation->createVkBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(DrawCallUniform), &descriptorBuffers[i], &descriptorBuffersMemory[i]);
+    gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(DrawCallUniform), &descriptorBuffers[i], &descriptorBuffersMemory[i]);
     pipeline->createDescriptorSet(pipeline->drawCallDescriptorLayout, descriptorBuffers[i], &descriptorSets[i]);
     
     // Set identity as default
@@ -61,7 +61,7 @@ void DrawCall::initCommon(const GraphicsPipeline *pipeline, const vector<vec3> &
 void DrawCall::createVec3Buffer(const vector<vec3> &vec3s, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) const {
   
   uint64_t dataSize = sizeof(vec3s[0]) * vec3s.size();
-  foundation->createVkBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, dataSize, bufferOut, memoryOut);
+  gfx::createBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, dataSize, bufferOut, memoryOut);
   
   uint8_t *data = (uint8_t*)vec3s.data();
   foundation->setMemory(*memoryOut, dataSize, data);

@@ -2,6 +2,14 @@
 
 namespace gfx {
   
+  VkInstance               instance         = VK_NULL_HANDLE;
+  VkDebugUtilsMessengerEXT debugMsgr        = VK_NULL_HANDLE;
+  VkSurfaceKHR             surface          = VK_NULL_HANDLE;
+  VkPhysicalDevice         physDevice       = VK_NULL_HANDLE;
+  VkDevice                 device           = VK_NULL_HANDLE;
+  VkQueue                  queue            = VK_NULL_HANDLE;
+  int                      queueFamilyIndex = -1;
+  
   VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT msgType, const VkDebugUtilsMessengerCallbackDataEXT *data, void *pUserData) {
 
     printf("\n");
@@ -35,7 +43,7 @@ namespace gfx {
     return VK_FALSE;
   }
   
-  static VkDebugUtilsMessengerEXT createDebugMessenger(VkInstance instance) {
+  static void createDebugMessenger() {
     
     VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -55,13 +63,10 @@ namespace gfx {
       = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
         instance, "vkCreateDebugUtilsMessengerEXT");
     
-    VkDebugUtilsMessengerEXT debugMsgr;
-    auto result = createDebugUtilsMessenger(instance, &createInfo, nullptr, &debugMsgr);
-    SDL_assert_release(result == VK_SUCCESS);
-    return debugMsgr;
+    createDebugUtilsMessenger(instance, &createInfo, nullptr, &debugMsgr);
   }
   
-  VkInstance createInstance(SDL_Window *window, VkDebugUtilsMessengerEXT *optionalDebugMsgrOut) {
+  static VkInstance createInstance(SDL_Window *window) {
     
     // Print available layers
     printf("\nAvailable instance layers:\n");
@@ -93,21 +98,12 @@ namespace gfx {
     for (auto &layer : layers) printf("\t%s\n", layer);
     printf("\n");
     
-    VkInstance instance;
-    auto creationResult = vkCreateInstance(&createInfo, nullptr, &instance);
-    SDL_assert_release(creationResult == VK_SUCCESS);
-    
-    #ifdef DEBUG
-      *optionalDebugMsgrOut = createDebugMessenger(instance);
-    #endif
+    vkCreateInstance(&createInfo, nullptr, &instance);
     
     return instance;
   }
 
-  static void createQueueInfo(VkSurfaceKHR surface, VkPhysicalDevice physDevice, VkDeviceQueueCreateInfo *infoOut) {
-    SDL_assert_release(surface != VK_NULL_HANDLE);
-    
-    bzero(infoOut, sizeof(*infoOut));
+  static VkDeviceQueueCreateInfo createQueueInfo() {
     
     uint32_t familyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &familyCount, nullptr);
@@ -128,18 +124,21 @@ namespace gfx {
 
     SDL_assert_release(familyIndex < families.size());
     
-    infoOut->sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    infoOut->queueFamilyIndex = familyIndex;
-    infoOut->queueCount = 1;
+    VkDeviceQueueCreateInfo info = {};
+    
+    info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    info.queueFamilyIndex = familyIndex;
+    info.queueCount = 1;
     
     static float defaultPriority = 1.0f;
-    infoOut->pQueuePriorities = &defaultPriority;
+    info.pQueuePriorities = &defaultPriority;
+    
+    return info;
   }
 
-  void createDeviceAndQueue(VkSurfaceKHR surface, VkPhysicalDevice physDevice, VkDevice *deviceOut, VkQueue *queueOut, int *queueFamilyIndexOut) {
+  static void createDeviceAndQueue() {
     
-    VkDeviceQueueCreateInfo queueInfo;
-    createQueueInfo(surface, physDevice, &queueInfo);
+    VkDeviceQueueCreateInfo queueInfo = createQueueInfo();
     
     VkDeviceCreateInfo deviceCreateInfo = {};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -159,14 +158,61 @@ namespace gfx {
     deviceCreateInfo.enabledLayerCount = (int)requiredLayers.size();
     deviceCreateInfo.ppEnabledLayerNames = requiredLayers.data();
     
-    auto result = vkCreateDevice(physDevice, &deviceCreateInfo, nullptr, deviceOut);
+    auto result = vkCreateDevice(physDevice, &deviceCreateInfo, nullptr, &device);
     SDL_assert_release(result == VK_SUCCESS);
     
     // Get a handle to the new queue
-    vkGetDeviceQueue(*deviceOut, queueInfo.queueFamilyIndex, 0, queueOut);
-    SDL_assert_release(queueOut != VK_NULL_HANDLE);
+    vkGetDeviceQueue(device, queueInfo.queueFamilyIndex, 0, &queue);
+    SDL_assert_release(queue != VK_NULL_HANDLE);
     
-    *queueFamilyIndexOut = queueInfo.queueFamilyIndex;
+    queueFamilyIndex = queueInfo.queueFamilyIndex;
+  }
+  
+  void createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) {
+    
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = dataSize;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    
+    auto result = vkCreateBuffer(device, &bufferInfo, nullptr, bufferOut);
+    SDL_assert(result == VK_SUCCESS);
+    
+    VkMemoryRequirements memoryReqs;
+    vkGetBufferMemoryRequirements(device, *bufferOut, &memoryReqs);
+
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memoryReqs.size;
+    allocInfo.memoryTypeIndex = getMemoryType(memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    result = vkAllocateMemory(device, &allocInfo, nullptr, memoryOut);
+    SDL_assert(result == VK_SUCCESS);
+    result = vkBindBufferMemory(device, *bufferOut, *memoryOut, 0);
+    SDL_assert(result == VK_SUCCESS);
+  }
+  
+  void createCoreHandles(SDL_Window *window) {
+    instance = createInstance(window);
+    
+    #ifdef DEBUG
+      createDebugMessenger();
+    #endif
+    
+    auto result = SDL_Vulkan_CreateSurface(window, instance, &surface);
+    SDL_assert_release(result == SDL_TRUE);
+    
+    physDevice = getPhysicalDevice(window);
+    
+    createDeviceAndQueue();
+    
+    SDL_assert_release(instance != VK_NULL_HANDLE);
+    SDL_assert_release(surface != VK_NULL_HANDLE);
+    SDL_assert_release(physDevice != VK_NULL_HANDLE);
+    SDL_assert_release(device != VK_NULL_HANDLE);
+    SDL_assert_release(queue != VK_NULL_HANDLE);
+    SDL_assert_release(queueFamilyIndex >= 0);
   }
 }
 
