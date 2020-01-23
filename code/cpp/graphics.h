@@ -5,12 +5,10 @@
 
 namespace gfx {
   
-  const VkFormat surfaceFormat            = VK_FORMAT_B8G8R8A8_UNORM;
-  const VkColorSpaceKHR surfaceColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+  extern const VkFormat surfaceFormat;
+  extern const VkColorSpaceKHR surfaceColorSpace;
   
-  const vector<const char *> requiredDeviceExtensions = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
-  };
+  extern const vector<const char *> requiredDeviceExtensions;
   
   extern VkInstance               instance;
   extern VkDebugUtilsMessengerEXT debugMsgr;
@@ -27,8 +25,12 @@ namespace gfx {
   // getters
   vector<const char*> getRequiredLayers();
   void getAvailableInstanceLayers(vector<VkLayerProperties> *layerProperties);
+  VkExtent2D getSurfaceExtent();
   VkPhysicalDevice getPhysicalDevice(SDL_Window *window);
   uint32_t getMemoryType(uint32_t memTypeBits, VkMemoryPropertyFlags properties);
+  
+  // miscellaneous
+  void setMemory(VkDeviceMemory memory, uint64_t dataSize, const void *data);
 }
 
 

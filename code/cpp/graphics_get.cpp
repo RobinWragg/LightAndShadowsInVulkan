@@ -125,6 +125,12 @@ namespace gfx {
     SDL_assert_release(false);
     return 0;
   }
+  
+  VkExtent2D getSurfaceExtent() {
+    VkSurfaceCapabilitiesKHR capabilities;
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &capabilities);
+    return capabilities.currentExtent;
+  }
 }
 
 
