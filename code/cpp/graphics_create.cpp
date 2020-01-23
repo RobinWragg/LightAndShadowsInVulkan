@@ -209,7 +209,7 @@ namespace gfx {
     }
   }
   
-  void createSwapchain() {
+  static void createSwapchain() {
     VkSurfaceCapabilitiesKHR capabilities;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &capabilities);
 

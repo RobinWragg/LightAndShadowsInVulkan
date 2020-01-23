@@ -37,11 +37,6 @@ namespace gfx {
   
   // miscellaneous
   void setMemory(VkDeviceMemory memory, uint64_t dataSize, const void *data);
-  
-  
-  
-  
-  void createSwapchain();
 }
 
 
