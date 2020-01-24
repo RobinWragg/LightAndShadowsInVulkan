@@ -38,10 +38,6 @@ public:
   void present(const PerFrameUniform *perFrameUniform);
   
 private:
-  VkImage        depthImage;
-  VkDeviceMemory depthImageMemory;
-  VkImageView    depthImageView;
-  
   VkDescriptorPool descriptorPool;
   
   VkDescriptorSetLayout perFrameDescriptorLayout;

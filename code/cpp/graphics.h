@@ -18,6 +18,7 @@ namespace gfx {
   extern VkQueue                  queue;
   extern int                      queueFamilyIndex;
   extern VkCommandPool            commandPool;
+  extern VkImageView              depthImageView;
   
   extern VkSwapchainKHR swapchain;
   extern VkImageView    swapchainViews[swapchainSize];
