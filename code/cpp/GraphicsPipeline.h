@@ -26,11 +26,10 @@ public:
   VkSemaphore renderCompletedSemaphore;
   VkPipeline vkPipeline;
   VkPipelineLayout pipelineLayout;
-  bool depthTestingEnabled;
   
   VkDescriptorSetLayout drawCallDescriptorLayout;
   
-  GraphicsPipeline(bool depthTest);
+  GraphicsPipeline();
   ~GraphicsPipeline();
   
   void createDescriptorSet(VkDescriptorSetLayout layout, VkBuffer buffer, VkDescriptorSet *setOut) const;

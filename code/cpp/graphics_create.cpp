@@ -327,6 +327,10 @@ namespace gfx {
     
     return view;
   }
+  
+  // VkDeviceMemory allocateMemory() {
+    
+  // }
 }
 
 

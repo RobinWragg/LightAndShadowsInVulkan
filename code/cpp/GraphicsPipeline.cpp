@@ -1,8 +1,7 @@
 #include "GraphicsPipeline.h"
 #include "DrawCall.h"
 
-GraphicsPipeline::GraphicsPipeline(bool depthTest) {
-  depthTestingEnabled = depthTest;
+GraphicsPipeline::GraphicsPipeline() {
   
   createRenderPass();
   
@@ -16,7 +15,7 @@ GraphicsPipeline::GraphicsPipeline(bool depthTest) {
   depthImage = VK_NULL_HANDLE;
   depthImageMemory = VK_NULL_HANDLE;
   depthImageView = VK_NULL_HANDLE;
-  if (depthTestingEnabled) setupDepthTesting();
+  setupDepthTesting();
   
   createFramebuffers();
   
@@ -146,7 +145,7 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
   
   // Color clear value
   
-  VkClearValue clearValues[2];
+  vector<VkClearValue> clearValues(2);
 
   clearValues[0].color.float32[0] = 0.5;
   clearValues[0].color.float32[1] = 0.7;
@@ -170,8 +169,8 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
   renderPassInfo.renderPass = renderPass;
   renderPassInfo.framebuffer = framebuffers[swapchainIndex];
   
-  renderPassInfo.clearValueCount = depthTestingEnabled ? 2 : 1;
-  renderPassInfo.pClearValues = clearValues;
+  renderPassInfo.clearValueCount = (int)clearValues.size();
+  renderPassInfo.pClearValues = clearValues.data();
 
   renderPassInfo.renderArea.offset = { 0, 0 };
   renderPassInfo.renderArea.extent = getSurfaceExtent();
@@ -461,15 +460,13 @@ void GraphicsPipeline::createVkPipeline() {
   pipelineInfo.pViewportState = &viewportInfo;
   
   VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
-  if (depthTestingEnabled) {
-    depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencilInfo.depthTestEnable = VK_TRUE;
-    depthStencilInfo.depthWriteEnable = VK_TRUE;
-    depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS; // Lower depth values mean closer to 'camera'
-    depthStencilInfo.depthBoundsTestEnable = VK_FALSE;
-    depthStencilInfo.stencilTestEnable = VK_FALSE;
-    pipelineInfo.pDepthStencilState = &depthStencilInfo;
-  }
+  depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+  depthStencilInfo.depthTestEnable = VK_TRUE;
+  depthStencilInfo.depthWriteEnable = VK_TRUE;
+  depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS; // Lower depth values mean closer to 'camera'
+  depthStencilInfo.depthBoundsTestEnable = VK_FALSE;
+  depthStencilInfo.stencilTestEnable = VK_FALSE;
+  pipelineInfo.pDepthStencilState = &depthStencilInfo;
 
   pipelineInfo.pRasterizationState = &rasterInfo;
   pipelineInfo.pMultisampleState = &multisamplingInfo;
@@ -523,17 +520,17 @@ void GraphicsPipeline::createRenderPass() {
   subpass.colorAttachmentCount = 1;
   subpass.pColorAttachments = &colorAttachmentRef;
 
-  VkAttachmentDescription depthAttachment = {};
-  VkAttachmentReference depthAttachmentRef = {};
-  
-  if (depthTestingEnabled) {
-    depthAttachment = createAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-    attachments.push_back(depthAttachment);
+  VkAttachmentDescription depthAttachment = createAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+  attachments.push_back(depthAttachment);
 
-    depthAttachmentRef.attachment = 1;
-    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    subpass.pDepthStencilAttachment = &depthAttachmentRef;
-  }
+  VkAttachmentReference depthAttachmentRef = {};
+  depthAttachmentRef.attachment = 1;
+  depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+  subpass.pDepthStencilAttachment = &depthAttachmentRef;
+  
+  
+  
+  
 
   VkRenderPassCreateInfo renderPassInfo = {};
   renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -610,8 +607,7 @@ void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
 void GraphicsPipeline::createFramebuffers() {
 
   for (int i = 0; i < swapchainSize; i++) {
-    vector<VkImageView> attachments = { swapchainViews[i] };
-    if (depthTestingEnabled) attachments.push_back(depthImageView);
+    vector<VkImageView> attachments = { swapchainViews[i], depthImageView };
 
     VkFramebufferCreateInfo framebufferInfo = {};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

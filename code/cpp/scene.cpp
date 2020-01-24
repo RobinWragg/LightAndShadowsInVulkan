@@ -65,7 +65,7 @@ namespace scene {
   void init(SDL_Window *window) {
     gfx::createCoreHandles(window);
     
-    pipeline = new GraphicsPipeline(true);
+    pipeline = new GraphicsPipeline();
     
     cameraPosition.x = 0;
     cameraPosition.y = 2;
