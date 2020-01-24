@@ -172,6 +172,24 @@ namespace gfx {
     queueFamilyIndex = queueInfo.queueFamilyIndex;
   }
   
+  static VkDeviceMemory allocateAndBindMemory(VkBuffer buffer) {
+    VkMemoryRequirements memoryReqs = {};
+    vkGetBufferMemoryRequirements(device, buffer, &memoryReqs);
+
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memoryReqs.size;
+    allocInfo.memoryTypeIndex = getMemoryType(memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    
+    VkDeviceMemory memory = VK_NULL_HANDLE;
+    auto result = vkAllocateMemory(device, &allocInfo, nullptr, &memory);
+    SDL_assert_release(result == VK_SUCCESS);
+    result = vkBindBufferMemory(device, buffer, memory, 0);
+    SDL_assert_release(result == VK_SUCCESS);
+    
+    return memory;
+  }
+  
   void createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) {
     
     VkBufferCreateInfo bufferInfo = {};
@@ -181,20 +199,9 @@ namespace gfx {
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     
     auto result = vkCreateBuffer(device, &bufferInfo, nullptr, bufferOut);
-    SDL_assert(result == VK_SUCCESS);
+    SDL_assert_release(result == VK_SUCCESS);
     
-    VkMemoryRequirements memoryReqs;
-    vkGetBufferMemoryRequirements(device, *bufferOut, &memoryReqs);
-
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memoryReqs.size;
-    allocInfo.memoryTypeIndex = getMemoryType(memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    result = vkAllocateMemory(device, &allocInfo, nullptr, memoryOut);
-    SDL_assert(result == VK_SUCCESS);
-    result = vkBindBufferMemory(device, *bufferOut, *memoryOut, 0);
-    SDL_assert(result == VK_SUCCESS);
+    *memoryOut = allocateAndBindMemory(*bufferOut);
   }
   
   static void createSwapchainImagesAndViews() {
@@ -327,10 +334,6 @@ namespace gfx {
     
     return view;
   }
-  
-  // VkDeviceMemory allocateMemory() {
-    
-  // }
 }
 
 
