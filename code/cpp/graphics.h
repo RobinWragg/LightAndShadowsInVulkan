@@ -22,11 +22,11 @@ namespace gfx {
   extern VkImageView    swapchainViews[swapchainSize];
   
   // creators
-  void                createCoreHandles(SDL_Window *window);
-  void                createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
-  void                createImage(VkFormat format, VkImage *imageOut, VkDeviceMemory *memoryOut);
-  VkImageView         createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
-  VkSubpassDependency createSubpassDependency();
+  void        createCoreHandles(SDL_Window *window);
+  void        createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
+  void        createImage(VkFormat format, VkImage *imageOut, VkDeviceMemory *memoryOut);
+  VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
+  void        createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut);
   
   // getters
   vector<const char*> getRequiredLayers();

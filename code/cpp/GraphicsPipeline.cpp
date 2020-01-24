@@ -467,61 +467,25 @@ void GraphicsPipeline::createVkPipeline() {
   for (auto &stage : shaderStages) vkDestroyShaderModule(device, stage.module, nullptr);
 }
 
-VkAttachmentDescription GraphicsPipeline::createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout) {
-  VkAttachmentDescription description = {};
-
-  description.format = format;
-  description.samples = VK_SAMPLE_COUNT_1_BIT;
-  description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  description.storeOp = storeOp;
-  description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  description.finalLayout = finalLayout;
-  
-  return description;
-}
-
 void GraphicsPipeline::createRenderPass() {
 
-  vector<VkAttachmentDescription> attachments = {};
-
-  VkAttachmentDescription colorAttachment = createAttachmentDescription(surfaceFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-  attachments.push_back(colorAttachment);
-
-  VkAttachmentReference colorAttachmentRef = {};
-  colorAttachmentRef.attachment = 0;
-  colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-  VkSubpassDescription subpass = {};
-  subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-  subpass.colorAttachmentCount = 1;
-  subpass.pColorAttachments = &colorAttachmentRef;
-
-  VkAttachmentDescription depthAttachment = createAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-  attachments.push_back(depthAttachment);
-
-  VkAttachmentReference depthAttachmentRef = {};
-  depthAttachmentRef.attachment = 1;
-  depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-  subpass.pDepthStencilAttachment = &depthAttachmentRef;
+  VkSubpassDescription subpassDesc = {};
+  VkSubpassDependency subpassDep = {};
+  vector<VkAttachmentDescription> attachments;
+  vector<VkAttachmentReference> attachmentRefs;
+  createSubpass(&subpassDesc, &subpassDep, &attachments, &attachmentRefs);
   
-  
-  
-  
-
   VkRenderPassCreateInfo renderPassInfo = {};
   renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
   
+  renderPassInfo.subpassCount = 1;
+  renderPassInfo.pSubpasses = &subpassDesc;
+  
+  renderPassInfo.dependencyCount = 1;
+  renderPassInfo.pDependencies = &subpassDep;
+  
   renderPassInfo.attachmentCount = (uint32_t)attachments.size();
   renderPassInfo.pAttachments = attachments.data();
-  
-  renderPassInfo.subpassCount = 1;
-  renderPassInfo.pSubpasses = &subpass;
-  
-  VkSubpassDependency dep = createSubpassDependency();
-  renderPassInfo.dependencyCount = 1;
-  renderPassInfo.pDependencies = &dep;
 
   SDL_assert_release(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS);
 }

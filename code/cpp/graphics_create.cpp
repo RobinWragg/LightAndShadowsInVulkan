@@ -350,7 +350,7 @@ namespace gfx {
     return view;
   }
   
-  VkSubpassDependency createSubpassDependency() {
+  static VkSubpassDependency createSubpassDependency() {
     VkSubpassDependency dependency = {};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     dependency.dstSubpass = 0;
@@ -362,6 +362,51 @@ namespace gfx {
     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     
     return dependency;
+  }
+  
+  static VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout) {
+    VkAttachmentDescription description = {};
+
+    description.format = format;
+    description.samples = VK_SAMPLE_COUNT_1_BIT;
+    description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    description.storeOp = storeOp;
+    description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    description.finalLayout = finalLayout;
+    
+    return description;
+  }
+  
+  void createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut) {
+    
+    // Hacky: attachmentRefsOut is passed out of this function on the stack to prevent its references in VkSubpassDescription from being deallocated before they're used. attachmentRefsOut doesn't need to be directly used by the caller of this function.
+    
+    attachmentsOut->resize(0);
+    attachmentsOut->push_back(createAttachmentDescription(surfaceFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR));
+    attachmentsOut->push_back(createAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL));
+    
+    // attachment references
+    attachmentRefsOut->resize(0);
+    
+    VkAttachmentReference colorAttachmentRef = {};
+    colorAttachmentRef.attachment = 0; // attachments[0]
+    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachmentRefsOut->push_back(colorAttachmentRef);
+    
+    VkAttachmentReference depthAttachmentRef = {};
+    depthAttachmentRef.attachment = 1; // attachments[1]
+    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    attachmentRefsOut->push_back(depthAttachmentRef);
+
+    bzero(descriptionOut, sizeof(VkSubpassDescription));
+    descriptionOut->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    descriptionOut->colorAttachmentCount = 1;
+    descriptionOut->pColorAttachments = &(*attachmentRefsOut)[0];
+    descriptionOut->pDepthStencilAttachment = &(*attachmentRefsOut)[1];
+    
+    *dependencyOut = createSubpassDependency();
   }
 }
 

@@ -67,8 +67,6 @@ private:
   
   void createCommandPool();
   
-  VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout);
-  
   void createRenderPass();
   
   void createFramebuffers();
