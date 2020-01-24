@@ -286,7 +286,7 @@ namespace gfx {
     createSwapchainViews();
   }
   
-  static void setupDepthTesting() {
+  static void createDepthImageAndView() {
     SDL_assert_release(commandPool != VK_NULL_HANDLE);
     
     VkImage depthImage;
@@ -297,11 +297,11 @@ namespace gfx {
 
     depthImageView = createImageView(depthImage, format, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-    VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
-    cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    cmdBufferAllocInfo.commandPool = commandPool;
-    cmdBufferAllocInfo.commandBufferCount = 1;
+    // VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
+    // cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    // cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    // cmdBufferAllocInfo.commandPool = commandPool;
+    // cmdBufferAllocInfo.commandBufferCount = 1;
 
     // VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
     // vkAllocateCommandBuffers(device, &cmdBufferAllocInfo, &commandBuffer);
@@ -375,7 +375,7 @@ namespace gfx {
       SDL_assert_release(swapchainViews[i] != VK_NULL_HANDLE);
     }
     
-    setupDepthTesting();
+    createDepthImageAndView();
   }
   
   void createImage(VkFormat format, VkImage *imageOut, VkDeviceMemory *memoryOut) {
