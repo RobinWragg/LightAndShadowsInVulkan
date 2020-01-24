@@ -171,40 +171,38 @@ namespace gfx {
     queueFamilyIndex = queueInfo.queueFamilyIndex;
   }
   
-  static VkDeviceMemory allocateAndBindMemory(VkBuffer buffer) {
-    VkMemoryRequirements memoryReqs = {};
-    vkGetBufferMemoryRequirements(device, buffer, &memoryReqs);
-
+  static VkDeviceMemory allocateMemory(VkMemoryRequirements reqs, VkMemoryPropertyFlags properties) {
     VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memoryReqs.size;
-    allocInfo.memoryTypeIndex = getMemoryType(memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    allocInfo.allocationSize = reqs.size;
+    allocInfo.memoryTypeIndex = getMemoryType(reqs.memoryTypeBits, properties);
     
     VkDeviceMemory memory = VK_NULL_HANDLE;
     auto result = vkAllocateMemory(device, &allocInfo, nullptr, &memory);
     SDL_assert_release(result == VK_SUCCESS);
-    result = vkBindBufferMemory(device, buffer, memory, 0);
+    
+    return memory;
+  }
+  
+  static VkDeviceMemory allocateAndBindMemory(VkBuffer buffer) {
+    VkMemoryRequirements reqs = {};
+    vkGetBufferMemoryRequirements(device, buffer, &reqs);
+
+    VkDeviceMemory memory = allocateMemory(reqs, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    auto result = vkBindBufferMemory(device, buffer, memory, 0);
     SDL_assert_release(result == VK_SUCCESS);
     
     return memory;
   }
   
   static VkDeviceMemory allocateAndBindMemory(VkImage image) {
-    
-    VkMemoryRequirements memoryReqs = {};
-    vkGetImageMemoryRequirements(device, image, &memoryReqs);
-
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memoryReqs.size;
+    VkMemoryRequirements reqs = {};
+    vkGetImageMemoryRequirements(device, image, &reqs);
     
     // For the depth image, ideal flag might be DEVICE_LOCAL, but appears to be inessential.
-    allocInfo.memoryTypeIndex = getMemoryType(memoryReqs.memoryTypeBits, 0);
-
-    VkDeviceMemory memory = VK_NULL_HANDLE;
-    auto result = vkAllocateMemory(device, &allocInfo, nullptr, &memory);
-    SDL_assert_release(result == VK_SUCCESS);
-    result = vkBindImageMemory(device, image, memory, 0);
+    VkDeviceMemory memory = allocateMemory(reqs, 0);
+    
+    auto result = vkBindImageMemory(device, image, memory, 0);
     SDL_assert_release(result == VK_SUCCESS);
     
     return memory;
