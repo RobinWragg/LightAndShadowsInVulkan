@@ -19,7 +19,6 @@ namespace gfx {
   extern int                      queueFamilyIndex;
   
   extern VkSwapchainKHR swapchain;
-  extern VkImage        swapchainImages[swapchainSize]; // TODO: don't need to hold onto the images.
   extern VkImageView    swapchainViews[swapchainSize];
   
   // creators

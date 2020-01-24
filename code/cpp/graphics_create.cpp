@@ -10,9 +10,8 @@ namespace gfx {
   VkQueue                  queue            = VK_NULL_HANDLE;
   int                      queueFamilyIndex = -1;
   
-  VkSwapchainKHR swapchain                      = VK_NULL_HANDLE;
-  VkImage        swapchainImages[swapchainSize] = {VK_NULL_HANDLE};
-  VkImageView    swapchainViews[swapchainSize]  = {VK_NULL_HANDLE};
+  VkSwapchainKHR swapchain                     = VK_NULL_HANDLE;
+  VkImageView    swapchainViews[swapchainSize] = {VK_NULL_HANDLE};
   
   VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT msgType, const VkDebugUtilsMessengerCallbackDataEXT *data, void *pUserData) {
 
@@ -228,11 +227,11 @@ namespace gfx {
   static void createSwapchainViews() {
     uint32_t imageCount;
     vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
-    SDL_assert_release(imageCount == swapchainSize);
-    vkGetSwapchainImagesKHR(device, swapchain, &imageCount, swapchainImages);
+    vector<VkImage> images(imageCount);
+    vkGetSwapchainImagesKHR(device, swapchain, &imageCount, images.data());
 
     for (int i = 0; i < swapchainSize; i++) {
-      swapchainViews[i] = createImageView(swapchainImages[i], surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+      swapchainViews[i] = createImageView(images[i], surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
     }
   }
   
@@ -299,7 +298,6 @@ namespace gfx {
     SDL_assert_release(swapchain != VK_NULL_HANDLE);
     
     for (int i = 0; i < swapchainSize; i++) {
-      SDL_assert_release(swapchainImages[i] != VK_NULL_HANDLE);
       SDL_assert_release(swapchainViews[i] != VK_NULL_HANDLE);
     }
   }

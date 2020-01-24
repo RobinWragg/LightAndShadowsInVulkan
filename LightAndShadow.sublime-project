@@ -3,7 +3,7 @@
 	[
 		{
 			"path": ".",
-      "folder_exclude_patterns": ["*.framework", "*.noindex", "DerivedData/LightAndShadow"]
+      "folder_exclude_patterns": ["*.framework", "*.noindex", "DerivedData/LightAndShadow", "VulkanSDK*"]
 		}
 	],
   "build_systems":
