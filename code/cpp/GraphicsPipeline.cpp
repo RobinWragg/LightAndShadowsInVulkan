@@ -484,16 +484,6 @@ VkAttachmentDescription GraphicsPipeline::createAttachmentDescription(VkFormat f
 
 void GraphicsPipeline::createRenderPass() {
 
-  VkSubpassDependency dependency = {};
-  dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-  dependency.dstSubpass = 0;
-
-  dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  dependency.srcAccessMask = 0;
-
-  dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
   vector<VkAttachmentDescription> attachments = {};
 
   VkAttachmentDescription colorAttachment = createAttachmentDescription(surfaceFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
@@ -525,10 +515,13 @@ void GraphicsPipeline::createRenderPass() {
   
   renderPassInfo.attachmentCount = (uint32_t)attachments.size();
   renderPassInfo.pAttachments = attachments.data();
-  renderPassInfo.dependencyCount = 1;
+  
   renderPassInfo.subpassCount = 1;
   renderPassInfo.pSubpasses = &subpass;
-  renderPassInfo.pDependencies = &dependency;
+  
+  VkSubpassDependency dep = createSubpassDependency();
+  renderPassInfo.dependencyCount = 1;
+  renderPassInfo.pDependencies = &dep;
 
   SDL_assert_release(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS);
 }
