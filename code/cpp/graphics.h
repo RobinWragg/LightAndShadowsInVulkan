@@ -17,6 +17,7 @@ namespace gfx {
   extern VkDevice                 device;
   extern VkQueue                  queue;
   extern int                      queueFamilyIndex;
+  extern VkCommandPool            commandPool;
   
   extern VkSwapchainKHR swapchain;
   extern VkImageView    swapchainViews[swapchainSize];

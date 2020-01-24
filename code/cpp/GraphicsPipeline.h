@@ -19,7 +19,6 @@ public:
   
   VkFramebuffer framebuffers[swapchainSize];
   VkRenderPass renderPass;
-  VkCommandPool commandPool;
   VkCommandBuffer commandBuffers[swapchainSize];
   VkFence fences[swapchainSize];
   VkSemaphore imageAvailableSemaphore;
@@ -64,8 +63,6 @@ private:
   void createSemaphores();
   
   void setupDepthTesting();
-  
-  void createCommandPool();
   
   void createRenderPass();
   

@@ -10,8 +10,6 @@ GraphicsPipeline::GraphicsPipeline() {
   
   createVkPipeline();
   
-  createCommandPool();
-  
   depthImage = VK_NULL_HANDLE;
   depthImageMemory = VK_NULL_HANDLE;
   depthImageView = VK_NULL_HANDLE;
@@ -302,16 +300,6 @@ VkPipelineShaderStageCreateInfo GraphicsPipeline::createShaderStage(const char *
   stageInfo.pName = "main";
 
   return stageInfo;
-}
-
-void GraphicsPipeline::createCommandPool() {
-  VkCommandPoolCreateInfo poolInfo = {};
-  poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-  poolInfo.queueFamilyIndex = queueFamilyIndex;
-  poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-  poolInfo.pNext = nullptr;
-
-  SDL_assert_release(vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) == VK_SUCCESS);
 }
 
 void GraphicsPipeline::createVkPipeline() {

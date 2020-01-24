@@ -9,6 +9,7 @@ namespace gfx {
   VkDevice                 device           = VK_NULL_HANDLE;
   VkQueue                  queue            = VK_NULL_HANDLE;
   int                      queueFamilyIndex = -1;
+  VkCommandPool            commandPool      = VK_NULL_HANDLE;
   
   VkSwapchainKHR swapchain                     = VK_NULL_HANDLE;
   VkImageView    swapchainViews[swapchainSize] = {VK_NULL_HANDLE};
@@ -67,6 +68,19 @@ namespace gfx {
         instance, "vkCreateDebugUtilsMessengerEXT");
     
     createDebugUtilsMessenger(instance, &createInfo, nullptr, &debugMsgr);
+  }
+  
+  static void createCommandPool() {
+    SDL_assert_release(queueFamilyIndex >= 0);
+    
+    VkCommandPoolCreateInfo poolInfo = {};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.queueFamilyIndex = queueFamilyIndex;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    poolInfo.pNext = nullptr;
+    
+    auto result = vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool);
+    SDL_assert_release(result == VK_SUCCESS);
   }
   
   static VkInstance createInstance(SDL_Window *window) {
@@ -291,6 +305,8 @@ namespace gfx {
     SDL_assert_release(device != VK_NULL_HANDLE);
     SDL_assert_release(queue != VK_NULL_HANDLE);
     SDL_assert_release(queueFamilyIndex >= 0);
+    
+    createCommandPool();
     
     createSwapchain();
     SDL_assert_release(swapchain != VK_NULL_HANDLE);
