@@ -190,6 +190,27 @@ namespace gfx {
     return memory;
   }
   
+  static VkDeviceMemory allocateAndBindMemory(VkImage image) {
+    
+    VkMemoryRequirements memoryReqs = {};
+    vkGetImageMemoryRequirements(device, image, &memoryReqs);
+
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memoryReqs.size;
+    
+    // For the depth image, ideal flag might be DEVICE_LOCAL, but appears to be inessential.
+    allocInfo.memoryTypeIndex = getMemoryType(memoryReqs.memoryTypeBits, 0);
+
+    VkDeviceMemory memory = VK_NULL_HANDLE;
+    auto result = vkAllocateMemory(device, &allocInfo, nullptr, &memory);
+    SDL_assert_release(result == VK_SUCCESS);
+    result = vkBindImageMemory(device, image, memory, 0);
+    SDL_assert_release(result == VK_SUCCESS);
+    
+    return memory;
+  }
+  
   void createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) {
     
     VkBufferCreateInfo bufferInfo = {};
@@ -204,11 +225,10 @@ namespace gfx {
     *memoryOut = allocateAndBindMemory(*bufferOut);
   }
   
-  static void createSwapchainImagesAndViews() {
+  static void createSwapchainViews() {
     uint32_t imageCount;
     vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
     SDL_assert_release(imageCount == swapchainSize);
-    
     vkGetSwapchainImagesKHR(device, swapchain, &imageCount, swapchainImages);
 
     for (int i = 0; i < swapchainSize; i++) {
@@ -251,7 +271,7 @@ namespace gfx {
     auto result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchain);
     SDL_assert_release(result == VK_SUCCESS);
     
-    createSwapchainImagesAndViews();
+    createSwapchainViews();
   }
   
   void createCoreHandles(SDL_Window *window) {
@@ -284,7 +304,7 @@ namespace gfx {
     }
   }
   
-  VkImage createImage(VkFormat format) {
+  void createImage(VkFormat format, VkImage *imageOut, VkDeviceMemory *memoryOut) {
     
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -304,11 +324,10 @@ namespace gfx {
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     
-    VkImage image;
-    auto result = vkCreateImage(device, &imageInfo, nullptr, &image);
+    auto result = vkCreateImage(device, &imageInfo, nullptr, imageOut);
     SDL_assert_release(result == VK_SUCCESS);
     
-    return image;
+    *memoryOut = allocateAndBindMemory(*imageOut);
   }
   
   VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask) {

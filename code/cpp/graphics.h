@@ -19,13 +19,13 @@ namespace gfx {
   extern int                      queueFamilyIndex;
   
   extern VkSwapchainKHR swapchain;
-  extern VkImage        swapchainImages[swapchainSize];
+  extern VkImage        swapchainImages[swapchainSize]; // TODO: don't need to hold onto the images.
   extern VkImageView    swapchainViews[swapchainSize];
   
   // creators
   void        createCoreHandles(SDL_Window *window);
   void        createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
-  VkImage     createImage(VkFormat format);
+  void        createImage(VkFormat format, VkImage *imageOut, VkDeviceMemory *memoryOut);
   VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
   
   // getters

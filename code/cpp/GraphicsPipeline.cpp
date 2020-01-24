@@ -209,19 +209,7 @@ void GraphicsPipeline::setupDepthTesting() {
   SDL_assert_release(commandPool != VK_NULL_HANDLE);
   
   VkFormat format = VK_FORMAT_D32_SFLOAT;
-  depthImage = createImage(format);
-
-  VkMemoryRequirements memoryReqs;
-  vkGetImageMemoryRequirements(device, depthImage, &memoryReqs);
-
-  VkMemoryAllocateInfo allocInfo = {};
-  allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  allocInfo.allocationSize = memoryReqs.size;
-  allocInfo.memoryTypeIndex = getMemoryType(memoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-  SDL_assert_release(vkAllocateMemory(device, &allocInfo, nullptr, &depthImageMemory) == VK_SUCCESS);
-
-  vkBindImageMemory(device, depthImage, depthImageMemory, 0);
+  createImage(format, &depthImage, &depthImageMemory);
 
   depthImageView = createImageView(depthImage, format, VK_IMAGE_ASPECT_DEPTH_BIT);
 

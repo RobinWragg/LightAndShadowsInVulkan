@@ -119,7 +119,7 @@ namespace gfx {
     vkGetPhysicalDeviceMemoryProperties(physDevice, &memoryProperties);
 
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
-      if ((memTypeBits& (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) return i;
+      if ((memTypeBits & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) return i;
     }
 
     SDL_assert_release(false);
