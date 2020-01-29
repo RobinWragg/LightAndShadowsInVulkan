@@ -53,7 +53,7 @@ void DrawCall::initCommon(const GraphicsPipeline *pipeline, const vector<vec3> &
     pipeline->createDescriptorSet(pipeline->drawCallDescriptorLayout, descriptorBuffers[i], &descriptorSets[i]);
     
     // Set identity as default
-    gfx::setMemory(descriptorBuffersMemory[i], sizeof(DrawCallUniform), &identityUniform);
+    gfx::setBufferMemory(descriptorBuffersMemory[i], sizeof(DrawCallUniform), &identityUniform);
   }
 }
 
@@ -63,7 +63,7 @@ void DrawCall::createVec3Buffer(const vector<vec3> &vec3s, VkBuffer *bufferOut, 
   gfx::createBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, dataSize, bufferOut, memoryOut);
   
   uint8_t *data = (uint8_t*)vec3s.data();
-  gfx::setMemory(*memoryOut, dataSize, data);
+  gfx::setBufferMemory(*memoryOut, dataSize, data);
 }
 
 

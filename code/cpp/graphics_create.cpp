@@ -204,18 +204,18 @@ namespace gfx {
     vkGetBufferMemoryRequirements(device, buffer, &reqs);
 
     VkDeviceMemory memory = allocateMemory(reqs, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    
     auto result = vkBindBufferMemory(device, buffer, memory, 0);
     SDL_assert_release(result == VK_SUCCESS);
     
     return memory;
   }
   
-  static VkDeviceMemory allocateAndBindMemory(VkImage image) {
+  static VkDeviceMemory allocateAndBindMemory(VkImage image, VkMemoryPropertyFlags properties) {
     VkMemoryRequirements reqs = {};
     vkGetImageMemoryRequirements(device, image, &reqs);
     
-    // For the depth image, ideal flag might be DEVICE_LOCAL, but appears to be inessential.
-    VkDeviceMemory memory = allocateMemory(reqs, 0);
+    VkDeviceMemory memory = allocateMemory(reqs, properties);
     
     auto result = vkBindImageMemory(device, image, memory, 0);
     SDL_assert_release(result == VK_SUCCESS);
@@ -292,7 +292,8 @@ namespace gfx {
     VkImage depthImage;
     VkDeviceMemory depthImageMemory;
     
-    createImage(true, &depthImage, &depthImageMemory);
+    auto extent = getSurfaceExtent();
+    createImage(true, extent.width, extent.height, &depthImage, &depthImageMemory);
 
     depthImageView = createImageView(depthImage, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT);
   }
@@ -330,24 +331,32 @@ namespace gfx {
     createDepthImageAndView();
   }
   
-  void createImage(bool forDepthTesting, VkImage *imageOut, VkDeviceMemory *memoryOut) {
+  void createImage(bool forDepthTesting, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut) {
     
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     
+    VkMemoryPropertyFlags memoryProperties;
+    
+    // Set format, usage, and memory properties.
     if (forDepthTesting) {
       imageInfo.format = VK_FORMAT_D32_SFLOAT;
       imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+      
+      // This flag appears to be inessential (on macOS at least), but is recommended.
+      // Might be good for color images too.
+      memoryProperties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
     } else {
       imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
       imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+      
+      memoryProperties = 0;
     }
     
-    auto extent = getSurfaceExtent();
-    imageInfo.extent.width = extent.width;
-    imageInfo.extent.height = extent.height;
-    imageInfo.extent.depth = 1;
+    imageInfo.extent.width = width;
+    imageInfo.extent.height = height;
+    imageInfo.extent.depth = 1; // This creates a 2D image
     
     imageInfo.mipLevels = 1;
     imageInfo.arrayLayers = 1;
@@ -359,7 +368,11 @@ namespace gfx {
     auto result = vkCreateImage(device, &imageInfo, nullptr, imageOut);
     SDL_assert_release(result == VK_SUCCESS);
     
-    *memoryOut = allocateAndBindMemory(*imageOut);
+    *memoryOut = allocateAndBindMemory(*imageOut, memoryProperties);
+  }
+  
+  void createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut) {
+    createImage(false, width, height, imageOut, memoryOut);
   }
   
   VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask) {

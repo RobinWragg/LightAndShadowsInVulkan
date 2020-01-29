@@ -26,7 +26,8 @@ namespace gfx {
   // creators
   void        createCoreHandles(SDL_Window *window);
   void        createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
-  void        createImage(bool forDepthTesting, VkImage *imageOut, VkDeviceMemory *memoryOut);
+  void        createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
+  void        createImage(bool forDepthTesting, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
   VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
   void        createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut);
   
@@ -38,7 +39,7 @@ namespace gfx {
   uint32_t            getMemoryType(uint32_t memTypeBits, VkMemoryPropertyFlags properties);
   
   // miscellaneous
-  void setMemory(VkDeviceMemory memory, uint64_t dataSize, const void *data);
+  void setBufferMemory(VkDeviceMemory memory, uint64_t dataSize, const void *data);
 }
 
 

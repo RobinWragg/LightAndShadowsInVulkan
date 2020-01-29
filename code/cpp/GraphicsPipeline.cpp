@@ -175,7 +175,7 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
   
   for (auto &sub : submissions) {
     // Set per-drawcall shader data
-    setMemory(sub.drawCall->descriptorBuffersMemory[swapchainIndex], sizeof(DrawCallUniform), &sub.uniform);
+    setBufferMemory(sub.drawCall->descriptorBuffersMemory[swapchainIndex], sizeof(DrawCallUniform), &sub.uniform);
     
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1 /*drawcall set index*/, 1, &sub.drawCall->descriptorSets[swapchainIndex], 0, nullptr);
     
@@ -437,7 +437,7 @@ void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
   
   // Set per-frame shader data
   VkDeviceMemory &uniformMemory = perFrameDescriptorBuffersMemory[swapchainIndex];
-  setMemory(uniformMemory, sizeof(PerFrameUniform), perFrameUniform);
+  setBufferMemory(uniformMemory, sizeof(PerFrameUniform), perFrameUniform);
   
   // Fill the command buffer
   fillCommandBuffer(swapchainIndex);
