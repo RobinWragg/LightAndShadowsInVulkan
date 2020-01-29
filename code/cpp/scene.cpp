@@ -4,6 +4,9 @@
 #include "DrawCall.h"
 #include "input.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 namespace scene {
   GraphicsPipeline *pipeline = nullptr;
   DrawCall *pyramid = nullptr;
@@ -66,6 +69,13 @@ namespace scene {
     gfx::createCoreHandles(window);
     
     pipeline = new GraphicsPipeline();
+    
+    int imageWidth, imageHeight, componentsPerPixel;
+    unsigned char *imageData = stbi_load("test.png", &imageWidth, &imageHeight, &componentsPerPixel, 4);
+    SDL_assert_release(imageData != nullptr);
+    SDL_assert_release(imageWidth == 128);
+    SDL_assert_release(imageHeight == 128);
+    stbi_image_free(imageData);
     
     cameraPosition.x = 0;
     cameraPosition.y = 2;
