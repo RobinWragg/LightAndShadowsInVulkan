@@ -21,7 +21,9 @@ GraphicsPipeline::GraphicsPipeline() {
     createDescriptorSet(perFrameDescriptorLayout, perFrameDescriptorBuffers[i], &perFrameDescriptorSets[i]);
   }
   
-  createCommandBuffers();
+  for (int i = 0; i < swapchainSize; i++) {
+    commandBuffers[i] = createCommandBuffer();
+  }
   
   createFences();
 }
@@ -120,16 +122,6 @@ void GraphicsPipeline::createDescriptorSetLayout(VkDescriptorSetLayout *layoutOu
   
   auto result = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, layoutOut);
   SDL_assert_release(result == VK_SUCCESS);
-}
-
-void GraphicsPipeline::createCommandBuffers() {
-  VkCommandBufferAllocateInfo bufferInfo = {};
-  bufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-  bufferInfo.commandPool = commandPool;
-  bufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-  bufferInfo.commandBufferCount = swapchainSize;
-  auto result = vkAllocateCommandBuffers(device, &bufferInfo, commandBuffers);
-  SDL_assert(result == VK_SUCCESS);
 }
 
 void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {

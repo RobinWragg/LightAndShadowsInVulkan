@@ -120,6 +120,20 @@ namespace gfx {
     
     return instance;
   }
+  
+  VkCommandBuffer createCommandBuffer() {
+    VkCommandBufferAllocateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    bufferInfo.commandPool = commandPool;
+    bufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    bufferInfo.commandBufferCount = 1;
+    
+    VkCommandBuffer cmdBuffer;
+    auto result = vkAllocateCommandBuffers(device, &bufferInfo, &cmdBuffer);
+    SDL_assert(result == VK_SUCCESS);
+    
+    return cmdBuffer;
+  }
 
   static VkDeviceQueueCreateInfo createQueueInfo() {
     

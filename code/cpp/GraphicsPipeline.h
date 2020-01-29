@@ -70,8 +70,6 @@ private:
   
   void createDescriptorPool();
   
-  void createCommandBuffers();
-  
   void fillCommandBuffer(uint32_t swapchainIndex);
   
   void createFences();

@@ -30,6 +30,7 @@ namespace gfx {
   void        createImage(bool forDepthTesting, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
   VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
   void        createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut);
+  VkCommandBuffer createCommandBuffer();
   
   // getters
   vector<const char*> getRequiredLayers();
