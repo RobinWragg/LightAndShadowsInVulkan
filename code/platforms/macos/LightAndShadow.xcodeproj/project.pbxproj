@@ -108,7 +108,6 @@
 		0076592623D9C2520077EE10 /* scene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scene.h; sourceTree = "<group>"; };
 		008D37CB238F129F00336F14 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MoltenVK.framework; sourceTree = SOURCE_ROOT; };
 		008D37FD238F16AB00336F14 /* Release.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Release.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		008D37FE238F16AB00336F14 /* LightAndShadow - Debug copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "LightAndShadow - Debug copy-Info.plist"; path = "/Users/robin/Desktop/y3/LightAndShadow/code/platforms/macos/LightAndShadow - Debug copy-Info.plist"; sourceTree = "<absolute>"; };
 		00F10F3A23848EA900C328BF /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../assets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -159,7 +158,6 @@
 				001D32B9238217CF001A68C7 /* LightAndShadow */,
 				001D32B8238217CF001A68C7 /* Products */,
 				00359D24238EB4E10076E82F /* Frameworks */,
-				008D37FE238F16AB00336F14 /* LightAndShadow - Debug copy-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -507,7 +505,10 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/LightAndShadow",
 				);
-				HEADER_SEARCH_PATHS = "../../libs/glm-0.9.9.6";
+				HEADER_SEARCH_PATHS = (
+					../../libs/stb_image,
+					"../../libs/glm-0.9.9.6",
+				);
 				INFOPLIST_FILE = LightAndShadow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -533,7 +534,10 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/LightAndShadow",
 				);
-				HEADER_SEARCH_PATHS = "../../libs/glm-0.9.9.6";
+				HEADER_SEARCH_PATHS = (
+					../../libs/stb_image,
+					"../../libs/glm-0.9.9.6",
+				);
 				INFOPLIST_FILE = LightAndShadow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -559,8 +563,11 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/LightAndShadow",
 				);
-				HEADER_SEARCH_PATHS = "../../libs/glm-0.9.9.6";
-				INFOPLIST_FILE = "LightAndShadow - Debug copy-Info.plist";
+				HEADER_SEARCH_PATHS = (
+					../../libs/stb_image,
+					"../../libs/glm-0.9.9.6",
+				);
+				INFOPLIST_FILE = LightAndShadow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -585,8 +592,11 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/LightAndShadow",
 				);
-				HEADER_SEARCH_PATHS = "../../libs/glm-0.9.9.6";
-				INFOPLIST_FILE = "LightAndShadow - Debug copy-Info.plist";
+				HEADER_SEARCH_PATHS = (
+					../../libs/stb_image,
+					"../../libs/glm-0.9.9.6",
+				);
+				INFOPLIST_FILE = LightAndShadow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

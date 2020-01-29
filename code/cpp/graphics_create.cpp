@@ -296,53 +296,6 @@ namespace gfx {
     createImage(format, &depthImage, &depthImageMemory);
 
     depthImageView = createImageView(depthImage, format, VK_IMAGE_ASPECT_DEPTH_BIT);
-
-    // VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
-    // cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    // cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    // cmdBufferAllocInfo.commandPool = commandPool;
-    // cmdBufferAllocInfo.commandBufferCount = 1;
-
-    // VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-    // vkAllocateCommandBuffers(device, &cmdBufferAllocInfo, &commandBuffer);
-
-    // VkCommandBufferBeginInfo beginInfo = {};
-    // beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    // beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-    // vkBeginCommandBuffer(commandBuffer, &beginInfo);
-    
-    // VkImageMemoryBarrier barrier = {};
-    // barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    // barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    // barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    // barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    // barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    // barrier.image = depthImage;
-    // barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-    // barrier.subresourceRange.baseMipLevel = 0;
-    // barrier.subresourceRange.levelCount = 1;
-    // barrier.subresourceRange.baseArrayLayer = 0;
-    // barrier.subresourceRange.layerCount = 1;
-    // barrier.srcAccessMask = 0;
-    // barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-    // VkPipelineStageFlags sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-    // VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-
-    // vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
-    // vkEndCommandBuffer(commandBuffer);
-
-    // VkSubmitInfo submitInfo = {};
-    // submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    // submitInfo.commandBufferCount = 1;
-    // submitInfo.pCommandBuffers = &commandBuffer;
-
-    // vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
-    // vkQueueWaitIdle(queue);
-
-    // vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
   }
   
   void createCoreHandles(SDL_Window *window) {
