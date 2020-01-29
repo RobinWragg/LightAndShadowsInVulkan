@@ -26,7 +26,7 @@ namespace gfx {
   // creators
   void        createCoreHandles(SDL_Window *window);
   void        createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
-  void        createImage(VkFormat format, VkImage *imageOut, VkDeviceMemory *memoryOut);
+  void        createImage(bool forDepthTesting, VkImage *imageOut, VkDeviceMemory *memoryOut);
   VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
   void        createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut);
   

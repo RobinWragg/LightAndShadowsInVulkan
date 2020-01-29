@@ -292,10 +292,9 @@ namespace gfx {
     VkImage depthImage;
     VkDeviceMemory depthImageMemory;
     
-    VkFormat format = VK_FORMAT_D32_SFLOAT;
-    createImage(format, &depthImage, &depthImageMemory);
+    createImage(true, &depthImage, &depthImageMemory);
 
-    depthImageView = createImageView(depthImage, format, VK_IMAGE_ASPECT_DEPTH_BIT);
+    depthImageView = createImageView(depthImage, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT);
   }
   
   void createCoreHandles(SDL_Window *window) {
@@ -331,11 +330,19 @@ namespace gfx {
     createDepthImageAndView();
   }
   
-  void createImage(VkFormat format, VkImage *imageOut, VkDeviceMemory *memoryOut) {
+  void createImage(bool forDepthTesting, VkImage *imageOut, VkDeviceMemory *memoryOut) {
     
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    
+    if (forDepthTesting) {
+      imageInfo.format = VK_FORMAT_D32_SFLOAT;
+      imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    } else {
+      imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+      imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    }
     
     auto extent = getSurfaceExtent();
     imageInfo.extent.width = extent.width;
@@ -344,10 +351,8 @@ namespace gfx {
     
     imageInfo.mipLevels = 1;
     imageInfo.arrayLayers = 1;
-    imageInfo.format = format;
     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     
