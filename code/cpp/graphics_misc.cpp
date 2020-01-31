@@ -42,8 +42,8 @@ namespace gfx {
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
     
-    VkPipelineStageFlags srcStage;
-    VkPipelineStageFlags dstStage;
+    VkPipelineStageFlags srcStage = 0;
+    VkPipelineStageFlags dstStage = 0;
     
     if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
         barrier.srcAccessMask = 0;

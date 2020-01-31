@@ -52,8 +52,6 @@ private:
   };
   vector<Submission> submissions;
   
-  VkPipelineShaderStageCreateInfo createShaderStage(const char *spirVFilePath, VkShaderStageFlagBits stage);
-  
   vector<uint8_t> loadBinaryFile(const char *filename);
   
   void createSemaphores();

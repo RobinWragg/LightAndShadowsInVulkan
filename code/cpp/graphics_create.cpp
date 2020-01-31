@@ -447,7 +447,7 @@ namespace gfx {
     return description;
   }
   
-  void createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut) {
+  static void createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut) {
     
     // Hacky: attachmentRefsOut is passed out of this function on the stack to prevent its references in VkSubpassDescription from being deallocated before they're used. attachmentRefsOut doesn't need to be directly used by the caller of this function.
     
@@ -502,7 +502,7 @@ namespace gfx {
     return renderPass;
   }
   
-  VkPipelineVertexInputStateCreateInfo allocVertexInputInfo() {
+  static VkPipelineVertexInputStateCreateInfo allocVertexInputInfo() {
     VkPipelineVertexInputStateCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     
@@ -530,12 +530,12 @@ namespace gfx {
     return info;
   }
   
-  void freeVertexInputInfo(VkPipelineVertexInputStateCreateInfo info) {
+  static void freeVertexInputInfo(VkPipelineVertexInputStateCreateInfo info) {
     delete [] info.pVertexBindingDescriptions;
     delete [] info.pVertexAttributeDescriptions;
   }
   
-  VkPipelineDepthStencilStateCreateInfo createDepthStencilInfo() {
+  static VkPipelineDepthStencilStateCreateInfo createDepthStencilInfo() {
     VkPipelineDepthStencilStateCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     info.depthTestEnable = VK_TRUE;
@@ -546,7 +546,7 @@ namespace gfx {
     return info;
   }
   
-  VkPipelineRasterizationStateCreateInfo createRasterizationInfo() {
+  static VkPipelineRasterizationStateCreateInfo createRasterizationInfo() {
     VkPipelineRasterizationStateCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     info.depthClampEnable = VK_FALSE;
@@ -559,7 +559,7 @@ namespace gfx {
     return info;
   }
   
-  VkPipelineColorBlendAttachmentState createColorBlendAttachment() {
+  static VkPipelineColorBlendAttachmentState createColorBlendAttachment() {
     VkPipelineColorBlendAttachmentState attachment = {};
     
     attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -576,7 +576,7 @@ namespace gfx {
     return attachment;
   }
   
-  VkPipelineViewportStateCreateInfo allocViewportInfo() {
+  static VkPipelineViewportStateCreateInfo allocViewportInfo() {
     auto extent = getSurfaceExtent();
     
     VkPipelineViewportStateCreateInfo info = {};
@@ -604,7 +604,7 @@ namespace gfx {
     return info;
   }
   
-  void freeViewportInfo(VkPipelineViewportStateCreateInfo info) {
+  static void freeViewportInfo(VkPipelineViewportStateCreateInfo info) {
     delete info.pViewports;
     delete info.pScissors;
   }
@@ -621,6 +621,91 @@ namespace gfx {
     SDL_assert_release(result == VK_SUCCESS);
     
     return pipelineLayout;
+  }
+  
+  static VkPipelineShaderStageCreateInfo createShaderStage(const char *spirVFilePath, VkShaderStageFlagBits stage) {
+    auto spirV = loadBinaryFile(spirVFilePath);
+
+    VkShaderModuleCreateInfo moduleInfo = {};
+    moduleInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    moduleInfo.codeSize = spirV.size();
+    moduleInfo.pCode = (uint32_t*)spirV.data();
+
+    VkShaderModule module = VK_NULL_HANDLE;
+    SDL_assert_release(vkCreateShaderModule(device, &moduleInfo, nullptr, &module) == VK_SUCCESS);
+
+    VkPipelineShaderStageCreateInfo stageInfo = {};
+    stageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+
+    stageInfo.stage = stage;
+
+    stageInfo.module = module;
+    stageInfo.pName = "main";
+
+    return stageInfo;
+  }
+  
+  VkPipeline createPipeline(VkPipelineLayout layout, VkRenderPass renderPass) {
+    VkPipelineColorBlendStateCreateInfo colorBlending = {};
+    colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    
+    colorBlending.logicOpEnable = VK_FALSE;
+    
+    auto colorBlendAttachment = createColorBlendAttachment();
+    colorBlending.pAttachments = &colorBlendAttachment;
+    colorBlending.attachmentCount = 1;
+
+    VkGraphicsPipelineCreateInfo pipelineInfo = {};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    
+    vector<VkPipelineShaderStageCreateInfo> shaderStages = {
+      createShaderStage("basic.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+      createShaderStage("basic.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
+    };
+    pipelineInfo.stageCount = (int)shaderStages.size();
+    pipelineInfo.pStages = shaderStages.data();
+    
+    auto vertexInputInfo = allocVertexInputInfo();
+    pipelineInfo.pVertexInputState = &vertexInputInfo;
+    
+    VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
+    inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    inputAssembly.primitiveRestartEnable = VK_FALSE;
+    pipelineInfo.pInputAssemblyState = &inputAssembly;
+    
+    auto viewportInfo = allocViewportInfo();
+    pipelineInfo.pViewportState = &viewportInfo;
+    
+    VkPipelineDepthStencilStateCreateInfo depthStencilInfo = createDepthStencilInfo();
+    pipelineInfo.pDepthStencilState = &depthStencilInfo;
+    
+    VkPipelineRasterizationStateCreateInfo rasterInfo = createRasterizationInfo();
+    pipelineInfo.pRasterizationState = &rasterInfo;
+    
+    VkPipelineMultisampleStateCreateInfo multisamplingInfo = {};
+    multisamplingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisamplingInfo.sampleShadingEnable = VK_FALSE;
+    multisamplingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    pipelineInfo.pMultisampleState = &multisamplingInfo;
+    
+    pipelineInfo.pColorBlendState = &colorBlending;
+    
+    pipelineInfo.layout = layout;
+    
+    pipelineInfo.renderPass = renderPass;
+    
+    pipelineInfo.subpass = 0;
+    
+    VkPipeline pipeline;
+    SDL_assert_release(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) == VK_SUCCESS);
+    
+    // Clean up
+    freeVertexInputInfo(vertexInputInfo);
+    freeViewportInfo(viewportInfo);
+    for (auto &stage : shaderStages) vkDestroyShaderModule(device, stage.module, nullptr);
+    
+    return pipeline;
   }
 }
 

@@ -33,6 +33,7 @@
 using namespace glm;
 using namespace std;
 
+vector<uint8_t> loadBinaryFile(const char *filename);
 double getTime();
 
 #include "scene.h"

@@ -24,6 +24,20 @@ void setWorkingDir() {
   SDL_free(path);
 }
 
+vector<uint8_t> loadBinaryFile(const char *filename) {
+  ifstream file(filename, ios::ate | ios::binary);
+
+  printf("LOADING: %s\n", filename);
+  SDL_assert_release(file.is_open());
+
+  vector<uint8_t> bytes(file.tellg());
+  file.seekg(0);
+  file.read((char*)bytes.data(), bytes.size());
+  file.close();
+
+  return bytes;
+}
+
 int main(int argc, char* argv[]) {
   
   #ifdef DEBUG

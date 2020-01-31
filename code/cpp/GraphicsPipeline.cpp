@@ -188,107 +188,14 @@ void GraphicsPipeline::createSemaphores() {
   SDL_assert_release(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderCompletedSemaphore) == VK_SUCCESS);
 }
 
-vector<uint8_t> GraphicsPipeline::loadBinaryFile(const char *filename) {
-  ifstream file(filename, ios::ate | ios::binary);
-
-  printf("LOADING: %s\n", filename);
-  SDL_assert_release(file.is_open());
-
-  vector<uint8_t> bytes(file.tellg());
-  file.seekg(0);
-  file.read((char*)bytes.data(), bytes.size());
-  file.close();
-
-  return bytes;
-}
-
-VkPipelineShaderStageCreateInfo GraphicsPipeline::createShaderStage(const char *spirVFilePath, VkShaderStageFlagBits stage) {
-  auto spirV = loadBinaryFile(spirVFilePath);
-
-  VkShaderModuleCreateInfo moduleInfo = {};
-  moduleInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-  moduleInfo.codeSize = spirV.size();
-  moduleInfo.pCode = (uint32_t*)spirV.data();
-
-  VkShaderModule module = VK_NULL_HANDLE;
-  SDL_assert_release(vkCreateShaderModule(device, &moduleInfo, nullptr, &module) == VK_SUCCESS);
-
-  VkPipelineShaderStageCreateInfo stageInfo = {};
-  stageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-
-  stageInfo.stage = stage;
-
-  stageInfo.module = module;
-  stageInfo.pName = "main";
-
-  return stageInfo;
-}
-
 void GraphicsPipeline::createVkPipeline() {
-
-  VkPipelineColorBlendStateCreateInfo colorBlending = {};
-  colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-  colorBlending.logicOpEnable = VK_FALSE;
-  
-  auto colorBlendAttachment = createColorBlendAttachment();
-  colorBlending.pAttachments = &colorBlendAttachment;
-  colorBlending.attachmentCount = 1;
-
   const int descriptorSetLayoutCount = 2;
   VkDescriptorSetLayout descriptorSetLayouts[descriptorSetLayoutCount] = {
     perFrameDescriptorLayout,
     drawCallDescriptorLayout
   };
   pipelineLayout = createPipelineLayout(descriptorSetLayouts, descriptorSetLayoutCount);
-
-  VkGraphicsPipelineCreateInfo pipelineInfo = {};
-  pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-  
-  vector<VkPipelineShaderStageCreateInfo> shaderStages = {
-    createShaderStage("basic.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-    createShaderStage("basic.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
-  };
-  pipelineInfo.stageCount = (int)shaderStages.size();
-  pipelineInfo.pStages = shaderStages.data();
-  
-  auto vertexInputInfo = allocVertexInputInfo();
-  pipelineInfo.pVertexInputState = &vertexInputInfo;
-  
-  VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
-  inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-  inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-  inputAssembly.primitiveRestartEnable = VK_FALSE;
-  pipelineInfo.pInputAssemblyState = &inputAssembly;
-  
-  auto viewportInfo = allocViewportInfo();
-  pipelineInfo.pViewportState = &viewportInfo;
-  
-  VkPipelineDepthStencilStateCreateInfo depthStencilInfo = createDepthStencilInfo();
-  pipelineInfo.pDepthStencilState = &depthStencilInfo;
-  
-  VkPipelineRasterizationStateCreateInfo rasterInfo = createRasterizationInfo();
-  pipelineInfo.pRasterizationState = &rasterInfo;
-  
-  VkPipelineMultisampleStateCreateInfo multisamplingInfo = {};
-  multisamplingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-  multisamplingInfo.sampleShadingEnable = VK_FALSE;
-  multisamplingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-  pipelineInfo.pMultisampleState = &multisamplingInfo;
-  
-  pipelineInfo.pColorBlendState = &colorBlending;
-  
-  pipelineInfo.layout = pipelineLayout;
-  
-  pipelineInfo.renderPass = renderPass;
-  
-  pipelineInfo.subpass = 0;
-  
-  SDL_assert_release(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkPipeline) == VK_SUCCESS);
-  
-  // Clean up
-  freeVertexInputInfo(vertexInputInfo);
-  freeViewportInfo(viewportInfo);
-  for (auto &stage : shaderStages) vkDestroyShaderModule(device, stage.module, nullptr);
+  vkPipeline = createPipeline(pipelineLayout, renderPass);
 }
 
 void GraphicsPipeline::submit(DrawCall *drawCall, const DrawCallUniform *uniform) {

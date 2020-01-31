@@ -29,17 +29,10 @@ namespace gfx {
   void createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
   void createImage(bool forDepthTesting, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
   VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
-  void createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut);
   VkCommandBuffer createCommandBuffer();
   VkRenderPass createRenderPass();
-  VkPipelineDepthStencilStateCreateInfo createDepthStencilInfo();
-  VkPipelineRasterizationStateCreateInfo createRasterizationInfo();
-  VkPipelineColorBlendAttachmentState createColorBlendAttachment();
   VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts[], uint32_t descriptorSetLayoutCount);
-  VkPipelineViewportStateCreateInfo allocViewportInfo(); // Call the function below when you're done.
-  void freeViewportInfo(VkPipelineViewportStateCreateInfo info);
-  VkPipelineVertexInputStateCreateInfo allocVertexInputInfo(); // Call the function below when you're done.
-  void freeVertexInputInfo(VkPipelineVertexInputStateCreateInfo info);
+  VkPipeline createPipeline(VkPipelineLayout layout, VkRenderPass renderPass);
     
   // getters (graphics_get.cpp)
   vector<const char*> getRequiredLayers();
