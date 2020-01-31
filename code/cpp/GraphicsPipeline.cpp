@@ -128,10 +128,15 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
   
   VkCommandBuffer &cmdBuffer = commandBuffers[swapchainIndex];
   
-  // Color clear value
+  beginCommandBuffer(cmdBuffer);
+
+  VkRenderPassBeginInfo renderPassInfo = {};
+  renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  renderPassInfo.renderPass = renderPass;
+  renderPassInfo.framebuffer = framebuffers[swapchainIndex];
   
   vector<VkClearValue> clearValues(2);
-
+  
   clearValues[0].color.float32[0] = 0.5;
   clearValues[0].color.float32[1] = 0.7;
   clearValues[0].color.float32[2] = 1;
@@ -139,20 +144,6 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
   
   clearValues[1].depthStencil.depth = 1;
   clearValues[1].depthStencil.stencil = 0;
-  
-  VkCommandBufferBeginInfo beginInfo = {};
-  beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-  beginInfo.pInheritanceInfo = nullptr;
-  
-  // This call will implicitly reset the command buffer if it has previously been filled
-  auto result = vkBeginCommandBuffer(cmdBuffer, &beginInfo);
-  SDL_assert(result == VK_SUCCESS);
-
-  VkRenderPassBeginInfo renderPassInfo = {};
-  renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  renderPassInfo.renderPass = renderPass;
-  renderPassInfo.framebuffer = framebuffers[swapchainIndex];
   
   renderPassInfo.clearValueCount = (int)clearValues.size();
   renderPassInfo.pClearValues = clearValues.data();
@@ -186,7 +177,7 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
   
   vkCmdEndRenderPass(commandBuffers[swapchainIndex]);
 
-  result = vkEndCommandBuffer(commandBuffers[swapchainIndex]);
+  auto result = vkEndCommandBuffer(commandBuffers[swapchainIndex]);
   SDL_assert(result == VK_SUCCESS);
 }
 
@@ -412,23 +403,8 @@ void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
   fillCommandBuffer(swapchainIndex);
   
   // Submit the command buffer
-  VkSubmitInfo submitInfo = {};
-  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-  
-  submitInfo.commandBufferCount = 1;
-  submitInfo.pCommandBuffers = &commandBuffers[swapchainIndex];
-
-  submitInfo.waitSemaphoreCount = 1;
-  submitInfo.pWaitSemaphores = &imageAvailableSemaphore;
-  
   VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  submitInfo.pWaitDstStageMask = &waitStage;
-
-  submitInfo.signalSemaphoreCount = 1;
-  submitInfo.pSignalSemaphores = &renderCompletedSemaphore;
-  
-  result = vkQueueSubmit(queue, 1, &submitInfo, fences[swapchainIndex]);
-  SDL_assert(result == VK_SUCCESS);
+  submitCommandBuffer(commandBuffers[swapchainIndex], imageAvailableSemaphore, waitStage, renderCompletedSemaphore, fences[swapchainIndex]);
   
   // Present
   VkPresentInfoKHR presentInfo = {};

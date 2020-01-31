@@ -42,6 +42,9 @@ namespace gfx {
   
   // miscellaneous
   void setBufferMemory(VkDeviceMemory memory, uint64_t dataSize, const void *data);
+  void setImageMemoryRGBA(VkImage, VkDeviceMemory memory, uint32_t width, uint32_t height, const float *data);
+  void beginCommandBuffer(VkCommandBuffer cmdBuffer);
+  void submitCommandBuffer(VkCommandBuffer cmdBuffer, VkSemaphore optionalWaitSemaphore = VK_NULL_HANDLE, VkPipelineStageFlags optionalWaitStage = 0, VkSemaphore optionalSignalSemaphore = VK_NULL_HANDLE, VkFence optionalFence = VK_NULL_HANDLE);
 }
 
 

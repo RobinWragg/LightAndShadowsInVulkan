@@ -143,13 +143,15 @@ namespace gfx {
     vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &familyCount, families.data());
 
     // Choose the first queue family of the required type
+    
     int familyIndex;
     for (familyIndex = 0; familyIndex < families.size(); familyIndex++) {
       VkBool32 hasSurfaceSupport;
       vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, familyIndex, surface, &hasSurfaceSupport);
       
       if (hasSurfaceSupport == VK_TRUE
-        && families[familyIndex].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+        && families[familyIndex].queueFlags & VK_QUEUE_GRAPHICS_BIT
+        && families[familyIndex].queueFlags & VK_QUEUE_TRANSFER_BIT) {
         break;
       }
     }
@@ -363,7 +365,10 @@ namespace gfx {
       memoryProperties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
     } else {
       imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-      imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+      
+      imageInfo.usage = 0;
+      imageInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT; // Enable data transfers to this image
+      imageInfo.usage |= VK_IMAGE_USAGE_SAMPLED_BIT; // Enable shader access
       
       memoryProperties = 0;
     }

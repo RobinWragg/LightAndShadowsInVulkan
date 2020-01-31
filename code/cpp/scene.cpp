@@ -75,7 +75,23 @@ namespace scene {
     SDL_assert_release(imageData != nullptr);
     SDL_assert_release(imageWidth == 128);
     SDL_assert_release(imageHeight == 128);
+    
+    uint32_t componentCount = 4 * imageWidth * imageHeight;
+    float *imageFloatData = new float[componentCount];
+    for (uint32_t i = 0; i < imageWidth*imageHeight; i++) {
+      imageFloatData[i] = imageData[i] / 255.0f;
+    }
+    
     stbi_image_free(imageData);
+    
+    VkImage testImage;
+    VkDeviceMemory testImageMemory;
+    
+    gfx::createColorImage(imageWidth, imageHeight, &testImage, &testImageMemory);
+    
+    gfx::setImageMemoryRGBA(testImage, testImageMemory, imageWidth, imageHeight, imageFloatData);
+    
+    delete [] imageFloatData;
     
     cameraPosition.x = 0;
     cameraPosition.y = 2;
