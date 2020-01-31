@@ -23,7 +23,7 @@ namespace gfx {
   extern VkSwapchainKHR swapchain;
   extern VkImageView    swapchainViews[swapchainSize];
   
-  // creators
+  // creators (graphics_create.cpp)
   void            createCoreHandles(SDL_Window *window);
   void            createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
   void            createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
@@ -32,16 +32,18 @@ namespace gfx {
   void            createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut);
   VkCommandBuffer createCommandBuffer();
   VkRenderPass    createRenderPass();
-  void            createVertexDescriptions(int vec3Count, vector<VkVertexInputBindingDescription> *bindingsOut, vector<VkVertexInputAttributeDescription> *attribsOut);
   
-  // getters
+  VkPipelineVertexInputStateCreateInfo allocVertexInputInfo(); // Call the function below when you're done.
+  void freeVertexInputInfo(VkPipelineVertexInputStateCreateInfo info);
+    
+  // getters (graphics_get.cpp)
   vector<const char*> getRequiredLayers();
   void                getAvailableInstanceLayers(vector<VkLayerProperties> *layerProperties);
   VkExtent2D          getSurfaceExtent();
   VkPhysicalDevice    getPhysicalDevice(SDL_Window *window);
   uint32_t            getMemoryType(uint32_t memTypeBits, VkMemoryPropertyFlags properties);
   
-  // miscellaneous
+  // miscellaneous (graphics_misc.cpp)
   void setBufferMemory(VkDeviceMemory memory, uint64_t dataSize, const void *data);
   void setImageMemoryRGBA(VkImage, VkDeviceMemory memory, uint32_t width, uint32_t height, const float *data);
   void beginCommandBuffer(VkCommandBuffer cmdBuffer);

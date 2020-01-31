@@ -226,20 +226,6 @@ VkPipelineShaderStageCreateInfo GraphicsPipeline::createShaderStage(const char *
 
 void GraphicsPipeline::createVkPipeline() {
   
-  VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
-  vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-  
-  // Set vertex descriptions
-  vector<VkVertexInputBindingDescription> vertBindingDescs;
-  vector<VkVertexInputAttributeDescription> vertAttribDescs;
-  createVertexDescriptions(2, &vertBindingDescs, &vertAttribDescs);
-  
-  vertexInputInfo.vertexBindingDescriptionCount = (uint32_t)vertBindingDescs.size();
-  vertexInputInfo.pVertexBindingDescriptions = vertBindingDescs.data();
-  
-  vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)vertAttribDescs.size();
-  vertexInputInfo.pVertexAttributeDescriptions = vertAttribDescs.data();
-
   VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
   inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
   inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -326,7 +312,8 @@ void GraphicsPipeline::createVkPipeline() {
 
   pipelineInfo.stageCount = (int)shaderStages.size();
   pipelineInfo.pStages = shaderStages.data();
-
+  
+  auto vertexInputInfo = allocVertexInputInfo();
   pipelineInfo.pVertexInputState = &vertexInputInfo;
   pipelineInfo.pInputAssemblyState = &inputAssembly;
   pipelineInfo.pViewportState = &viewportInfo;
@@ -347,7 +334,9 @@ void GraphicsPipeline::createVkPipeline() {
   pipelineInfo.renderPass = renderPass;
   pipelineInfo.subpass = 0;
   SDL_assert_release(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkPipeline) == VK_SUCCESS);
-
+  
+  // Clean up
+  freeVertexInputInfo(vertexInputInfo);
   for (auto &stage : shaderStages) vkDestroyShaderModule(device, stage.module, nullptr);
 }
 

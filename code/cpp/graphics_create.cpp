@@ -502,23 +502,37 @@ namespace gfx {
     return renderPass;
   }
   
-  void createVertexDescriptions(int vec3Count, vector<VkVertexInputBindingDescription> *bindingsOut, vector<VkVertexInputAttributeDescription> *attribsOut) {
+  VkPipelineVertexInputStateCreateInfo allocVertexInputInfo() {
+    VkPipelineVertexInputStateCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     
-    bindingsOut->resize(0);
-    attribsOut->resize(0);
+    const uint32_t attribCount = 2;
+    info.vertexBindingDescriptionCount = attribCount; // One binding per attribute.
+    info.vertexAttributeDescriptionCount = attribCount;
     
-    for (int i = 0; i < vec3Count; i++) {
-      bindingsOut->push_back({});
-      bindingsOut->back().binding = i;
-      bindingsOut->back().stride = sizeof(vec3);
-      bindingsOut->back().inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    auto bindings = new VkVertexInputBindingDescription[attribCount];
+    auto attribs = new VkVertexInputAttributeDescription[attribCount];
+    
+    for (int i = 0; i < attribCount; i++) {
+      bindings[i].binding = i;
+      bindings[i].stride = sizeof(vec3);
+      bindings[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
       
-      attribsOut->push_back({});
-      attribsOut->back().binding = i; // (*bindingsOut)[i]
-      attribsOut->back().location = i;
-      attribsOut->back().format = VK_FORMAT_R32G32B32_SFLOAT;
-      attribsOut->back().offset = 0;
+      attribs[i].binding = i; // (*bindingsOut)[i]
+      attribs[i].location = i;
+      attribs[i].format = VK_FORMAT_R32G32B32_SFLOAT;
+      attribs[i].offset = 0;
     }
+    
+    info.pVertexBindingDescriptions = bindings;
+    info.pVertexAttributeDescriptions = attribs;
+    
+    return info;
+  }
+  
+  void freeVertexInputInfo(VkPipelineVertexInputStateCreateInfo info) {
+    delete [] info.pVertexBindingDescriptions;
+    delete [] info.pVertexAttributeDescriptions;
   }
 }
 
