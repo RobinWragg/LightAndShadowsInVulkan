@@ -32,6 +32,7 @@ namespace gfx {
   void            createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut);
   VkCommandBuffer createCommandBuffer();
   VkRenderPass    createRenderPass();
+  void            createVertexDescriptions(int vec3Count, vector<VkVertexInputBindingDescription> *bindingsOut, vector<VkVertexInputAttributeDescription> *attribsOut);
   
   // getters
   vector<const char*> getRequiredLayers();

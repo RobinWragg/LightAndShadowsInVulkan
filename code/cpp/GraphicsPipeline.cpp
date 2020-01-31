@@ -226,49 +226,17 @@ VkPipelineShaderStageCreateInfo GraphicsPipeline::createShaderStage(const char *
 
 void GraphicsPipeline::createVkPipeline() {
   
-  // TODO: refactor this function?
-  
-  vector<VkVertexInputBindingDescription> vertBindingDescs;
-  
-  VkVertexInputBindingDescription positionBindingDesc = {};
-  positionBindingDesc.binding = 0;
-  positionBindingDesc.stride = sizeof(vec3);
-  positionBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-  vertBindingDescs.push_back(positionBindingDesc);
-  
-  VkVertexInputBindingDescription normalBindingDesc = {};
-  normalBindingDesc.binding = 1;
-  normalBindingDesc.stride = sizeof(vec3);
-  normalBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-  vertBindingDescs.push_back(normalBindingDesc);
-  
-  vector<VkVertexInputAttributeDescription> vertAttribDescs;
-  
-  VkVertexInputAttributeDescription positionAttribDesc = {};
-  positionAttribDesc.binding = 0;
-  positionAttribDesc.location = 0;
-  positionAttribDesc.format = VK_FORMAT_R32G32B32_SFLOAT;
-  positionAttribDesc.offset = 0;
-  vertAttribDescs.push_back(positionAttribDesc);
-  
-  VkVertexInputAttributeDescription normalAttribDesc = {};
-  normalAttribDesc.binding = 1;
-  normalAttribDesc.location = 1;
-  normalAttribDesc.format = VK_FORMAT_R32G32B32_SFLOAT;
-  normalAttribDesc.offset = 0;
-  vertAttribDescs.push_back(normalAttribDesc);
-  
-  vector<VkPipelineShaderStageCreateInfo> shaderStages = {
-    createShaderStage("basic.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-    createShaderStage("basic.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
-  };
-
   VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
   vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
+  
+  // Set vertex descriptions
+  vector<VkVertexInputBindingDescription> vertBindingDescs;
+  vector<VkVertexInputAttributeDescription> vertAttribDescs;
+  createVertexDescriptions(2, &vertBindingDescs, &vertAttribDescs);
+  
   vertexInputInfo.vertexBindingDescriptionCount = (uint32_t)vertBindingDescs.size();
   vertexInputInfo.pVertexBindingDescriptions = vertBindingDescs.data();
-
+  
   vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)vertAttribDescs.size();
   vertexInputInfo.pVertexAttributeDescriptions = vertAttribDescs.data();
 
@@ -349,6 +317,12 @@ void GraphicsPipeline::createVkPipeline() {
 
   VkGraphicsPipelineCreateInfo pipelineInfo = {};
   pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+  
+  // Load shaders from disk
+  vector<VkPipelineShaderStageCreateInfo> shaderStages = {
+    createShaderStage("basic.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+    createShaderStage("basic.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
+  };
 
   pipelineInfo.stageCount = (int)shaderStages.size();
   pipelineInfo.pStages = shaderStages.data();

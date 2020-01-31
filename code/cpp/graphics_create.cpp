@@ -501,6 +501,25 @@ namespace gfx {
     
     return renderPass;
   }
+  
+  void createVertexDescriptions(int vec3Count, vector<VkVertexInputBindingDescription> *bindingsOut, vector<VkVertexInputAttributeDescription> *attribsOut) {
+    
+    bindingsOut->resize(0);
+    attribsOut->resize(0);
+    
+    for (int i = 0; i < vec3Count; i++) {
+      bindingsOut->push_back({});
+      bindingsOut->back().binding = i;
+      bindingsOut->back().stride = sizeof(vec3);
+      bindingsOut->back().inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+      
+      attribsOut->push_back({});
+      attribsOut->back().binding = i; // (*bindingsOut)[i]
+      attribsOut->back().location = i;
+      attribsOut->back().format = VK_FORMAT_R32G32B32_SFLOAT;
+      attribsOut->back().offset = 0;
+    }
+  }
 }
 
 
