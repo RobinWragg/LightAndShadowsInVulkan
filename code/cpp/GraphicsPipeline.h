@@ -60,8 +60,6 @@ private:
   
   void setupDepthTesting();
   
-  void createRenderPass();
-  
   void createFramebuffers();
   
   void createDescriptorSetLayout(VkDescriptorSetLayout *layoutOut) const;

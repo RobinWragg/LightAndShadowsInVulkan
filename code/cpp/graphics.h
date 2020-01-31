@@ -24,13 +24,14 @@ namespace gfx {
   extern VkImageView    swapchainViews[swapchainSize];
   
   // creators
-  void        createCoreHandles(SDL_Window *window);
-  void        createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
-  void        createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
-  void        createImage(bool forDepthTesting, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
-  VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
-  void        createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut);
+  void            createCoreHandles(SDL_Window *window);
+  void            createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
+  void            createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
+  void            createImage(bool forDepthTesting, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
+  VkImageView     createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
+  void            createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut);
   VkCommandBuffer createCommandBuffer();
+  VkRenderPass    createRenderPass();
   
   // getters
   vector<const char*> getRequiredLayers();

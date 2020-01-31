@@ -471,6 +471,31 @@ namespace gfx {
     
     *dependencyOut = createSubpassDependency();
   }
+  
+  VkRenderPass createRenderPass() {
+    VkSubpassDescription subpassDesc = {};
+    VkSubpassDependency subpassDep = {};
+    vector<VkAttachmentDescription> attachments;
+    vector<VkAttachmentReference> attachmentRefs;
+    createSubpass(&subpassDesc, &subpassDep, &attachments, &attachmentRefs);
+    
+    VkRenderPassCreateInfo renderPassInfo = {};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    
+    renderPassInfo.subpassCount = 1;
+    renderPassInfo.pSubpasses = &subpassDesc;
+    
+    renderPassInfo.dependencyCount = 1;
+    renderPassInfo.pDependencies = &subpassDep;
+    
+    renderPassInfo.attachmentCount = (uint32_t)attachments.size();
+    renderPassInfo.pAttachments = attachments.data();
+    
+    VkRenderPass renderPass;
+    SDL_assert_release(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS);
+    
+    return renderPass;
+  }
 }
 
 

@@ -3,7 +3,7 @@
 
 GraphicsPipeline::GraphicsPipeline() {
   
-  createRenderPass();
+  renderPass = createRenderPass();
   
   createDescriptorSetLayout(&perFrameDescriptorLayout);
   createDescriptorSetLayout(&drawCallDescriptorLayout);
@@ -384,29 +384,6 @@ void GraphicsPipeline::createVkPipeline() {
   SDL_assert_release(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkPipeline) == VK_SUCCESS);
 
   for (auto &stage : shaderStages) vkDestroyShaderModule(device, stage.module, nullptr);
-}
-
-void GraphicsPipeline::createRenderPass() {
-
-  VkSubpassDescription subpassDesc = {};
-  VkSubpassDependency subpassDep = {};
-  vector<VkAttachmentDescription> attachments;
-  vector<VkAttachmentReference> attachmentRefs;
-  createSubpass(&subpassDesc, &subpassDep, &attachments, &attachmentRefs);
-  
-  VkRenderPassCreateInfo renderPassInfo = {};
-  renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-  
-  renderPassInfo.subpassCount = 1;
-  renderPassInfo.pSubpasses = &subpassDesc;
-  
-  renderPassInfo.dependencyCount = 1;
-  renderPassInfo.pDependencies = &subpassDep;
-  
-  renderPassInfo.attachmentCount = (uint32_t)attachments.size();
-  renderPassInfo.pAttachments = attachments.data();
-
-  SDL_assert_release(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS);
 }
 
 void GraphicsPipeline::submit(DrawCall *drawCall, const DrawCallUniform *uniform) {
