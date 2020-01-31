@@ -15,8 +15,6 @@ class DrawCall;
 
 class GraphicsPipeline {
 public:
-  static const int maxDescriptors = 1024;
-  
   VkFramebuffer framebuffers[swapchainSize];
   VkRenderPass renderPass;
   VkCommandBuffer commandBuffers[swapchainSize];
@@ -26,25 +24,14 @@ public:
   VkPipeline vkPipeline;
   VkPipelineLayout pipelineLayout;
   
-  VkDescriptorSetLayout drawCallDescriptorLayout;
-  
   GraphicsPipeline();
   ~GraphicsPipeline();
-  
-  void createDescriptorSet(VkDescriptorSetLayout layout, VkBuffer buffer, VkDescriptorSet *setOut) const;
   
   void submit(DrawCall *drawCall, const DrawCallUniform *uniform);
   
   void present(const PerFrameUniform *perFrameUniform);
   
 private:
-  VkDescriptorPool descriptorPool;
-  
-  VkDescriptorSetLayout perFrameDescriptorLayout;
-  
-  VkDescriptorSet       perFrameDescriptorSets[swapchainSize];
-  VkBuffer              perFrameDescriptorBuffers[swapchainSize];
-  VkDeviceMemory        perFrameDescriptorBuffersMemory[swapchainSize];
   
   struct Submission {
     DrawCall *drawCall;
@@ -60,11 +47,7 @@ private:
   
   void createFramebuffers();
   
-  void createDescriptorSetLayout(VkDescriptorSetLayout *layoutOut) const;
-  
   void createVkPipeline();
-  
-  void createDescriptorPool();
   
   void fillCommandBuffer(uint32_t swapchainIndex, const PerFrameUniform *perFrameUniform);
   

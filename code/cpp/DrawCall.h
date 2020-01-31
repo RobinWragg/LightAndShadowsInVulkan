@@ -7,10 +7,6 @@ public:
   VkBuffer normalBuffer;
   uint32_t vertexCount;
   
-  VkDescriptorSet descriptorSets[swapchainSize];
-  VkBuffer        descriptorBuffers[swapchainSize];
-  VkDeviceMemory  descriptorBuffersMemory[swapchainSize];
-  
   // Auto-make normals based on positions
   DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &vertices);
   

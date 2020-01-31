@@ -5,21 +5,11 @@ GraphicsPipeline::GraphicsPipeline() {
   
   renderPass = createRenderPass();
   
-  createDescriptorSetLayout(&perFrameDescriptorLayout);
-  createDescriptorSetLayout(&drawCallDescriptorLayout);
-  
   createVkPipeline();
   
   createFramebuffers();
   
   createSemaphores();
-  
-  createDescriptorPool();
-  
-  for (int i = 0; i < swapchainSize; i++) {
-    createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(PerFrameUniform), &perFrameDescriptorBuffers[i], &perFrameDescriptorBuffersMemory[i]);
-    createDescriptorSet(perFrameDescriptorLayout, perFrameDescriptorBuffers[i], &perFrameDescriptorSets[i]);
-  }
   
   for (int i = 0; i < swapchainSize; i++) {
     commandBuffers[i] = createCommandBuffer();
@@ -43,15 +33,7 @@ GraphicsPipeline::~GraphicsPipeline() {
   for (int i = 0; i < swapchainSize; i++) {
     vkDestroyFramebuffer(device, framebuffers[i], nullptr);
     vkDestroyFence(device, fences[i], nullptr);
-    
-    vkDestroyBuffer(device, perFrameDescriptorBuffers[i], nullptr);
-    vkFreeMemory(device, perFrameDescriptorBuffersMemory[i], nullptr);
   }
-  
-  vkDestroyDescriptorSetLayout(device, perFrameDescriptorLayout, nullptr);
-  vkDestroyDescriptorSetLayout(device, drawCallDescriptorLayout, nullptr);
-  
-  vkDestroyDescriptorPool(device, descriptorPool, nullptr); // Also destroys the descriptor sets
 }
 
 void GraphicsPipeline::createFences() {
@@ -62,66 +44,6 @@ void GraphicsPipeline::createFences() {
   for (int i = 0; i < swapchainSize; i++) {
     vkCreateFence(device, &createInfo, nullptr, &fences[i]);
   }
-}
-
-void GraphicsPipeline::createDescriptorPool() {
-  VkDescriptorPoolSize poolSize = {};
-  poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  poolSize.descriptorCount = swapchainSize * maxDescriptors;
-  
-  VkDescriptorPoolCreateInfo poolInfo = {};
-  poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-  poolInfo.poolSizeCount = 1;
-  poolInfo.maxSets = swapchainSize * maxDescriptors;
-  poolInfo.pPoolSizes = &poolSize;
-  poolInfo.flags = 0;
-  
-  auto result = vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool);
-  SDL_assert_release(result == VK_SUCCESS);
-}
-
-void GraphicsPipeline::createDescriptorSet(VkDescriptorSetLayout layout, VkBuffer buffer, VkDescriptorSet *setOut) const {
-  
-  VkDescriptorSetAllocateInfo allocInfo = {};
-  allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-  allocInfo.descriptorPool = descriptorPool;
-  allocInfo.descriptorSetCount = 1;
-  allocInfo.pSetLayouts = &layout;
-  
-  auto result = vkAllocateDescriptorSets(device, &allocInfo, setOut);
-  SDL_assert_release(result == VK_SUCCESS);
-  
-  VkDescriptorBufferInfo bufferInfo = {};
-  bufferInfo.buffer = buffer;
-  bufferInfo.offset = 0;
-  bufferInfo.range = VK_WHOLE_SIZE;
-  
-  VkWriteDescriptorSet writeDescriptorSet = {};
-  writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  writeDescriptorSet.dstSet = *setOut;
-  writeDescriptorSet.dstBinding = 0;
-  writeDescriptorSet.dstArrayElement = 0;
-  writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  writeDescriptorSet.descriptorCount = 1;
-  writeDescriptorSet.pBufferInfo = &bufferInfo;
-  
-  vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
-}
-
-void GraphicsPipeline::createDescriptorSetLayout(VkDescriptorSetLayout *layoutOut) const {
-  VkDescriptorSetLayoutBinding layoutBinding = {};
-  layoutBinding.binding = 0;
-  layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  layoutBinding.descriptorCount = 1;
-  layoutBinding.stageFlags = VK_SHADER_STAGE_ALL;
-  
-  VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-  layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  layoutInfo.bindingCount = 1;
-  layoutInfo.pBindings = &layoutBinding;
-  
-  auto result = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, layoutOut);
-  SDL_assert_release(result == VK_SUCCESS);
 }
 
 void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex, const PerFrameUniform *perFrameUniform) {
@@ -153,18 +75,11 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex, const PerFrame
   
   vkCmdBeginRenderPass(cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
   vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
-
-  vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0 /*per-frame set index*/, 1, &perFrameDescriptorSets[swapchainIndex], 0, nullptr);
   
   vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(*perFrameUniform), perFrameUniform);
   
   for (auto &sub : submissions) {
     vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(*perFrameUniform), sizeof(sub.uniform), &sub.uniform);
-    
-    // Set per-drawcall shader data
-    // setBufferMemory(sub.drawCall->descriptorBuffersMemory[swapchainIndex], sizeof(DrawCallUniform), &sub.uniform);
-    
-    // vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1 /*drawcall set index*/, 1, &sub.drawCall->descriptorSets[swapchainIndex], 0, nullptr);
     
     const int bufferCount = 2;
     VkBuffer buffers[bufferCount] = {
@@ -193,12 +108,7 @@ void GraphicsPipeline::createSemaphores() {
 }
 
 void GraphicsPipeline::createVkPipeline() {
-  const int descriptorSetLayoutCount = 2;
-  VkDescriptorSetLayout descriptorSetLayouts[descriptorSetLayoutCount] = {
-    perFrameDescriptorLayout,
-    drawCallDescriptorLayout
-  };
-  pipelineLayout = createPipelineLayout(descriptorSetLayouts, descriptorSetLayoutCount);
+  pipelineLayout = createPipelineLayout(nullptr, 0);
   vkPipeline = createPipeline(pipelineLayout, renderPass);
 }
 
@@ -219,10 +129,6 @@ void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
   // Wait for the command buffer to finish executing
   vkWaitForFences(device, 1, &fences[swapchainIndex], VK_TRUE, INT64_MAX);
   vkResetFences(device, 1, &fences[swapchainIndex]);
-  
-  // Set per-frame shader data
-  VkDeviceMemory &uniformMemory = perFrameDescriptorBuffersMemory[swapchainIndex];
-  setBufferMemory(uniformMemory, sizeof(PerFrameUniform), perFrameUniform);
   
   // Fill the command buffer
   fillCommandBuffer(swapchainIndex, perFrameUniform);

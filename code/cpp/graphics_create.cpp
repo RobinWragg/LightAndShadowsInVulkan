@@ -714,6 +714,78 @@ namespace gfx {
     
     return pipeline;
   }
+  
+  // Unused, kept in case it's needed later.
+  VkDescriptorPool createDescriptorPool(uint32_t descriptorCount) {
+    VkDescriptorPoolSize poolSize = {};
+    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSize.descriptorCount = descriptorCount;
+    
+    VkDescriptorPoolCreateInfo poolInfo = {};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.poolSizeCount = 1;
+    poolInfo.maxSets = descriptorCount; // Assumes one descriptor per set
+    poolInfo.pPoolSizes = &poolSize;
+    poolInfo.flags = 0;
+    
+    VkDescriptorPool pool;
+    auto result = vkCreateDescriptorPool(device, &poolInfo, nullptr, &pool);
+    SDL_assert_release(result == VK_SUCCESS);
+    
+    return pool;
+  }
+  
+  // Unused, kept in case it's needed later.
+  VkDescriptorSet createDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout layout, VkBuffer buffer) {
+    
+    VkDescriptorSetAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = pool;
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = &layout;
+    
+    VkDescriptorSet descriptorSet;
+    auto result = vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet);
+    SDL_assert_release(result == VK_SUCCESS);
+    
+    VkDescriptorBufferInfo bufferInfo = {};
+    bufferInfo.buffer = buffer;
+    bufferInfo.offset = 0;
+    bufferInfo.range = VK_WHOLE_SIZE;
+    
+    VkWriteDescriptorSet writeDescriptorSet = {};
+    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSet.dstSet = descriptorSet;
+    writeDescriptorSet.dstBinding = 0;
+    writeDescriptorSet.dstArrayElement = 0;
+    writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    writeDescriptorSet.descriptorCount = 1;
+    writeDescriptorSet.pBufferInfo = &bufferInfo;
+    
+    vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
+    
+    return descriptorSet;
+  }
+  
+  // Unused, kept in case it's needed later.
+  VkDescriptorSetLayout createDescriptorSetLayout() {
+    VkDescriptorSetLayoutBinding layoutBinding = {};
+    layoutBinding.binding = 0;
+    layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    layoutBinding.descriptorCount = 1;
+    layoutBinding.stageFlags = VK_SHADER_STAGE_ALL;
+    
+    VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = 1;
+    layoutInfo.pBindings = &layoutBinding;
+    
+    VkDescriptorSetLayout layout;
+    auto result = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &layout);
+    SDL_assert_release(result == VK_SUCCESS);
+    
+    return layout;
+  }
 }
 
 
