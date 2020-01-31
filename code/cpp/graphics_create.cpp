@@ -534,6 +534,94 @@ namespace gfx {
     delete [] info.pVertexBindingDescriptions;
     delete [] info.pVertexAttributeDescriptions;
   }
+  
+  VkPipelineDepthStencilStateCreateInfo createDepthStencilInfo() {
+    VkPipelineDepthStencilStateCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    info.depthTestEnable = VK_TRUE;
+    info.depthWriteEnable = VK_TRUE;
+    info.depthCompareOp = VK_COMPARE_OP_LESS; // Lower depth values mean closer to 'camera'
+    info.depthBoundsTestEnable = VK_FALSE;
+    info.stencilTestEnable = VK_FALSE;
+    return info;
+  }
+  
+  VkPipelineRasterizationStateCreateInfo createRasterizationInfo() {
+    VkPipelineRasterizationStateCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    info.depthClampEnable = VK_FALSE;
+    info.rasterizerDiscardEnable = VK_FALSE;
+    info.polygonMode = VK_POLYGON_MODE_FILL;
+    info.lineWidth = 1;
+    info.cullMode = VK_CULL_MODE_BACK_BIT;
+    info.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    info.depthBiasEnable = VK_FALSE;
+    return info;
+  }
+  
+  VkPipelineColorBlendAttachmentState createColorBlendAttachment() {
+    VkPipelineColorBlendAttachmentState attachment = {};
+    
+    attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    attachment.blendEnable = VK_TRUE;
+
+    attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    attachment.colorBlendOp = VK_BLEND_OP_ADD;
+
+    attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+    attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+    
+    return attachment;
+  }
+  
+  VkPipelineViewportStateCreateInfo allocViewportInfo() {
+    auto extent = getSurfaceExtent();
+    
+    VkPipelineViewportStateCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    
+    VkViewport *viewport = new VkViewport;
+    bzero(viewport, sizeof(VkViewport));
+    viewport->x = 0;
+    viewport->y = 0;
+    viewport->width = (float)extent.width;
+    viewport->height = (float)extent.height;
+    viewport->minDepth = 0;
+    viewport->maxDepth = 1;
+    info.viewportCount = 1;
+    info.pViewports = viewport;
+    
+    VkRect2D *scissor = new VkRect2D;
+    bzero(scissor, sizeof(VkRect2D));
+    scissor->offset.x = 0;
+    scissor->offset.y = 0;
+    scissor->extent = extent;
+    info.scissorCount = 1;
+    info.pScissors = scissor;
+    
+    return info;
+  }
+  
+  void freeViewportInfo(VkPipelineViewportStateCreateInfo info) {
+    delete info.pViewports;
+    delete info.pScissors;
+  }
+  
+  VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts[], uint32_t descriptorSetLayoutCount) {
+    VkPipelineLayoutCreateInfo layoutInfo = {};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    
+    layoutInfo.setLayoutCount = descriptorSetLayoutCount;
+    layoutInfo.pSetLayouts = descriptorSetLayouts;
+    
+    VkPipelineLayout pipelineLayout;
+    auto result = vkCreatePipelineLayout(device, &layoutInfo, nullptr, &pipelineLayout);
+    SDL_assert_release(result == VK_SUCCESS);
+    
+    return pipelineLayout;
+  }
 }
 
 

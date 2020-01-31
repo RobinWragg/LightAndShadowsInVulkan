@@ -24,15 +24,20 @@ namespace gfx {
   extern VkImageView    swapchainViews[swapchainSize];
   
   // creators (graphics_create.cpp)
-  void            createCoreHandles(SDL_Window *window);
-  void            createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
-  void            createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
-  void            createImage(bool forDepthTesting, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
-  VkImageView     createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
-  void            createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut);
+  void createCoreHandles(SDL_Window *window);
+  void createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
+  void createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
+  void createImage(bool forDepthTesting, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
+  VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
+  void createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut);
   VkCommandBuffer createCommandBuffer();
-  VkRenderPass    createRenderPass();
-  
+  VkRenderPass createRenderPass();
+  VkPipelineDepthStencilStateCreateInfo createDepthStencilInfo();
+  VkPipelineRasterizationStateCreateInfo createRasterizationInfo();
+  VkPipelineColorBlendAttachmentState createColorBlendAttachment();
+  VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts[], uint32_t descriptorSetLayoutCount);
+  VkPipelineViewportStateCreateInfo allocViewportInfo(); // Call the function below when you're done.
+  void freeViewportInfo(VkPipelineViewportStateCreateInfo info);
   VkPipelineVertexInputStateCreateInfo allocVertexInputInfo(); // Call the function below when you're done.
   void freeVertexInputInfo(VkPipelineVertexInputStateCreateInfo info);
     
