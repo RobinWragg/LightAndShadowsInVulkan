@@ -124,7 +124,7 @@ void GraphicsPipeline::createDescriptorSetLayout(VkDescriptorSetLayout *layoutOu
   SDL_assert_release(result == VK_SUCCESS);
 }
 
-void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
+void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex, const PerFrameUniform *perFrameUniform) {
   
   VkCommandBuffer &cmdBuffer = commandBuffers[swapchainIndex];
   
@@ -156,11 +156,15 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex) {
 
   vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0 /*per-frame set index*/, 1, &perFrameDescriptorSets[swapchainIndex], 0, nullptr);
   
+  vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(*perFrameUniform), perFrameUniform);
+  
   for (auto &sub : submissions) {
-    // Set per-drawcall shader data
-    setBufferMemory(sub.drawCall->descriptorBuffersMemory[swapchainIndex], sizeof(DrawCallUniform), &sub.uniform);
+    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(*perFrameUniform), sizeof(sub.uniform), &sub.uniform);
     
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1 /*drawcall set index*/, 1, &sub.drawCall->descriptorSets[swapchainIndex], 0, nullptr);
+    // Set per-drawcall shader data
+    // setBufferMemory(sub.drawCall->descriptorBuffersMemory[swapchainIndex], sizeof(DrawCallUniform), &sub.uniform);
+    
+    // vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1 /*drawcall set index*/, 1, &sub.drawCall->descriptorSets[swapchainIndex], 0, nullptr);
     
     const int bufferCount = 2;
     VkBuffer buffers[bufferCount] = {
@@ -221,7 +225,7 @@ void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
   setBufferMemory(uniformMemory, sizeof(PerFrameUniform), perFrameUniform);
   
   // Fill the command buffer
-  fillCommandBuffer(swapchainIndex);
+  fillCommandBuffer(swapchainIndex, perFrameUniform);
   
   // Submit the command buffer
   VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;

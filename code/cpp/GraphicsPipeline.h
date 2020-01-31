@@ -66,7 +66,7 @@ private:
   
   void createDescriptorPool();
   
-  void fillCommandBuffer(uint32_t swapchainIndex);
+  void fillCommandBuffer(uint32_t swapchainIndex, const PerFrameUniform *perFrameUniform);
   
   void createFences();
 };

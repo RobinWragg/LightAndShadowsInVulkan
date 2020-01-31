@@ -135,14 +135,15 @@ namespace scene {
     PerFrameUniform perFrameUniform;
     perFrameUniform.matrix = glm::identity<mat4>();
     
+    // projection transformation
     VkExtent2D extent = gfx::getSurfaceExtent();
     float aspect = extent.width / (float)extent.height;
     perFrameUniform.matrix = perspective(radians(50.0f), aspect, 0.1f, 100.0f);
-    perFrameUniform.matrix = scale(perFrameUniform.matrix, vec3(1, -1, 1));
     
+    // view transformation
+    perFrameUniform.matrix = scale(perFrameUniform.matrix, vec3(1, -1, 1));
     perFrameUniform.matrix = rotate(perFrameUniform.matrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
     perFrameUniform.matrix = rotate(perFrameUniform.matrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
-    
     perFrameUniform.matrix = translate(perFrameUniform.matrix, -cameraPosition);
     
     DrawCallUniform pyramidUniform;

@@ -13,14 +13,23 @@ layout(set = 1, binding = 0) uniform DrawCallData {
   mat4 matrix;
 } drawCallData;
 
+layout(push_constant) uniform PushConstant {
+  mat4 viewAndProjection;
+  mat4 model;
+} pushConstant;
+
 void main() {
-  gl_Position = perFrameData.matrix * drawCallData.matrix * vec4(position, 1.0);
+  gl_Position = pushConstant.viewAndProjection * pushConstant.model * vec4(position, 1.0);
   
   // Transform the normal to world space
-  mat3 normalMatrix = mat3(drawCallData.matrix);
+  mat3 normalMatrix = mat3(pushConstant.model);
   normalMatrix = transpose(inverse(normalMatrix)); // TODO: Learn why this works. Inverting and transposing the matrix is required to handle scaled normals correctly, but I don't understand how it works at this time.
   vec3 worldNormal = normalize(normalMatrix * normal);
   
   fragmentColor = vec3(1, 1, 1) * dot(worldNormal, vec3(0.707, 0.707, 0));
   // fragmentColor = normal;
 }
+
+
+
+

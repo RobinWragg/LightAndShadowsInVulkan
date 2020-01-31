@@ -616,6 +616,13 @@ namespace gfx {
     layoutInfo.setLayoutCount = descriptorSetLayoutCount;
     layoutInfo.pSetLayouts = descriptorSetLayouts;
     
+    VkPushConstantRange pushConstRange = {};
+    pushConstRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    pushConstRange.offset = 0;
+    pushConstRange.size = sizeof(mat4) * 2;
+    layoutInfo.pushConstantRangeCount = 1;
+    layoutInfo.pPushConstantRanges = &pushConstRange;
+    
     VkPipelineLayout pipelineLayout;
     auto result = vkCreatePipelineLayout(device, &layoutInfo, nullptr, &pipelineLayout);
     SDL_assert_release(result == VK_SUCCESS);
