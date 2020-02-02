@@ -122,7 +122,7 @@ namespace scene {
     printf("\nInitialised Vulkan\n");
   }
   
-  void updateAndRender(float dt) {
+  mat4 getUpdatedViewProjectionMatrix(float dt) {
     cameraAngle += input::getViewAngleInput();
     
     // Get player input for walking and take into account the direction the player is facing
@@ -145,6 +145,10 @@ namespace scene {
     viewProjectionMatrix = rotate(viewProjectionMatrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
     viewProjectionMatrix = translate(viewProjectionMatrix, -cameraPosition);
     
+    return viewProjectionMatrix;
+  }
+  
+  void updateAndRender(float dt) {
     pyramid->modelMatrix = glm::identity<mat4>();
     pyramid->modelMatrix = translate(pyramid->modelMatrix, vec3(0, 0, -2));
     pyramid->modelMatrix = rotate(pyramid->modelMatrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
@@ -165,7 +169,7 @@ namespace scene {
     ground->modelMatrix = glm::identity<mat4>();
     pipeline->submit(ground);
     
-    pipeline->present(viewProjectionMatrix);
+    pipeline->present(getUpdatedViewProjectionMatrix(dt));
   }
 }
 
