@@ -12,7 +12,8 @@ namespace gfx {
   
   struct SwapchainFrame {
     VkImageView view = VK_NULL_HANDLE;
-    VkFramebuffer buffer = VK_NULL_HANDLE;
+    VkFramebuffer framebuffer = VK_NULL_HANDLE;
+    VkCommandBuffer cmdBuffer = VK_NULL_HANDLE;
   };
   
   extern VkSwapchainKHR swapchain;

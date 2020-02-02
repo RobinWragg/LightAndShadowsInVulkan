@@ -278,7 +278,8 @@ namespace gfx {
   static SwapchainFrame createSwapchainFrame(VkImage swapchainImage) {
     SwapchainFrame frame;
     frame.view = createImageView(swapchainImage, surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-    frame.buffer = createFramebuffer(frame.view);
+    frame.framebuffer = createFramebuffer(frame.view);
+    frame.cmdBuffer = createCommandBuffer();
     return frame;
   }
   

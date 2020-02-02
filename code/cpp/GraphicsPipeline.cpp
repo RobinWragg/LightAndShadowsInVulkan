@@ -7,15 +7,10 @@ GraphicsPipeline::GraphicsPipeline() {
   
   createSemaphores();
   
-  for (int i = 0; i < swapchainSize; i++) {
-    commandBuffers[i] = createCommandBuffer();
-  }
-  
   createFences();
 }
 
 GraphicsPipeline::~GraphicsPipeline() {
-  vkFreeCommandBuffers(device, commandPool, swapchainSize, commandBuffers);
   
   vkDestroyCommandPool(device, commandPool, nullptr);
 
@@ -43,14 +38,14 @@ void GraphicsPipeline::createFences() {
 
 void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex, const PerFrameUniform *perFrameUniform) {
   
-  VkCommandBuffer &cmdBuffer = commandBuffers[swapchainIndex];
+  VkCommandBuffer &cmdBuffer = swapchainFrames[swapchainIndex].cmdBuffer;
   
   beginCommandBuffer(cmdBuffer);
 
   VkRenderPassBeginInfo renderPassInfo = {};
   renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   renderPassInfo.renderPass = renderPass;
-  renderPassInfo.framebuffer = swapchainFrames[swapchainIndex].buffer;
+  renderPassInfo.framebuffer = swapchainFrames[swapchainIndex].framebuffer;
   
   vector<VkClearValue> clearValues(2);
   
@@ -89,9 +84,9 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex, const PerFrame
   
   submissions.resize(0);
   
-  vkCmdEndRenderPass(commandBuffers[swapchainIndex]);
+  vkCmdEndRenderPass(cmdBuffer);
 
-  auto result = vkEndCommandBuffer(commandBuffers[swapchainIndex]);
+  auto result = vkEndCommandBuffer(cmdBuffer);
   SDL_assert(result == VK_SUCCESS);
 }
 
@@ -130,7 +125,7 @@ void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
   
   // Submit the command buffer
   VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  submitCommandBuffer(commandBuffers[swapchainIndex], imageAvailableSemaphore, waitStage, renderCompletedSemaphore, fences[swapchainIndex]);
+  submitCommandBuffer(swapchainFrames[swapchainIndex].cmdBuffer, imageAvailableSemaphore, waitStage, renderCompletedSemaphore, fences[swapchainIndex]);
   
   // Present
   VkPresentInfoKHR presentInfo = {};

@@ -15,7 +15,6 @@ class DrawCall;
 
 class GraphicsPipeline {
 public:
-  VkCommandBuffer commandBuffers[swapchainSize];
   VkFence fences[swapchainSize];
   VkSemaphore imageAvailableSemaphore;
   VkSemaphore renderCompletedSemaphore;
