@@ -132,19 +132,18 @@ namespace scene {
     cameraPosition.x += lateralMovement.x;
     cameraPosition.z -= lateralMovement.y;
     
-    PerFrameUniform perFrameUniform;
-    perFrameUniform.matrix = glm::identity<mat4>();
+    mat4 viewProjectionMatrix = glm::identity<mat4>();
     
     // projection transformation
     VkExtent2D extent = gfx::getSurfaceExtent();
     float aspect = extent.width / (float)extent.height;
-    perFrameUniform.matrix = perspective(radians(50.0f), aspect, 0.1f, 100.0f);
+    viewProjectionMatrix = perspective(radians(50.0f), aspect, 0.1f, 100.0f);
     
     // view transformation
-    perFrameUniform.matrix = scale(perFrameUniform.matrix, vec3(1, -1, 1));
-    perFrameUniform.matrix = rotate(perFrameUniform.matrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
-    perFrameUniform.matrix = rotate(perFrameUniform.matrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
-    perFrameUniform.matrix = translate(perFrameUniform.matrix, -cameraPosition);
+    viewProjectionMatrix = scale(viewProjectionMatrix, vec3(1, -1, 1));
+    viewProjectionMatrix = rotate(viewProjectionMatrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
+    viewProjectionMatrix = rotate(viewProjectionMatrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
+    viewProjectionMatrix = translate(viewProjectionMatrix, -cameraPosition);
     
     pyramid->modelMatrix = glm::identity<mat4>();
     pyramid->modelMatrix = translate(pyramid->modelMatrix, vec3(0, 0, -2));
@@ -166,7 +165,7 @@ namespace scene {
     ground->modelMatrix = glm::identity<mat4>();
     pipeline->submit(ground);
     
-    pipeline->present(&perFrameUniform);
+    pipeline->present(viewProjectionMatrix);
   }
 }
 

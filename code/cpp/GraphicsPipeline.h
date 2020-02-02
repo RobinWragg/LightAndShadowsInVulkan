@@ -3,14 +3,6 @@
 
 using namespace gfx;
 
-struct PerFrameUniform {
-  mat4 matrix;
-};
-
-struct DrawCallUniform {
-  mat4 matrix;
-};
-
 class DrawCall;
 
 class GraphicsPipeline {
@@ -24,7 +16,7 @@ public:
   
   void submit(const DrawCall *drawCall);
   
-  void present(const PerFrameUniform *perFrameUniform);
+  void present(const mat4 &viewProjectionMatrix);
   
 private:
   
@@ -36,7 +28,7 @@ private:
   
   void setupDepthTesting();
   
-  void fillCommandBuffer(SwapchainFrame *frame, const PerFrameUniform *perFrameUniform);
+  void fillCommandBuffer(SwapchainFrame *frame, const mat4 &viewProjectionMatrix);
 };
 
 

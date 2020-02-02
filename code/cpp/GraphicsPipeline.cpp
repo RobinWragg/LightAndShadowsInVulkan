@@ -10,7 +10,7 @@ GraphicsPipeline::GraphicsPipeline() {
   createSemaphores();
 }
 
-void GraphicsPipeline::fillCommandBuffer(SwapchainFrame *frame, const PerFrameUniform *perFrameUniform) {
+void GraphicsPipeline::fillCommandBuffer(SwapchainFrame *frame, const mat4 &viewProjectionMatrix) {
   
   VkCommandBuffer &cmdBuffer = frame->cmdBuffer;
   
@@ -40,7 +40,7 @@ void GraphicsPipeline::fillCommandBuffer(SwapchainFrame *frame, const PerFrameUn
   vkCmdBeginRenderPass(cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
   vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
   
-  vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(*perFrameUniform), perFrameUniform);
+  vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
   
   for (auto &sub : submissions) {
     sub.addToCmdBuffer(cmdBuffer, pipelineLayout);
@@ -65,7 +65,7 @@ void GraphicsPipeline::submit(const DrawCall *drawCall) {
   submissions.push_back(*drawCall);
 }
 
-void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
+void GraphicsPipeline::present(const mat4 &viewProjectionMatrix) {
   
   // Get next swapchain image
   // Get the next swapchain image and signal the semaphore.
@@ -80,7 +80,7 @@ void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
   vkResetFences(device, 1, &frame->cmdBufferFence);
   
   // Fill the command buffer
-  fillCommandBuffer(frame, perFrameUniform);
+  fillCommandBuffer(frame, viewProjectionMatrix);
   
   // Submit the command buffer
   VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
