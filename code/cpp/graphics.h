@@ -15,6 +15,7 @@ namespace gfx {
     VkFramebuffer framebuffer = VK_NULL_HANDLE;
     VkCommandBuffer cmdBuffer = VK_NULL_HANDLE;
     VkFence cmdBufferFence = VK_NULL_HANDLE;
+    uint32_t index;
   };
   
   extern VkSwapchainKHR swapchain;
@@ -48,12 +49,14 @@ namespace gfx {
   VkPhysicalDevice    getPhysicalDevice(SDL_Window *window);
   uint32_t            getMemoryType(uint32_t memTypeBits, VkMemoryPropertyFlags properties);
   vector<VkImage>     getSwapchainImages();
+  SwapchainFrame*     getNextFrame(VkSemaphore imageAvailableSemaphore);
   
   // miscellaneous (graphics_misc.cpp)
   void setBufferMemory(VkDeviceMemory memory, uint64_t dataSize, const void *data);
   void setImageMemoryRGBA(VkImage, VkDeviceMemory memory, uint32_t width, uint32_t height, const float *data);
   void beginCommandBuffer(VkCommandBuffer cmdBuffer);
   void submitCommandBuffer(VkCommandBuffer cmdBuffer, VkSemaphore optionalWaitSemaphore = VK_NULL_HANDLE, VkPipelineStageFlags optionalWaitStage = 0, VkSemaphore optionalSignalSemaphore = VK_NULL_HANDLE, VkFence optionalFence = VK_NULL_HANDLE);
+  void presentFrame(const SwapchainFrame *frame, VkSemaphore waitSemaphore);
 }
 
 

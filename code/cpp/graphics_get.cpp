@@ -140,6 +140,18 @@ namespace gfx {
     vkGetSwapchainImagesKHR(device, swapchain, &imageCount, images.data());
     return images;
   }
+  
+  SwapchainFrame* getNextFrame(VkSemaphore imageAvailableSemaphore) {
+    SDL_assert(imageAvailableSemaphore != VK_NULL_HANDLE);
+    
+    // Get next swapchain image
+    // Get the next swapchain image and signal the semaphore.
+    uint32_t swapchainIndex = INT32_MAX;
+    auto result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX /* no timeout */, imageAvailableSemaphore, VK_NULL_HANDLE, &swapchainIndex);
+    SDL_assert(result == VK_SUCCESS);
+    
+    return &swapchainFrames[swapchainIndex];
+  }
 }
 
 

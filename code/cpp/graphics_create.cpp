@@ -275,19 +275,21 @@ namespace gfx {
     return framebuffer;
   }
   
-  static SwapchainFrame createSwapchainFrame(VkImage swapchainImage) {
-    SwapchainFrame frame;
+  static void createSwapchainFrames() {
+    auto images = getSwapchainImages();
     
-    frame.view = createImageView(swapchainImage, surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-    frame.framebuffer = createFramebuffer(frame.view);
-    frame.cmdBuffer = createCommandBuffer();
-    
-    VkFenceCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    createInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-    vkCreateFence(device, &createInfo, nullptr, &frame.cmdBufferFence);
-    
-    return frame;
+    for (int i = 0; i < images.size(); i++) {
+      swapchainFrames[i].index = i;
+      
+      swapchainFrames[i].view = createImageView(images[i], surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+      swapchainFrames[i].framebuffer = createFramebuffer(swapchainFrames[i].view);
+      swapchainFrames[i].cmdBuffer = createCommandBuffer();
+      
+      VkFenceCreateInfo createInfo = {};
+      createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+      createInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+      vkCreateFence(device, &createInfo, nullptr, &swapchainFrames[i].cmdBufferFence);
+    }
   }
   
   static void createSwapchain() {
@@ -326,11 +328,7 @@ namespace gfx {
     auto result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchain);
     SDL_assert_release(result == VK_SUCCESS);
     
-    auto images = getSwapchainImages();
-    
-    for (int i = 0; i < images.size(); i++) {
-      swapchainFrames[i] = createSwapchainFrame(images[i]);
-    }
+    createSwapchainFrames();
   }
   
   static void createDepthImageAndView() {

@@ -1,5 +1,5 @@
 #pragma once
-#include "GraphicsPipeline.h"
+#include "graphics.h"
 
 class DrawCall {
 public:

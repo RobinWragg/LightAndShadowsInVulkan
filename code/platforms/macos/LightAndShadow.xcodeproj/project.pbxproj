@@ -16,22 +16,20 @@
 		00359D34238EB5D70076E82F /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D33238EB5D70076E82F /* AppKit.framework */; };
 		00359D36238EB65A0076E82F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D35238EB65A0076E82F /* QuartzCore.framework */; };
 		00470909238218AA0018D488 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; };
-		0076592723D9C2520077EE10 /* graphics_get.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076591B23D9C2520077EE10 /* graphics_get.cpp */; };
-		0076592823D9C2520077EE10 /* graphics_get.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076591B23D9C2520077EE10 /* graphics_get.cpp */; };
-		0076592923D9C2520077EE10 /* graphics_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076591C23D9C2520077EE10 /* graphics_misc.cpp */; };
-		0076592A23D9C2520077EE10 /* graphics_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076591C23D9C2520077EE10 /* graphics_misc.cpp */; };
-		0076592B23D9C2520077EE10 /* input.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076591D23D9C2520077EE10 /* input.cpp */; };
-		0076592C23D9C2520077EE10 /* input.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076591D23D9C2520077EE10 /* input.cpp */; };
-		0076592D23D9C2520077EE10 /* scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076591E23D9C2520077EE10 /* scene.cpp */; };
-		0076592E23D9C2520077EE10 /* scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076591E23D9C2520077EE10 /* scene.cpp */; };
-		0076592F23D9C2520077EE10 /* GraphicsPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076591F23D9C2520077EE10 /* GraphicsPipeline.cpp */; };
-		0076593023D9C2520077EE10 /* GraphicsPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076591F23D9C2520077EE10 /* GraphicsPipeline.cpp */; };
-		0076593123D9C2520077EE10 /* graphics_create.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076592023D9C2520077EE10 /* graphics_create.cpp */; };
-		0076593223D9C2520077EE10 /* graphics_create.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076592023D9C2520077EE10 /* graphics_create.cpp */; };
-		0076593323D9C2520077EE10 /* DrawCall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076592423D9C2520077EE10 /* DrawCall.cpp */; };
-		0076593423D9C2520077EE10 /* DrawCall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076592423D9C2520077EE10 /* DrawCall.cpp */; };
-		0076593523D9C2520077EE10 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076592523D9C2520077EE10 /* main.cpp */; };
-		0076593623D9C2520077EE10 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0076592523D9C2520077EE10 /* main.cpp */; };
+		0066E57F23E785CA00E9F600 /* graphics_get.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57523E785CA00E9F600 /* graphics_get.cpp */; };
+		0066E58023E785CA00E9F600 /* graphics_get.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57523E785CA00E9F600 /* graphics_get.cpp */; };
+		0066E58123E785CA00E9F600 /* graphics_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57623E785CA00E9F600 /* graphics_misc.cpp */; };
+		0066E58223E785CA00E9F600 /* graphics_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57623E785CA00E9F600 /* graphics_misc.cpp */; };
+		0066E58323E785CA00E9F600 /* input.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57723E785CA00E9F600 /* input.cpp */; };
+		0066E58423E785CA00E9F600 /* input.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57723E785CA00E9F600 /* input.cpp */; };
+		0066E58523E785CA00E9F600 /* scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57823E785CA00E9F600 /* scene.cpp */; };
+		0066E58623E785CA00E9F600 /* scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57823E785CA00E9F600 /* scene.cpp */; };
+		0066E58723E785CA00E9F600 /* graphics_create.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57923E785CA00E9F600 /* graphics_create.cpp */; };
+		0066E58823E785CA00E9F600 /* graphics_create.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57923E785CA00E9F600 /* graphics_create.cpp */; };
+		0066E58923E785CA00E9F600 /* DrawCall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57C23E785CA00E9F600 /* DrawCall.cpp */; };
+		0066E58A23E785CA00E9F600 /* DrawCall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57C23E785CA00E9F600 /* DrawCall.cpp */; };
+		0066E58B23E785CA00E9F600 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57D23E785CA00E9F600 /* main.cpp */; };
+		0066E58C23E785CA00E9F600 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0066E57D23E785CA00E9F600 /* main.cpp */; };
 		008D37EA238F16AB00336F14 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D35238EB65A0076E82F /* QuartzCore.framework */; };
 		008D37EB238F16AB00336F14 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D33238EB5D70076E82F /* AppKit.framework */; };
 		008D37EC238F16AB00336F14 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D31238EB58D0076E82F /* Foundation.framework */; };
@@ -92,20 +90,18 @@
 		00359D35238EB65A0076E82F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		0036EB352382A71D008538A6 /* vulkan.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = vulkan.framework; sourceTree = SOURCE_ROOT; };
 		00470908238218AA0018D488 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL2.framework; sourceTree = SOURCE_ROOT; };
-		0076591923D9C2520077EE10 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
-		0076591A23D9C2520077EE10 /* input.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = input.h; sourceTree = "<group>"; };
-		0076591B23D9C2520077EE10 /* graphics_get.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics_get.cpp; sourceTree = "<group>"; };
-		0076591C23D9C2520077EE10 /* graphics_misc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics_misc.cpp; sourceTree = "<group>"; };
-		0076591D23D9C2520077EE10 /* input.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = input.cpp; sourceTree = "<group>"; };
-		0076591E23D9C2520077EE10 /* scene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = scene.cpp; sourceTree = "<group>"; };
-		0076591F23D9C2520077EE10 /* GraphicsPipeline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicsPipeline.cpp; sourceTree = "<group>"; };
-		0076592023D9C2520077EE10 /* graphics_create.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics_create.cpp; sourceTree = "<group>"; };
-		0076592123D9C2520077EE10 /* GraphicsPipeline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphicsPipeline.h; sourceTree = "<group>"; };
-		0076592223D9C2520077EE10 /* DrawCall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DrawCall.h; sourceTree = "<group>"; };
-		0076592323D9C2520077EE10 /* graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = graphics.h; sourceTree = "<group>"; };
-		0076592423D9C2520077EE10 /* DrawCall.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DrawCall.cpp; sourceTree = "<group>"; };
-		0076592523D9C2520077EE10 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		0076592623D9C2520077EE10 /* scene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scene.h; sourceTree = "<group>"; };
+		0066E57323E785C900E9F600 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
+		0066E57423E785C900E9F600 /* input.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = input.h; sourceTree = "<group>"; };
+		0066E57523E785CA00E9F600 /* graphics_get.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics_get.cpp; sourceTree = "<group>"; };
+		0066E57623E785CA00E9F600 /* graphics_misc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics_misc.cpp; sourceTree = "<group>"; };
+		0066E57723E785CA00E9F600 /* input.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = input.cpp; sourceTree = "<group>"; };
+		0066E57823E785CA00E9F600 /* scene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = scene.cpp; sourceTree = "<group>"; };
+		0066E57923E785CA00E9F600 /* graphics_create.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics_create.cpp; sourceTree = "<group>"; };
+		0066E57A23E785CA00E9F600 /* DrawCall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DrawCall.h; sourceTree = "<group>"; };
+		0066E57B23E785CA00E9F600 /* graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = graphics.h; sourceTree = "<group>"; };
+		0066E57C23E785CA00E9F600 /* DrawCall.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DrawCall.cpp; sourceTree = "<group>"; };
+		0066E57D23E785CA00E9F600 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		0066E57E23E785CA00E9F600 /* scene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scene.h; sourceTree = "<group>"; };
 		008D37CB238F129F00336F14 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MoltenVK.framework; sourceTree = SOURCE_ROOT; };
 		008D37FD238F16AB00336F14 /* Release.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Release.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		00F10F3A23848EA900C328BF /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../assets; sourceTree = "<group>"; };
@@ -153,7 +149,7 @@
 		001D32AE238217CF001A68C7 = {
 			isa = PBXGroup;
 			children = (
-				0076591823D9C2520077EE10 /* cpp */,
+				0066E57223E785C900E9F600 /* cpp */,
 				00F10F3A23848EA900C328BF /* assets */,
 				001D32B9238217CF001A68C7 /* LightAndShadow */,
 				001D32B8238217CF001A68C7 /* Products */,
@@ -196,23 +192,21 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		0076591823D9C2520077EE10 /* cpp */ = {
+		0066E57223E785C900E9F600 /* cpp */ = {
 			isa = PBXGroup;
 			children = (
-				0076591923D9C2520077EE10 /* main.h */,
-				0076591A23D9C2520077EE10 /* input.h */,
-				0076591B23D9C2520077EE10 /* graphics_get.cpp */,
-				0076591C23D9C2520077EE10 /* graphics_misc.cpp */,
-				0076591D23D9C2520077EE10 /* input.cpp */,
-				0076591E23D9C2520077EE10 /* scene.cpp */,
-				0076591F23D9C2520077EE10 /* GraphicsPipeline.cpp */,
-				0076592023D9C2520077EE10 /* graphics_create.cpp */,
-				0076592123D9C2520077EE10 /* GraphicsPipeline.h */,
-				0076592223D9C2520077EE10 /* DrawCall.h */,
-				0076592323D9C2520077EE10 /* graphics.h */,
-				0076592423D9C2520077EE10 /* DrawCall.cpp */,
-				0076592523D9C2520077EE10 /* main.cpp */,
-				0076592623D9C2520077EE10 /* scene.h */,
+				0066E57323E785C900E9F600 /* main.h */,
+				0066E57423E785C900E9F600 /* input.h */,
+				0066E57523E785CA00E9F600 /* graphics_get.cpp */,
+				0066E57623E785CA00E9F600 /* graphics_misc.cpp */,
+				0066E57723E785CA00E9F600 /* input.cpp */,
+				0066E57823E785CA00E9F600 /* scene.cpp */,
+				0066E57923E785CA00E9F600 /* graphics_create.cpp */,
+				0066E57A23E785CA00E9F600 /* DrawCall.h */,
+				0066E57B23E785CA00E9F600 /* graphics.h */,
+				0066E57C23E785CA00E9F600 /* DrawCall.cpp */,
+				0066E57D23E785CA00E9F600 /* main.cpp */,
+				0066E57E23E785CA00E9F600 /* scene.h */,
 			);
 			name = cpp;
 			path = ../../cpp;
@@ -353,14 +347,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0076593123D9C2520077EE10 /* graphics_create.cpp in Sources */,
-				0076592F23D9C2520077EE10 /* GraphicsPipeline.cpp in Sources */,
-				0076592D23D9C2520077EE10 /* scene.cpp in Sources */,
-				0076592923D9C2520077EE10 /* graphics_misc.cpp in Sources */,
-				0076593323D9C2520077EE10 /* DrawCall.cpp in Sources */,
-				0076592723D9C2520077EE10 /* graphics_get.cpp in Sources */,
-				0076593523D9C2520077EE10 /* main.cpp in Sources */,
-				0076592B23D9C2520077EE10 /* input.cpp in Sources */,
+				0066E58523E785CA00E9F600 /* scene.cpp in Sources */,
+				0066E58923E785CA00E9F600 /* DrawCall.cpp in Sources */,
+				0066E58723E785CA00E9F600 /* graphics_create.cpp in Sources */,
+				0066E58123E785CA00E9F600 /* graphics_misc.cpp in Sources */,
+				0066E58B23E785CA00E9F600 /* main.cpp in Sources */,
+				0066E57F23E785CA00E9F600 /* graphics_get.cpp in Sources */,
+				0066E58323E785CA00E9F600 /* input.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -368,14 +361,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0076593223D9C2520077EE10 /* graphics_create.cpp in Sources */,
-				0076593023D9C2520077EE10 /* GraphicsPipeline.cpp in Sources */,
-				0076592E23D9C2520077EE10 /* scene.cpp in Sources */,
-				0076592A23D9C2520077EE10 /* graphics_misc.cpp in Sources */,
-				0076593423D9C2520077EE10 /* DrawCall.cpp in Sources */,
-				0076592823D9C2520077EE10 /* graphics_get.cpp in Sources */,
-				0076593623D9C2520077EE10 /* main.cpp in Sources */,
-				0076592C23D9C2520077EE10 /* input.cpp in Sources */,
+				0066E58623E785CA00E9F600 /* scene.cpp in Sources */,
+				0066E58A23E785CA00E9F600 /* DrawCall.cpp in Sources */,
+				0066E58823E785CA00E9F600 /* graphics_create.cpp in Sources */,
+				0066E58223E785CA00E9F600 /* graphics_misc.cpp in Sources */,
+				0066E58C23E785CA00E9F600 /* main.cpp in Sources */,
+				0066E58023E785CA00E9F600 /* graphics_get.cpp in Sources */,
+				0066E58423E785CA00E9F600 /* input.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

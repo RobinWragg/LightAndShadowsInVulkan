@@ -1,6 +1,5 @@
 #include "main.h"
 
-#include "GraphicsPipeline.h"
 #include "DrawCall.h"
 #include "input.h"
 
@@ -8,7 +7,12 @@
 #include "stb_image.h"
 
 namespace scene {
-  GraphicsPipeline *pipeline = nullptr;
+  
+  VkPipelineLayout pipelineLayout;
+  VkPipeline       pipeline;
+  VkSemaphore      imageAvailableSemaphore;
+  VkSemaphore      renderCompletedSemaphore;
+  
   DrawCall *pyramid = nullptr;
   DrawCall *ground = nullptr;
   DrawCall *sphere0 = nullptr;
@@ -64,11 +68,58 @@ namespace scene {
       return new DrawCall(verts, normals);
     } else return new DrawCall(verts);
   }
+  
+  void createSemaphores() {
+    VkSemaphoreCreateInfo semaphoreInfo = {};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    SDL_assert_release(vkCreateSemaphore(gfx::device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) == VK_SUCCESS);
+    SDL_assert_release(vkCreateSemaphore(gfx::device, &semaphoreInfo, nullptr, &renderCompletedSemaphore) == VK_SUCCESS);
+  }
+  
+  void beginCommandBuffer(const gfx::SwapchainFrame *frame, const mat4 &viewProjectionMatrix) {
+    VkRenderPassBeginInfo renderPassInfo = {};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = gfx::renderPass;
+    renderPassInfo.framebuffer = frame->framebuffer;
+    
+    vector<VkClearValue> clearValues(2);
+    
+    clearValues[0].color.float32[0] = 0.5;
+    clearValues[0].color.float32[1] = 0.7;
+    clearValues[0].color.float32[2] = 1;
+    clearValues[0].color.float32[3] = 1;
+    
+    clearValues[1].depthStencil.depth = 1;
+    clearValues[1].depthStencil.stencil = 0;
+    
+    renderPassInfo.clearValueCount = (int)clearValues.size();
+    renderPassInfo.pClearValues = clearValues.data();
+
+    renderPassInfo.renderArea.offset = { 0, 0 };
+    renderPassInfo.renderArea.extent = gfx::getSurfaceExtent();
+    
+    gfx::beginCommandBuffer(frame->cmdBuffer);
+    
+    vkCmdBeginRenderPass(frame->cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(frame->cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    
+    vkCmdPushConstants(frame->cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
+  }
+  
+  void endCommandBuffer(const gfx::SwapchainFrame *frame) {
+    vkCmdEndRenderPass(frame->cmdBuffer);
+
+    auto result = vkEndCommandBuffer(frame->cmdBuffer);
+    SDL_assert(result == VK_SUCCESS);
+  }
 
   void init(SDL_Window *window) {
     gfx::createCoreHandles(window);
     
-    pipeline = new GraphicsPipeline();
+    pipelineLayout = gfx::createPipelineLayout(nullptr, 0);
+    pipeline = gfx::createPipeline(pipelineLayout, gfx::renderPass);
+    
+    createSemaphores();
     
     int imageWidth, imageHeight, componentsPerPixel;
     unsigned char *imageData = stbi_load("test.png", &imageWidth, &imageHeight, &componentsPerPixel, 4);
@@ -148,28 +199,48 @@ namespace scene {
     return viewProjectionMatrix;
   }
   
-  void updateAndRender(float dt) {
+  void fillCommandBuffer(const gfx::SwapchainFrame *frame, const mat4 &viewProjectionMatrix) {
+    beginCommandBuffer(frame, viewProjectionMatrix);
+    
     pyramid->modelMatrix = glm::identity<mat4>();
     pyramid->modelMatrix = translate(pyramid->modelMatrix, vec3(0, 0, -2));
     pyramid->modelMatrix = rotate(pyramid->modelMatrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
-    pipeline->submit(pyramid);
+    pyramid->addToCmdBuffer(frame->cmdBuffer, pipelineLayout);
     
     sphere0->modelMatrix = glm::identity<mat4>();
     sphere0->modelMatrix = translate(sphere0->modelMatrix, vec3(-1.0f, 1.0f, 0.0f));
     sphere0->modelMatrix = rotate(sphere0->modelMatrix, (float)getTime(), vec3(0, 1, 0));
     sphere0->modelMatrix = scale(sphere0->modelMatrix, vec3(0.3, 1, 1));
-    pipeline->submit(sphere0);
+    sphere0->addToCmdBuffer(frame->cmdBuffer, pipelineLayout);
     
     sphere1->modelMatrix = glm::identity<mat4>();
     sphere1->modelMatrix = translate(sphere1->modelMatrix, vec3(1.0f, 1.0f, 0.0f));
     sphere1->modelMatrix = rotate(sphere1->modelMatrix, (float)getTime(), vec3(0, 0, 1));
     sphere1->modelMatrix = scale(sphere1->modelMatrix, vec3(0.3, 1, 1));
-    pipeline->submit(sphere1);
+    sphere1->addToCmdBuffer(frame->cmdBuffer, pipelineLayout);
     
     ground->modelMatrix = glm::identity<mat4>();
-    pipeline->submit(ground);
+    ground->addToCmdBuffer(frame->cmdBuffer, pipelineLayout);
     
-    pipeline->present(getUpdatedViewProjectionMatrix(dt));
+    endCommandBuffer(frame);
+  }
+  
+  int a = 0;
+  
+  void updateAndRender(float dt) {
+    gfx::SwapchainFrame *frame = gfx::getNextFrame(imageAvailableSemaphore);
+    
+    // Wait for the command buffer to finish executing
+    vkWaitForFences(gfx::device, 1, &frame->cmdBufferFence, VK_TRUE, INT64_MAX);
+    vkResetFences(gfx::device, 1, &frame->cmdBufferFence);
+    
+    fillCommandBuffer(frame, getUpdatedViewProjectionMatrix(dt));
+    
+    // Submit the command buffer
+    VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    gfx::submitCommandBuffer(frame->cmdBuffer, imageAvailableSemaphore, waitStage, renderCompletedSemaphore, frame->cmdBufferFence);
+    
+    gfx::presentFrame(frame, renderCompletedSemaphore);
   }
 }
 

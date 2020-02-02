@@ -143,11 +143,26 @@ namespace gfx {
     
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
     beginInfo.pInheritanceInfo = nullptr;
     
     // This call will implicitly reset the command buffer if it has previously been filled, thanks to VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT.
     auto result = vkBeginCommandBuffer(cmdBuffer, &beginInfo);
+    SDL_assert(result == VK_SUCCESS);
+  }
+  
+  void presentFrame(const SwapchainFrame *frame, VkSemaphore waitSemaphore) {
+    VkPresentInfoKHR presentInfo = {};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = &waitSemaphore;
+
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = &swapchain;
+    presentInfo.pImageIndices = &frame->index;
+    
+    auto result = vkQueuePresentKHR(queue, &presentInfo);
     SDL_assert(result == VK_SUCCESS);
   }
 }
