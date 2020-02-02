@@ -146,29 +146,25 @@ namespace scene {
     perFrameUniform.matrix = rotate(perFrameUniform.matrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
     perFrameUniform.matrix = translate(perFrameUniform.matrix, -cameraPosition);
     
-    DrawCallUniform pyramidUniform;
-    pyramidUniform.matrix = glm::identity<mat4>();
-    pyramidUniform.matrix = translate(pyramidUniform.matrix, vec3(0, 0, -2));
-    pyramidUniform.matrix = rotate(pyramidUniform.matrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
-    pipeline->submit(pyramid, &pyramidUniform);
+    pyramid->modelMatrix = glm::identity<mat4>();
+    pyramid->modelMatrix = translate(pyramid->modelMatrix, vec3(0, 0, -2));
+    pyramid->modelMatrix = rotate(pyramid->modelMatrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
+    pipeline->submit(pyramid);
     
-    DrawCallUniform sphere0Uniform;
-    sphere0Uniform.matrix = glm::identity<mat4>();
-    sphere0Uniform.matrix = translate(sphere0Uniform.matrix, vec3(-1.0f, 1.0f, 0.0f));
-    sphere0Uniform.matrix = rotate(sphere0Uniform.matrix, (float)getTime(), vec3(0, 1, 0));
-    sphere0Uniform.matrix = scale(sphere0Uniform.matrix, vec3(0.3, 1, 1));
-    pipeline->submit(sphere0, &sphere0Uniform);
+    sphere0->modelMatrix = glm::identity<mat4>();
+    sphere0->modelMatrix = translate(sphere0->modelMatrix, vec3(-1.0f, 1.0f, 0.0f));
+    sphere0->modelMatrix = rotate(sphere0->modelMatrix, (float)getTime(), vec3(0, 1, 0));
+    sphere0->modelMatrix = scale(sphere0->modelMatrix, vec3(0.3, 1, 1));
+    pipeline->submit(sphere0);
     
-    DrawCallUniform sphere1Uniform;
-    sphere1Uniform.matrix = glm::identity<mat4>();
-    sphere1Uniform.matrix = translate(sphere1Uniform.matrix, vec3(1.0f, 1.0f, 0.0f));
-    sphere1Uniform.matrix = rotate(sphere1Uniform.matrix, (float)getTime(), vec3(0, 0, 1));
-    sphere1Uniform.matrix = scale(sphere1Uniform.matrix, vec3(0.3, 1, 1));
-    pipeline->submit(sphere1, &sphere1Uniform);
+    sphere1->modelMatrix = glm::identity<mat4>();
+    sphere1->modelMatrix = translate(sphere1->modelMatrix, vec3(1.0f, 1.0f, 0.0f));
+    sphere1->modelMatrix = rotate(sphere1->modelMatrix, (float)getTime(), vec3(0, 0, 1));
+    sphere1->modelMatrix = scale(sphere1->modelMatrix, vec3(0.3, 1, 1));
+    pipeline->submit(sphere1);
     
-    DrawCallUniform groundUniform;
-    groundUniform.matrix = glm::identity<mat4>();
-    pipeline->submit(ground, &groundUniform);
+    ground->modelMatrix = glm::identity<mat4>();
+    pipeline->submit(ground);
     
     pipeline->present(&perFrameUniform);
   }

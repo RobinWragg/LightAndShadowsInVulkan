@@ -22,17 +22,13 @@ public:
   
   GraphicsPipeline();
   
-  void submit(DrawCall *drawCall, const DrawCallUniform *uniform);
+  void submit(const DrawCall *drawCall);
   
   void present(const PerFrameUniform *perFrameUniform);
   
 private:
   
-  struct Submission {
-    DrawCall *drawCall;
-    DrawCallUniform uniform;
-  };
-  vector<Submission> submissions;
+  vector<DrawCall> submissions;
   
   vector<uint8_t> loadBinaryFile(const char *filename);
   

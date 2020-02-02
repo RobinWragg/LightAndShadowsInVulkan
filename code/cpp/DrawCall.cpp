@@ -28,15 +28,12 @@ DrawCall::DrawCall(const vector<vec3> &positions, const vector<vec3> &normals) {
   initCommon(positions, normals);
 }
 
-DrawCall::~DrawCall() {
-  vkDestroyBuffer(gfx::device, positionBuffer, nullptr);
-  vkFreeMemory(gfx::device, positionBufferMemory, nullptr);
-}
-
 void DrawCall::initCommon(const vector<vec3> &positions, const vector<vec3> &normals) {
   vertexCount = (uint32_t)positions.size();
   createVec3Buffer(positions, &positionBuffer, &positionBufferMemory);
   createVec3Buffer(normals, &normalBuffer, &normalBufferMemory);
+  
+  modelMatrix = glm::identity<mat4>();
 }
 
 void DrawCall::createVec3Buffer(const vector<vec3> &vec3s, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) const {

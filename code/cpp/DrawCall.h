@@ -7,13 +7,15 @@ public:
   VkBuffer normalBuffer;
   uint32_t vertexCount;
   
+  mat4 modelMatrix;
+  
+  DrawCall() {}
+  
   // Auto-make normals based on positions
   DrawCall(const vector<vec3> &positions);
   
   // Pass normals in explicitly
   DrawCall(const vector<vec3> &positions, const vector<vec3> &normals);
-  
-  ~DrawCall();
 
 private:
   VkDeviceMemory positionBufferMemory;

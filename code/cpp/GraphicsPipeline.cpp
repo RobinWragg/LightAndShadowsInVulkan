@@ -43,17 +43,17 @@ void GraphicsPipeline::fillCommandBuffer(SwapchainFrame *frame, const PerFrameUn
   vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(*perFrameUniform), perFrameUniform);
   
   for (auto &sub : submissions) {
-    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(*perFrameUniform), sizeof(sub.uniform), &sub.uniform);
+    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(*perFrameUniform), sizeof(sub.modelMatrix), &sub.modelMatrix);
     
     const int bufferCount = 2;
     VkBuffer buffers[bufferCount] = {
-      sub.drawCall->positionBuffer,
-      sub.drawCall->normalBuffer
+      sub.positionBuffer,
+      sub.normalBuffer
     };
     VkDeviceSize offsets[bufferCount] = {0, 0};
     vkCmdBindVertexBuffers(cmdBuffer, 0, bufferCount, buffers, offsets);
     
-    vkCmdDraw(cmdBuffer, sub.drawCall->vertexCount, 1, 0, 0);
+    vkCmdDraw(cmdBuffer, sub.vertexCount, 1, 0, 0);
   }
   
   submissions.resize(0);
@@ -71,11 +71,8 @@ void GraphicsPipeline::createSemaphores() {
   SDL_assert_release(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderCompletedSemaphore) == VK_SUCCESS);
 }
 
-void GraphicsPipeline::submit(DrawCall *drawCall, const DrawCallUniform *uniform) {
-  Submission sub;
-  sub.drawCall = drawCall;
-  sub.uniform = *uniform;
-  submissions.push_back(sub);
+void GraphicsPipeline::submit(const DrawCall *drawCall) {
+  submissions.push_back(*drawCall);
 }
 
 void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
@@ -83,7 +80,7 @@ void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
   // Get next swapchain image
   // Get the next swapchain image and signal the semaphore.
   uint32_t swapchainIndex = INT32_MAX;
-  auto result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX /* no timeout */, IASem, VK_NULL_HANDLE, &swapchainIndex);
+  auto result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX /* no timeout */, imageAvailableSemaphore, VK_NULL_HANDLE, &swapchainIndex);
   SDL_assert(result == VK_SUCCESS);
   
   SwapchainFrame *frame = &swapchainFrames[swapchainIndex];
