@@ -3,21 +3,11 @@
 
 GraphicsPipeline::GraphicsPipeline() {
   
-  createVkPipeline();
+  pipelineLayout = createPipelineLayout(nullptr, 0);
+  
+  vkPipeline = createPipeline(pipelineLayout, renderPass);
   
   createSemaphores();
-}
-
-GraphicsPipeline::~GraphicsPipeline() {
-  
-  vkDestroyCommandPool(device, commandPool, nullptr);
-
-  vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
-  vkDestroySemaphore(device, renderCompletedSemaphore, nullptr);
-  
-  vkDestroyPipeline(device, vkPipeline, nullptr);
-  vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-  vkDestroyRenderPass(device, renderPass, nullptr);
 }
 
 void GraphicsPipeline::fillCommandBuffer(SwapchainFrame *frame, const PerFrameUniform *perFrameUniform) {
@@ -81,11 +71,6 @@ void GraphicsPipeline::createSemaphores() {
   SDL_assert_release(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderCompletedSemaphore) == VK_SUCCESS);
 }
 
-void GraphicsPipeline::createVkPipeline() {
-  pipelineLayout = createPipelineLayout(nullptr, 0);
-  vkPipeline = createPipeline(pipelineLayout, renderPass);
-}
-
 void GraphicsPipeline::submit(DrawCall *drawCall, const DrawCallUniform *uniform) {
   Submission sub;
   sub.drawCall = drawCall;
@@ -96,8 +81,9 @@ void GraphicsPipeline::submit(DrawCall *drawCall, const DrawCallUniform *uniform
 void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
   
   // Get next swapchain image
+  // Get the next swapchain image and signal the semaphore.
   uint32_t swapchainIndex = INT32_MAX;
-  auto result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX /* no timeout */, imageAvailableSemaphore, VK_NULL_HANDLE, &swapchainIndex);
+  auto result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX /* no timeout */, IASem, VK_NULL_HANDLE, &swapchainIndex);
   SDL_assert(result == VK_SUCCESS);
   
   SwapchainFrame *frame = &swapchainFrames[swapchainIndex];

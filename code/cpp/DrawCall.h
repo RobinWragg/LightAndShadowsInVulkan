@@ -8,19 +8,18 @@ public:
   uint32_t vertexCount;
   
   // Auto-make normals based on positions
-  DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &vertices);
+  DrawCall(const vector<vec3> &positions);
   
   // Pass normals in explicitly
-  DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &positions, const vector<vec3> &normals);
+  DrawCall(const vector<vec3> &positions, const vector<vec3> &normals);
   
   ~DrawCall();
 
 private:
-  const GraphicsPipeline *pipeline = nullptr;
   VkDeviceMemory positionBufferMemory;
   VkDeviceMemory normalBufferMemory;
   
-  void initCommon(const GraphicsPipeline *pipeline, const vector<vec3> &positions, const vector<vec3> &normals);
+  void initCommon(const vector<vec3> &positions, const vector<vec3> &normals);
   
   void createVec3Buffer(const vector<vec3> &vec3s, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) const;
 };

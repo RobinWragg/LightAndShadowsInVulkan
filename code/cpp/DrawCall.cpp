@@ -1,6 +1,6 @@
 #include "DrawCall.h"
 
-DrawCall::DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &positions) {
+DrawCall::DrawCall(const vector<vec3> &positions) {
   vector<vec3> normals;
   
   for (int32_t i = 0; i < positions.size(); i += 3) {
@@ -21,11 +21,11 @@ DrawCall::DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &positio
     normals.push_back(normal);
   }
   
-  initCommon(pipeline, positions, normals);
+  initCommon(positions, normals);
 }
 
-DrawCall::DrawCall(const GraphicsPipeline *pipeline, const vector<vec3> &positions, const vector<vec3> &normals) {
-  initCommon(pipeline, positions, normals);
+DrawCall::DrawCall(const vector<vec3> &positions, const vector<vec3> &normals) {
+  initCommon(positions, normals);
 }
 
 DrawCall::~DrawCall() {
@@ -33,9 +33,7 @@ DrawCall::~DrawCall() {
   vkFreeMemory(gfx::device, positionBufferMemory, nullptr);
 }
 
-void DrawCall::initCommon(const GraphicsPipeline *pipeline, const vector<vec3> &positions, const vector<vec3> &normals) {
-  this->pipeline = pipeline;
-  
+void DrawCall::initCommon(const vector<vec3> &positions, const vector<vec3> &normals) {
   vertexCount = (uint32_t)positions.size();
   createVec3Buffer(positions, &positionBuffer, &positionBufferMemory);
   createVec3Buffer(normals, &normalBuffer, &normalBufferMemory);

@@ -61,8 +61,8 @@ namespace scene {
       vector<vec3> normals;
       for (auto &vert : verts) normals.push_back(vert);
       
-      return new DrawCall(pipeline, verts, normals);
-    } else return new DrawCall(pipeline, verts);
+      return new DrawCall(verts, normals);
+    } else return new DrawCall(verts);
   }
 
   void init(SDL_Window *window) {
@@ -107,14 +107,14 @@ namespace scene {
       {1, 0, 0}, {0, 0, 1}, {0, 1, 0},
     };
     
-    pyramid = new DrawCall(pipeline, pyramidVertices);
+    pyramid = new DrawCall(pyramidVertices);
     
     vector<vec3> groundVertices = {
       {-3, 0, -3}, {3, 0, -3}, {-3, 0, 3},
       {-3, 0, 3}, {3, 0, -3}, {3, 0, 3}
     };
     
-    ground = new DrawCall(pipeline, groundVertices);
+    ground = new DrawCall(groundVertices);
     
     sphere0 = newSphereDrawCall(32, true);
     sphere1 = newSphereDrawCall(32, true);

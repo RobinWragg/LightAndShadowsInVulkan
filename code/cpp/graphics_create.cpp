@@ -315,8 +315,9 @@ namespace gfx {
     createInfo.preTransform = capabilities.currentTransform;
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // Opaque window
     createInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR; // vsync
+    // createInfo.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR; // vsync
     
-    // Vulkan may not renderall pixels if some are osbscured by other windows.
+    // Vulkan may not render all pixels if some are osbscured by other windows.
     createInfo.clipped = VK_TRUE;
     
     // I don't currently support swapchain recreation.

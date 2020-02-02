@@ -21,7 +21,6 @@ public:
   VkPipelineLayout pipelineLayout;
   
   GraphicsPipeline();
-  ~GraphicsPipeline();
   
   void submit(DrawCall *drawCall, const DrawCallUniform *uniform);
   
@@ -40,8 +39,6 @@ private:
   void createSemaphores();
   
   void setupDepthTesting();
-  
-  void createVkPipeline();
   
   void fillCommandBuffer(SwapchainFrame *frame, const PerFrameUniform *perFrameUniform);
 };
