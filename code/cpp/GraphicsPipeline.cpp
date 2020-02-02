@@ -3,11 +3,7 @@
 
 GraphicsPipeline::GraphicsPipeline() {
   
-  renderPass = createRenderPass();
-  
   createVkPipeline();
-  
-  createFramebuffers();
   
   createSemaphores();
   
@@ -31,7 +27,6 @@ GraphicsPipeline::~GraphicsPipeline() {
   vkDestroyRenderPass(device, renderPass, nullptr);
 
   for (int i = 0; i < swapchainSize; i++) {
-    vkDestroyFramebuffer(device, framebuffers[i], nullptr);
     vkDestroyFence(device, fences[i], nullptr);
   }
 }
@@ -55,7 +50,7 @@ void GraphicsPipeline::fillCommandBuffer(uint32_t swapchainIndex, const PerFrame
   VkRenderPassBeginInfo renderPassInfo = {};
   renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   renderPassInfo.renderPass = renderPass;
-  renderPassInfo.framebuffer = framebuffers[swapchainIndex];
+  renderPassInfo.framebuffer = swapchainFrames[swapchainIndex].buffer;
   
   vector<VkClearValue> clearValues(2);
   
@@ -150,27 +145,6 @@ void GraphicsPipeline::present(const PerFrameUniform *perFrameUniform) {
   
   result = vkQueuePresentKHR(queue, &presentInfo);
   SDL_assert(result == VK_SUCCESS);
-}
-
-void GraphicsPipeline::createFramebuffers() {
-
-  for (int i = 0; i < swapchainSize; i++) {
-    vector<VkImageView> attachments = { swapchainViews[i], depthImageView };
-
-    VkFramebufferCreateInfo framebufferInfo = {};
-    framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferInfo.renderPass = renderPass;
-    framebufferInfo.attachmentCount = (uint32_t)attachments.size();
-    framebufferInfo.pAttachments = attachments.data();
-    
-    auto extent = getSurfaceExtent();
-    framebufferInfo.width = extent.width;
-    framebufferInfo.height = extent.height;
-    
-    framebufferInfo.layers = 1;
-
-    SDL_assert_release(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]) == VK_SUCCESS);
-  }
 }
 
 

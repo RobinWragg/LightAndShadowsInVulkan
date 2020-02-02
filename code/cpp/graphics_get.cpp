@@ -131,6 +131,15 @@ namespace gfx {
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice, surface, &capabilities);
     return capabilities.currentExtent;
   }
+  
+  vector<VkImage> getSwapchainImages() {
+    uint32_t imageCount;
+    vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
+    SDL_assert_release(imageCount == swapchainSize);
+    vector<VkImage> images(imageCount);
+    vkGetSwapchainImagesKHR(device, swapchain, &imageCount, images.data());
+    return images;
+  }
 }
 
 

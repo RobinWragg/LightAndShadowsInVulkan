@@ -15,8 +15,6 @@ class DrawCall;
 
 class GraphicsPipeline {
 public:
-  VkFramebuffer framebuffers[swapchainSize];
-  VkRenderPass renderPass;
   VkCommandBuffer commandBuffers[swapchainSize];
   VkFence fences[swapchainSize];
   VkSemaphore imageAvailableSemaphore;
@@ -44,8 +42,6 @@ private:
   void createSemaphores();
   
   void setupDepthTesting();
-  
-  void createFramebuffers();
   
   void createVkPipeline();
   

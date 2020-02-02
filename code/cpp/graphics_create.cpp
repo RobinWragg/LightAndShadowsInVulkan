@@ -7,13 +7,14 @@ namespace gfx {
   VkSurfaceKHR             surface          = VK_NULL_HANDLE;
   VkPhysicalDevice         physDevice       = VK_NULL_HANDLE;
   VkDevice                 device           = VK_NULL_HANDLE;
+  VkRenderPass             renderPass       = VK_NULL_HANDLE;
   VkQueue                  queue            = VK_NULL_HANDLE;
   int                      queueFamilyIndex = -1;
   VkCommandPool            commandPool      = VK_NULL_HANDLE;
   VkImageView              depthImageView   = VK_NULL_HANDLE;
   
-  VkSwapchainKHR swapchain                     = VK_NULL_HANDLE;
-  VkImageView    swapchainViews[swapchainSize] = {VK_NULL_HANDLE};
+  VkSwapchainKHR swapchain = VK_NULL_HANDLE;
+  SwapchainFrame swapchainFrames[swapchainSize];
   
   VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT msgType, const VkDebugUtilsMessengerCallbackDataEXT *data, void *pUserData) {
 
@@ -253,15 +254,32 @@ namespace gfx {
     *memoryOut = allocateAndBindMemory(*bufferOut);
   }
   
-  static void createSwapchainViews() {
-    uint32_t imageCount;
-    vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
-    vector<VkImage> images(imageCount);
-    vkGetSwapchainImagesKHR(device, swapchain, &imageCount, images.data());
+  static VkFramebuffer createFramebuffer(VkImageView colorView) {
+    vector<VkImageView> attachments = { colorView, depthImageView };
 
-    for (int i = 0; i < swapchainSize; i++) {
-      swapchainViews[i] = createImageView(images[i], surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-    }
+    VkFramebufferCreateInfo framebufferInfo = {};
+    framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    framebufferInfo.renderPass = renderPass;
+    framebufferInfo.attachmentCount = (uint32_t)attachments.size();
+    framebufferInfo.pAttachments = attachments.data();
+    
+    auto extent = getSurfaceExtent();
+    framebufferInfo.width = extent.width;
+    framebufferInfo.height = extent.height;
+    
+    framebufferInfo.layers = 1;
+    
+    VkFramebuffer framebuffer;
+    auto result = vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffer);
+    SDL_assert_release(result == VK_SUCCESS);
+    return framebuffer;
+  }
+  
+  static SwapchainFrame createSwapchainFrame(VkImage swapchainImage) {
+    SwapchainFrame frame;
+    frame.view = createImageView(swapchainImage, surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+    frame.buffer = createFramebuffer(frame.view);
+    return frame;
   }
   
   static void createSwapchain() {
@@ -281,7 +299,7 @@ namespace gfx {
     createInfo.imageColorSpace = surfaceColorSpace;
     createInfo.imageExtent = capabilities.currentExtent;
     createInfo.imageArrayLayers = 1; // 1 == not stereoscopic
-    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // Suitable for VkFrameBuffer
+    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // Suitable for VkFramebuffer
     
     // If the graphics and surface queues are the same, no sharing is necessary.
     createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -299,7 +317,11 @@ namespace gfx {
     auto result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchain);
     SDL_assert_release(result == VK_SUCCESS);
     
-    createSwapchainViews();
+    auto images = getSwapchainImages();
+    
+    for (int i = 0; i < images.size(); i++) {
+      swapchainFrames[i] = createSwapchainFrame(images[i]);
+    }
   }
   
   static void createDepthImageAndView() {
@@ -312,6 +334,90 @@ namespace gfx {
     createImage(true, extent.width, extent.height, &depthImage, &depthImageMemory);
 
     depthImageView = createImageView(depthImage, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT);
+  }
+  
+  static VkSubpassDependency createSubpassDependency() {
+    VkSubpassDependency dependency = {};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcAccessMask = 0;
+
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    
+    return dependency;
+  }
+  
+  static VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout) {
+    VkAttachmentDescription description = {};
+
+    description.format = format;
+    description.samples = VK_SAMPLE_COUNT_1_BIT;
+    description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    description.storeOp = storeOp;
+    description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    description.finalLayout = finalLayout;
+    
+    return description;
+  }
+  
+  static void createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut) {
+    
+    // Hacky: attachmentRefsOut is passed out of this function on the stack to prevent its references in VkSubpassDescription from being deallocated before they're used. attachmentRefsOut doesn't need to be directly used by the caller of this function.
+    
+    attachmentsOut->resize(0);
+    attachmentsOut->push_back(createAttachmentDescription(surfaceFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR));
+    attachmentsOut->push_back(createAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL));
+    
+    // attachment references
+    attachmentRefsOut->resize(0);
+    
+    VkAttachmentReference colorAttachmentRef = {};
+    colorAttachmentRef.attachment = 0; // attachments[0]
+    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachmentRefsOut->push_back(colorAttachmentRef);
+    
+    VkAttachmentReference depthAttachmentRef = {};
+    depthAttachmentRef.attachment = 1; // attachments[1]
+    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    attachmentRefsOut->push_back(depthAttachmentRef);
+
+    bzero(descriptionOut, sizeof(VkSubpassDescription));
+    descriptionOut->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    descriptionOut->colorAttachmentCount = 1;
+    descriptionOut->pColorAttachments = &(*attachmentRefsOut)[0];
+    descriptionOut->pDepthStencilAttachment = &(*attachmentRefsOut)[1];
+    
+    *dependencyOut = createSubpassDependency();
+  }
+  
+  static VkRenderPass createRenderPass() {
+    VkSubpassDescription subpassDesc = {};
+    VkSubpassDependency subpassDep = {};
+    vector<VkAttachmentDescription> attachments;
+    vector<VkAttachmentReference> attachmentRefs;
+    createSubpass(&subpassDesc, &subpassDep, &attachments, &attachmentRefs);
+    
+    VkRenderPassCreateInfo renderPassInfo = {};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    
+    renderPassInfo.subpassCount = 1;
+    renderPassInfo.pSubpasses = &subpassDesc;
+    
+    renderPassInfo.dependencyCount = 1;
+    renderPassInfo.pDependencies = &subpassDep;
+    
+    renderPassInfo.attachmentCount = (uint32_t)attachments.size();
+    renderPassInfo.pAttachments = attachments.data();
+    
+    VkRenderPass renderPass;
+    SDL_assert_release(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS);
+    
+    return renderPass;
   }
   
   void createCoreHandles(SDL_Window *window) {
@@ -337,14 +443,15 @@ namespace gfx {
     
     createCommandPool();
     
+    createDepthImageAndView();
+    
+    renderPass = createRenderPass();
+    
     createSwapchain();
-    SDL_assert_release(swapchain != VK_NULL_HANDLE);
     
     for (int i = 0; i < swapchainSize; i++) {
-      SDL_assert_release(swapchainViews[i] != VK_NULL_HANDLE);
+      SDL_assert_release(swapchainFrames[i].view != VK_NULL_HANDLE);
     }
-    
-    createDepthImageAndView();
   }
   
   void createImage(bool forDepthTesting, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut) {
@@ -416,90 +523,6 @@ namespace gfx {
     SDL_assert_release(result == VK_SUCCESS);
     
     return view;
-  }
-  
-  static VkSubpassDependency createSubpassDependency() {
-    VkSubpassDependency dependency = {};
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependency.dstSubpass = 0;
-
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.srcAccessMask = 0;
-
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    
-    return dependency;
-  }
-  
-  static VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout) {
-    VkAttachmentDescription description = {};
-
-    description.format = format;
-    description.samples = VK_SAMPLE_COUNT_1_BIT;
-    description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    description.storeOp = storeOp;
-    description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    description.finalLayout = finalLayout;
-    
-    return description;
-  }
-  
-  static void createSubpass(VkSubpassDescription *descriptionOut, VkSubpassDependency *dependencyOut, vector<VkAttachmentDescription> *attachmentsOut, vector<VkAttachmentReference> *attachmentRefsOut) {
-    
-    // Hacky: attachmentRefsOut is passed out of this function on the stack to prevent its references in VkSubpassDescription from being deallocated before they're used. attachmentRefsOut doesn't need to be directly used by the caller of this function.
-    
-    attachmentsOut->resize(0);
-    attachmentsOut->push_back(createAttachmentDescription(surfaceFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR));
-    attachmentsOut->push_back(createAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL));
-    
-    // attachment references
-    attachmentRefsOut->resize(0);
-    
-    VkAttachmentReference colorAttachmentRef = {};
-    colorAttachmentRef.attachment = 0; // attachments[0]
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    attachmentRefsOut->push_back(colorAttachmentRef);
-    
-    VkAttachmentReference depthAttachmentRef = {};
-    depthAttachmentRef.attachment = 1; // attachments[1]
-    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    attachmentRefsOut->push_back(depthAttachmentRef);
-
-    bzero(descriptionOut, sizeof(VkSubpassDescription));
-    descriptionOut->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    descriptionOut->colorAttachmentCount = 1;
-    descriptionOut->pColorAttachments = &(*attachmentRefsOut)[0];
-    descriptionOut->pDepthStencilAttachment = &(*attachmentRefsOut)[1];
-    
-    *dependencyOut = createSubpassDependency();
-  }
-  
-  VkRenderPass createRenderPass() {
-    VkSubpassDescription subpassDesc = {};
-    VkSubpassDependency subpassDep = {};
-    vector<VkAttachmentDescription> attachments;
-    vector<VkAttachmentReference> attachmentRefs;
-    createSubpass(&subpassDesc, &subpassDep, &attachments, &attachmentRefs);
-    
-    VkRenderPassCreateInfo renderPassInfo = {};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpassDesc;
-    
-    renderPassInfo.dependencyCount = 1;
-    renderPassInfo.pDependencies = &subpassDep;
-    
-    renderPassInfo.attachmentCount = (uint32_t)attachments.size();
-    renderPassInfo.pAttachments = attachments.data();
-    
-    VkRenderPass renderPass;
-    SDL_assert_release(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS);
-    
-    return renderPass;
   }
   
   static VkPipelineVertexInputStateCreateInfo allocVertexInputInfo() {
