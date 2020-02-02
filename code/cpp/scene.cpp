@@ -225,8 +225,6 @@ namespace scene {
     endCommandBuffer(frame);
   }
   
-  int a = 0;
-  
   void updateAndRender(float dt) {
     gfx::SwapchainFrame *frame = gfx::getNextFrame(imageAvailableSemaphore);
     
