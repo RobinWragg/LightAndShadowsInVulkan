@@ -10,16 +10,12 @@ GraphicsPipeline::GraphicsPipeline() {
   createSemaphores();
 }
 
-void GraphicsPipeline::fillCommandBuffer(SwapchainFrame *frame, const mat4 &viewProjectionMatrix) {
-  
-  VkCommandBuffer &cmdBuffer = frame->cmdBuffer;
-  
-  beginCommandBuffer(cmdBuffer);
+void GraphicsPipeline::beginCommandBuffer(const SwapchainFrame &frame, const mat4 &viewProjectionMatrix) {
 
   VkRenderPassBeginInfo renderPassInfo = {};
   renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   renderPassInfo.renderPass = renderPass;
-  renderPassInfo.framebuffer = frame->framebuffer;
+  renderPassInfo.framebuffer = frame.framebuffer;
   
   vector<VkClearValue> clearValues(2);
   
@@ -37,20 +33,22 @@ void GraphicsPipeline::fillCommandBuffer(SwapchainFrame *frame, const mat4 &view
   renderPassInfo.renderArea.offset = { 0, 0 };
   renderPassInfo.renderArea.extent = getSurfaceExtent();
   
-  vkCmdBeginRenderPass(cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-  vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
+  // Wait for the command buffer to finish executing
+  vkWaitForFences(device, 1, &frame.cmdBufferFence, VK_TRUE, INT64_MAX);
+  vkResetFences(device, 1, &frame.cmdBufferFence);
   
-  vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
+  gfx::beginCommandBuffer(frame.cmdBuffer);
   
-  for (auto &sub : submissions) {
-    sub.addToCmdBuffer(cmdBuffer, pipelineLayout);
-  }
+  vkCmdBeginRenderPass(frame.cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+  vkCmdBindPipeline(frame.cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
   
-  submissions.resize(0);
-  
-  vkCmdEndRenderPass(cmdBuffer);
+  vkCmdPushConstants(frame.cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
+}
 
-  auto result = vkEndCommandBuffer(cmdBuffer);
+void GraphicsPipeline::endCommandBuffer(const SwapchainFrame &frame) {
+  vkCmdEndRenderPass(frame.cmdBuffer);
+
+  auto result = vkEndCommandBuffer(frame.cmdBuffer);
   SDL_assert(result == VK_SUCCESS);
 }
 
@@ -65,6 +63,10 @@ void GraphicsPipeline::submit(const DrawCall *drawCall) {
   submissions.push_back(*drawCall);
 }
 
+// const SwapchainFrame& GraphicsPipeline::getNextFrame() {
+  
+// }
+
 void GraphicsPipeline::present(const mat4 &viewProjectionMatrix) {
   
   // Get next swapchain image
@@ -73,18 +75,21 @@ void GraphicsPipeline::present(const mat4 &viewProjectionMatrix) {
   auto result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX /* no timeout */, imageAvailableSemaphore, VK_NULL_HANDLE, &swapchainIndex);
   SDL_assert(result == VK_SUCCESS);
   
-  SwapchainFrame *frame = &swapchainFrames[swapchainIndex];
-  
-  // Wait for the command buffer to finish executing
-  vkWaitForFences(device, 1, &frame->cmdBufferFence, VK_TRUE, INT64_MAX);
-  vkResetFences(device, 1, &frame->cmdBufferFence);
+  SwapchainFrame &frame = swapchainFrames[swapchainIndex];
   
   // Fill the command buffer
-  fillCommandBuffer(frame, viewProjectionMatrix);
+  beginCommandBuffer(frame, viewProjectionMatrix);
+  
+  for (auto &sub : submissions) {
+    sub.addToCmdBuffer(frame.cmdBuffer, pipelineLayout);
+  }
+  submissions.resize(0);
+  
+  endCommandBuffer(frame);
   
   // Submit the command buffer
   VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  submitCommandBuffer(frame->cmdBuffer, imageAvailableSemaphore, waitStage, renderCompletedSemaphore, frame->cmdBufferFence);
+  submitCommandBuffer(frame.cmdBuffer, imageAvailableSemaphore, waitStage, renderCompletedSemaphore, frame.cmdBufferFence);
   
   // Present
   VkPresentInfoKHR presentInfo = {};

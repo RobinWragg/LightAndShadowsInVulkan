@@ -28,7 +28,9 @@ private:
   
   void setupDepthTesting();
   
-  void fillCommandBuffer(SwapchainFrame *frame, const mat4 &viewProjectionMatrix);
+  void beginCommandBuffer(const SwapchainFrame &frame, const mat4 &viewProjectionMatrix); 
+  
+  void endCommandBuffer(const SwapchainFrame &frame);
 };
 
 
