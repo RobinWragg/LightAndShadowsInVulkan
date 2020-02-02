@@ -15,7 +15,6 @@ class DrawCall;
 
 class GraphicsPipeline {
 public:
-  VkFence fences[swapchainSize];
   VkSemaphore imageAvailableSemaphore;
   VkSemaphore renderCompletedSemaphore;
   VkPipeline vkPipeline;
@@ -44,9 +43,7 @@ private:
   
   void createVkPipeline();
   
-  void fillCommandBuffer(uint32_t swapchainIndex, const PerFrameUniform *perFrameUniform);
-  
-  void createFences();
+  void fillCommandBuffer(SwapchainFrame *frame, const PerFrameUniform *perFrameUniform);
 };
 
 

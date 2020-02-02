@@ -277,9 +277,16 @@ namespace gfx {
   
   static SwapchainFrame createSwapchainFrame(VkImage swapchainImage) {
     SwapchainFrame frame;
+    
     frame.view = createImageView(swapchainImage, surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
     frame.framebuffer = createFramebuffer(frame.view);
     frame.cmdBuffer = createCommandBuffer();
+    
+    VkFenceCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    createInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    vkCreateFence(device, &createInfo, nullptr, &frame.cmdBufferFence);
+    
     return frame;
   }
   
