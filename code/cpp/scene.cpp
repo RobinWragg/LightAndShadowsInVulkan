@@ -168,14 +168,6 @@ namespace scene {
     
     pipeline->present(&perFrameUniform);
   }
-
-  void destroy() {
-    delete pyramid;
-    delete ground;
-    delete sphere0;
-    delete sphere1;
-    delete pipeline;
-  }
 }
 
 

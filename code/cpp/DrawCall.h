@@ -16,6 +16,8 @@ public:
   
   // Pass normals in explicitly
   DrawCall(const vector<vec3> &positions, const vector<vec3> &normals);
+  
+  void addToCmdBuffer(VkCommandBuffer cmdBuffer, VkPipelineLayout layout);
 
 private:
   VkDeviceMemory positionBufferMemory;

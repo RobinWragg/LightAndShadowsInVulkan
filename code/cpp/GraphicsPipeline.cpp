@@ -43,17 +43,7 @@ void GraphicsPipeline::fillCommandBuffer(SwapchainFrame *frame, const PerFrameUn
   vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(*perFrameUniform), perFrameUniform);
   
   for (auto &sub : submissions) {
-    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(*perFrameUniform), sizeof(sub.modelMatrix), &sub.modelMatrix);
-    
-    const int bufferCount = 2;
-    VkBuffer buffers[bufferCount] = {
-      sub.positionBuffer,
-      sub.normalBuffer
-    };
-    VkDeviceSize offsets[bufferCount] = {0, 0};
-    vkCmdBindVertexBuffers(cmdBuffer, 0, bufferCount, buffers, offsets);
-    
-    vkCmdDraw(cmdBuffer, sub.vertexCount, 1, 0, 0);
+    sub.addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
   
   submissions.resize(0);
