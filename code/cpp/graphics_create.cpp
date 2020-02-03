@@ -1,4 +1,5 @@
 #include "graphics.h"
+#include "linear_algebra.h"
 
 namespace gfx {
   

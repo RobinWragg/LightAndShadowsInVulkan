@@ -1,6 +1,7 @@
 #pragma once
-
 #include "main.h"
+#include <SDL2/SDL.h>
+#include "linear_algebra.h"
 
 namespace input {
   extern bool firstPersonMode;

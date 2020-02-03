@@ -1,5 +1,6 @@
 #pragma once
 #include "graphics.h"
+#include "linear_algebra.h"
 
 class DrawCall {
 public:

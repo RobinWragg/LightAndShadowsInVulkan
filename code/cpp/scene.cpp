@@ -1,20 +1,20 @@
 #include "main.h"
-
-#include "DrawCall.h"
 #include "input.h"
+#include "DrawCall.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 namespace scene {
   
-  VkPipelineLayout pipelineLayout;
-  VkPipeline       pipeline;
-  VkSemaphore      imageAvailableSemaphore;
-  VkSemaphore      renderCompletedSemaphore;
+  VkPipelineLayout scenePipelineLayout = VK_NULL_HANDLE;
+  VkPipeline       scenePipeline       = VK_NULL_HANDLE;
+  
+  VkPipelineLayout monitorPipelineLayout = VK_NULL_HANDLE;
+  VkPipeline       monitorPipeline       = VK_NULL_HANDLE;
   
   DrawCall *pyramid = nullptr;
-  DrawCall *ground = nullptr;
+  DrawCall *ground  = nullptr;
   DrawCall *sphere0 = nullptr;
   DrawCall *sphere1 = nullptr;
   vec3 cameraPosition;
@@ -69,13 +69,6 @@ namespace scene {
     } else return new DrawCall(verts);
   }
   
-  void createSemaphores() {
-    VkSemaphoreCreateInfo semaphoreInfo = {};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    SDL_assert_release(vkCreateSemaphore(gfx::device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) == VK_SUCCESS);
-    SDL_assert_release(vkCreateSemaphore(gfx::device, &semaphoreInfo, nullptr, &renderCompletedSemaphore) == VK_SUCCESS);
-  }
-  
   void beginCommandBuffer(const gfx::SwapchainFrame *frame, const mat4 &viewProjectionMatrix) {
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -101,9 +94,9 @@ namespace scene {
     gfx::beginCommandBuffer(frame->cmdBuffer);
     
     vkCmdBeginRenderPass(frame->cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-    vkCmdBindPipeline(frame->cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    vkCmdBindPipeline(frame->cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, scenePipeline);
     
-    vkCmdPushConstants(frame->cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
+    vkCmdPushConstants(frame->cmdBuffer, scenePipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
   }
   
   void endCommandBuffer(const gfx::SwapchainFrame *frame) {
@@ -114,12 +107,8 @@ namespace scene {
   }
 
   void init(SDL_Window *window) {
-    gfx::createCoreHandles(window);
-    
-    pipelineLayout = gfx::createPipelineLayout(nullptr, 0);
-    pipeline = gfx::createPipeline(pipelineLayout, gfx::renderPass);
-    
-    createSemaphores();
+    scenePipelineLayout = gfx::createPipelineLayout(nullptr, 0);
+    scenePipeline = gfx::createPipeline(scenePipelineLayout, gfx::renderPass);
     
     int imageWidth, imageHeight, componentsPerPixel;
     unsigned char *imageData = stbi_load("test.png", &imageWidth, &imageHeight, &componentsPerPixel, 4);
@@ -205,29 +194,27 @@ namespace scene {
     pyramid->modelMatrix = glm::identity<mat4>();
     pyramid->modelMatrix = translate(pyramid->modelMatrix, vec3(0, 0, -2));
     pyramid->modelMatrix = rotate(pyramid->modelMatrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
-    pyramid->addToCmdBuffer(frame->cmdBuffer, pipelineLayout);
+    pyramid->addToCmdBuffer(frame->cmdBuffer, scenePipelineLayout);
     
     sphere0->modelMatrix = glm::identity<mat4>();
     sphere0->modelMatrix = translate(sphere0->modelMatrix, vec3(-1.0f, 1.0f, 0.0f));
     sphere0->modelMatrix = rotate(sphere0->modelMatrix, (float)getTime(), vec3(0, 1, 0));
     sphere0->modelMatrix = scale(sphere0->modelMatrix, vec3(0.3, 1, 1));
-    sphere0->addToCmdBuffer(frame->cmdBuffer, pipelineLayout);
+    sphere0->addToCmdBuffer(frame->cmdBuffer, scenePipelineLayout);
     
     sphere1->modelMatrix = glm::identity<mat4>();
     sphere1->modelMatrix = translate(sphere1->modelMatrix, vec3(1.0f, 1.0f, 0.0f));
     sphere1->modelMatrix = rotate(sphere1->modelMatrix, (float)getTime(), vec3(0, 0, 1));
     sphere1->modelMatrix = scale(sphere1->modelMatrix, vec3(0.3, 1, 1));
-    sphere1->addToCmdBuffer(frame->cmdBuffer, pipelineLayout);
+    sphere1->addToCmdBuffer(frame->cmdBuffer, scenePipelineLayout);
     
     ground->modelMatrix = glm::identity<mat4>();
-    ground->addToCmdBuffer(frame->cmdBuffer, pipelineLayout);
+    ground->addToCmdBuffer(frame->cmdBuffer, scenePipelineLayout);
     
     endCommandBuffer(frame);
   }
   
-  void updateAndRender(float dt) {
-    gfx::SwapchainFrame *frame = gfx::getNextFrame(imageAvailableSemaphore);
-    
+  void updateAndRender(float dt, const gfx::SwapchainFrame *frame, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore) {
     // Wait for the command buffer to finish executing
     vkWaitForFences(gfx::device, 1, &frame->cmdBufferFence, VK_TRUE, INT64_MAX);
     vkResetFences(gfx::device, 1, &frame->cmdBufferFence);
@@ -236,9 +223,7 @@ namespace scene {
     
     // Submit the command buffer
     VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    gfx::submitCommandBuffer(frame->cmdBuffer, imageAvailableSemaphore, waitStage, renderCompletedSemaphore, frame->cmdBufferFence);
-    
-    gfx::presentFrame(frame, renderCompletedSemaphore);
+    gfx::submitCommandBuffer(frame->cmdBuffer, waitSemaphore, waitStage, signalSemaphore, frame->cmdBufferFence);
   }
 }
 

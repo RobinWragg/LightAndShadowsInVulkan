@@ -5,8 +5,14 @@
 #define chdir _chdir
 #endif
 
+#include <string>
+#include <fstream>
+
 #include "main.h"
 #include "input.h"
+#include "imageViewer.h"
+#include "graphics.h"
+#include "scene.h"
 
 double getTime() {
   static uint64_t startCount = SDL_GetPerformanceCounter();
@@ -36,6 +42,17 @@ vector<uint8_t> loadBinaryFile(const char *filename) {
   file.close();
 
   return bytes;
+}
+
+VkSemaphore imageAvailableSemaphore  = VK_NULL_HANDLE;
+VkSemaphore renderCompletedSemaphore = VK_NULL_HANDLE;
+
+void createSemaphores() {
+  VkSemaphoreCreateInfo semaphoreInfo = {};
+  semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+  vkCreateSemaphore(gfx::device, &semaphoreInfo, nullptr, &imageAvailableSemaphore);
+  //SDL_assert_release( == VK_SUCCESS);
+  SDL_assert_release(vkCreateSemaphore(gfx::device, &semaphoreInfo, nullptr, &renderCompletedSemaphore) == VK_SUCCESS);
 }
 
 int main(int argc, char* argv[]) {
@@ -73,6 +90,9 @@ int main(int argc, char* argv[]) {
   SDL_assert_release(window != NULL);
   printf("Created window\n");
   fflush(stdout);
+  
+  gfx::createCoreHandles(window);
+  createSemaphores();
   
   scene::init(window);
   
@@ -112,8 +132,10 @@ int main(int argc, char* argv[]) {
       }
     }
     
-    scene::updateAndRender(deltaTime);
-    // printf("fps: %.1f\n", 1 / deltaTime);
+    gfx::SwapchainFrame *frame = gfx::getNextFrame(imageAvailableSemaphore);
+    scene::updateAndRender(deltaTime, frame, imageAvailableSemaphore, renderCompletedSemaphore);
+    imageViewer::render();
+    gfx::presentFrame(frame, renderCompletedSemaphore);
     
     fflush(stdout);
   }
