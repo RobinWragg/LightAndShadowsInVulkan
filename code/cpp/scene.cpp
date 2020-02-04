@@ -68,45 +68,8 @@ namespace scene {
       return new DrawCall(verts, normals);
     } else return new DrawCall(verts);
   }
-  
-  void beginCommandBuffer(const gfx::SwapchainFrame *frame, const mat4 &viewProjectionMatrix) {
-    VkRenderPassBeginInfo renderPassInfo = {};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = gfx::renderPass;
-    renderPassInfo.framebuffer = frame->framebuffer;
-    
-    vector<VkClearValue> clearValues(2);
-    
-    clearValues[0].color.float32[0] = 0.5;
-    clearValues[0].color.float32[1] = 0.7;
-    clearValues[0].color.float32[2] = 1;
-    clearValues[0].color.float32[3] = 1;
-    
-    clearValues[1].depthStencil.depth = 1;
-    clearValues[1].depthStencil.stencil = 0;
-    
-    renderPassInfo.clearValueCount = (int)clearValues.size();
-    renderPassInfo.pClearValues = clearValues.data();
 
-    renderPassInfo.renderArea.offset = { 0, 0 };
-    renderPassInfo.renderArea.extent = gfx::getSurfaceExtent();
-    
-    gfx::beginCommandBuffer(frame->cmdBuffer);
-    
-    vkCmdBeginRenderPass(frame->cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-    vkCmdBindPipeline(frame->cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, scenePipeline);
-    
-    vkCmdPushConstants(frame->cmdBuffer, scenePipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
-  }
-  
-  void endCommandBuffer(const gfx::SwapchainFrame *frame) {
-    vkCmdEndRenderPass(frame->cmdBuffer);
-
-    auto result = vkEndCommandBuffer(frame->cmdBuffer);
-    SDL_assert(result == VK_SUCCESS);
-  }
-
-  void init(SDL_Window *window) {
+  void init() {
     scenePipelineLayout = gfx::createPipelineLayout(nullptr, 0);
     scenePipeline = gfx::createPipeline(scenePipelineLayout, gfx::renderPass);
     
@@ -188,42 +151,31 @@ namespace scene {
     return viewProjectionMatrix;
   }
   
-  void fillCommandBuffer(const gfx::SwapchainFrame *frame, const mat4 &viewProjectionMatrix) {
-    beginCommandBuffer(frame, viewProjectionMatrix);
+  void addToCommandBuffer(VkCommandBuffer cmdBuffer, float dt) {
+    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, scenePipeline);
+    
+    mat4 viewProjectionMatrix =  getUpdatedViewProjectionMatrix(dt);
+    vkCmdPushConstants(cmdBuffer, scenePipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
     
     pyramid->modelMatrix = glm::identity<mat4>();
     pyramid->modelMatrix = translate(pyramid->modelMatrix, vec3(0, 0, -2));
     pyramid->modelMatrix = rotate(pyramid->modelMatrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
-    pyramid->addToCmdBuffer(frame->cmdBuffer, scenePipelineLayout);
+    pyramid->addToCmdBuffer(cmdBuffer, scenePipelineLayout);
     
     sphere0->modelMatrix = glm::identity<mat4>();
     sphere0->modelMatrix = translate(sphere0->modelMatrix, vec3(-1.0f, 1.0f, 0.0f));
     sphere0->modelMatrix = rotate(sphere0->modelMatrix, (float)getTime(), vec3(0, 1, 0));
     sphere0->modelMatrix = scale(sphere0->modelMatrix, vec3(0.3, 1, 1));
-    sphere0->addToCmdBuffer(frame->cmdBuffer, scenePipelineLayout);
+    sphere0->addToCmdBuffer(cmdBuffer, scenePipelineLayout);
     
     sphere1->modelMatrix = glm::identity<mat4>();
     sphere1->modelMatrix = translate(sphere1->modelMatrix, vec3(1.0f, 1.0f, 0.0f));
     sphere1->modelMatrix = rotate(sphere1->modelMatrix, (float)getTime(), vec3(0, 0, 1));
     sphere1->modelMatrix = scale(sphere1->modelMatrix, vec3(0.3, 1, 1));
-    sphere1->addToCmdBuffer(frame->cmdBuffer, scenePipelineLayout);
+    sphere1->addToCmdBuffer(cmdBuffer, scenePipelineLayout);
     
     ground->modelMatrix = glm::identity<mat4>();
-    ground->addToCmdBuffer(frame->cmdBuffer, scenePipelineLayout);
-    
-    endCommandBuffer(frame);
-  }
-  
-  void updateAndRender(float dt, const gfx::SwapchainFrame *frame, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore) {
-    // Wait for the command buffer to finish executing
-    vkWaitForFences(gfx::device, 1, &frame->cmdBufferFence, VK_TRUE, INT64_MAX);
-    vkResetFences(gfx::device, 1, &frame->cmdBufferFence);
-    
-    fillCommandBuffer(frame, getUpdatedViewProjectionMatrix(dt));
-    
-    // Submit the command buffer
-    VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    gfx::submitCommandBuffer(frame->cmdBuffer, waitSemaphore, waitStage, signalSemaphore, frame->cmdBufferFence);
+    ground->addToCmdBuffer(cmdBuffer, scenePipelineLayout);
   }
 }
 

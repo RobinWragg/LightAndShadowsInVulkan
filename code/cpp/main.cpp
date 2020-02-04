@@ -55,6 +55,40 @@ void createSemaphores() {
   SDL_assert_release(vkCreateSemaphore(gfx::device, &semaphoreInfo, nullptr, &renderCompletedSemaphore) == VK_SUCCESS);
 }
 
+void beginCommandBuffer(const gfx::SwapchainFrame *frame) {
+  VkRenderPassBeginInfo renderPassInfo = {};
+  renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  renderPassInfo.renderPass = gfx::renderPass;
+  renderPassInfo.framebuffer = frame->framebuffer;
+  
+  vector<VkClearValue> clearValues(2);
+  
+  clearValues[0].color.float32[0] = 0.5;
+  clearValues[0].color.float32[1] = 0.7;
+  clearValues[0].color.float32[2] = 1;
+  clearValues[0].color.float32[3] = 1;
+  
+  clearValues[1].depthStencil.depth = 1;
+  clearValues[1].depthStencil.stencil = 0;
+  
+  renderPassInfo.clearValueCount = (int)clearValues.size();
+  renderPassInfo.pClearValues = clearValues.data();
+
+  renderPassInfo.renderArea.offset = { 0, 0 };
+  renderPassInfo.renderArea.extent = gfx::getSurfaceExtent();
+  
+  gfx::beginCommandBuffer(frame->cmdBuffer);
+  
+  vkCmdBeginRenderPass(frame->cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void endCommandBuffer(VkCommandBuffer cmdBuffer) {
+  vkCmdEndRenderPass(cmdBuffer);
+
+  auto result = vkEndCommandBuffer(cmdBuffer);
+  SDL_assert(result == VK_SUCCESS);
+}
+
 int main(int argc, char* argv[]) {
   
   #ifdef DEBUG
@@ -94,7 +128,7 @@ int main(int argc, char* argv[]) {
   gfx::createCoreHandles(window);
   createSemaphores();
   
-  scene::init(window);
+  scene::init();
   
   bool running = true;
   
@@ -133,8 +167,22 @@ int main(int argc, char* argv[]) {
     }
     
     gfx::SwapchainFrame *frame = gfx::getNextFrame(imageAvailableSemaphore);
-    scene::updateAndRender(deltaTime, frame, imageAvailableSemaphore, renderCompletedSemaphore);
+    
+    // Wait for the command buffer to finish executing
+    vkWaitForFences(gfx::device, 1, &frame->cmdBufferFence, VK_TRUE, INT64_MAX);
+    vkResetFences(gfx::device, 1, &frame->cmdBufferFence);
+    
+    beginCommandBuffer(frame);
+    
+    scene::addToCommandBuffer(frame->cmdBuffer, deltaTime);
     imageViewer::render();
+    
+    endCommandBuffer(frame->cmdBuffer);
+    
+    // Submit the command buffer
+    VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    gfx::submitCommandBuffer(frame->cmdBuffer, imageAvailableSemaphore, waitStage, renderCompletedSemaphore, frame->cmdBufferFence);
+    
     gfx::presentFrame(frame, renderCompletedSemaphore);
     
     fflush(stdout);
