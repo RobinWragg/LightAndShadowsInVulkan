@@ -12,18 +12,29 @@ namespace imageViewer {
   
   VkSampler shadowMapSampler;
   
+  VkDescriptorSetLayout shadowMapSamplerDescriptorSetLayout;
+  VkDescriptorSet shadowMapSamplerDescriptorSet;
+  
   vector<vec3> vertices = {
     vec3(0, 0, 0), vec3(1, 0, 0), vec3(0, 1, 0),
     vec3(0, 1, 0), vec3(1, 0, 0), vec3(1, 1, 0)
   };
   
+  void createShadowMapResources() {
+    shadowMapSampler = gfx::createSampler();
+    
+    shadowMapSamplerDescriptorSetLayout = gfx::createDescriptorSetLayout(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    
+    shadowMapSamplerDescriptorSet = gfx::createDescriptorSet(gfx::descriptorPool, shadowMapSamplerDescriptorSetLayout, scene::getShadowMapView(), shadowMapSampler);
+  }
+  
   void init() {
-    pipelineLayout = gfx::createPipelineLayout(nullptr, 0, sizeof(mat4));
+    createShadowMapResources();
+    
+    pipelineLayout = gfx::createPipelineLayout(&shadowMapSamplerDescriptorSetLayout, 1, sizeof(mat4));
     pipeline = gfx::createPipeline(pipelineLayout, gfx::renderPass, 1, "imageViewer.vert.spv", "imageViewer.frag.spv");
     
     gfx::createVec3Buffer(vertices, &vertexBuffer, &vertexBufferMemory);
-    
-    shadowMapSampler = gfx::createSampler();
   }
   
   void renderQuad(VkCommandBuffer cmdBuffer) {
@@ -37,6 +48,8 @@ namespace imageViewer {
     
     vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrix), &matrix);
     
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowMapSamplerDescriptorSet, 0, nullptr);
+    
     VkDeviceSize vertexBufferOffset = 0;
     vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffer, &vertexBufferOffset);
     
@@ -44,7 +57,6 @@ namespace imageViewer {
   }
   
   void addToCommandBuffer(VkCommandBuffer cmdBuffer) {
-    VkImageView shadowMapView = scene::getShadowMapView();
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     renderQuad(cmdBuffer);
   }

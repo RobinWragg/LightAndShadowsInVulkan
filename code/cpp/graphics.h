@@ -29,6 +29,7 @@ namespace gfx {
   extern VkSurfaceKHR             surface;
   extern VkPhysicalDevice         physDevice;
   extern VkDevice                 device;
+  extern VkDescriptorPool         descriptorPool;
   extern VkRenderPass             renderPass;
   extern VkQueue                  queue;
   extern int                      queueFamilyIndex;
@@ -46,6 +47,8 @@ namespace gfx {
   VkCommandBuffer createCommandBuffer();
   VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts[], uint32_t descriptorSetLayoutCount, uint32_t pushConstantSize);
   VkPipeline createPipeline(VkPipelineLayout layout, VkRenderPass renderPass, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath);
+  VkDescriptorSetLayout createDescriptorSetLayout(VkDescriptorType descriptorType);
+  VkDescriptorSet createDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout layout, VkImageView imageView, VkSampler sampler);
     
   // getters (graphics_get.cpp)
   vector<const char*> getRequiredLayers();

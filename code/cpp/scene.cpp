@@ -84,7 +84,7 @@ namespace scene {
     
     uint32_t componentCount = 4 * imageWidth * imageHeight;
     float *imageFloatData = new float[componentCount];
-    for (uint32_t i = 0; i < imageWidth*imageHeight; i++) {
+    for (uint32_t i = 0; i < componentCount; i++) {
       imageFloatData[i] = imageData[i] / 255.0f;
     }
     
