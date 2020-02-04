@@ -89,6 +89,27 @@ void endCommandBuffer(VkCommandBuffer cmdBuffer) {
   SDL_assert(result == VK_SUCCESS);
 }
 
+void renderNextFrame(float deltaTime) {
+  gfx::SwapchainFrame *frame = gfx::getNextFrame(imageAvailableSemaphore);
+  
+  // Wait for the command buffer to finish executing
+  vkWaitForFences(gfx::device, 1, &frame->cmdBufferFence, VK_TRUE, INT64_MAX);
+  vkResetFences(gfx::device, 1, &frame->cmdBufferFence);
+  
+  beginCommandBuffer(frame);
+  
+  scene::addToCommandBuffer(frame->cmdBuffer, deltaTime);
+  imageViewer::render();
+  
+  endCommandBuffer(frame->cmdBuffer);
+  
+  // Submit the command buffer
+  VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  gfx::submitCommandBuffer(frame->cmdBuffer, imageAvailableSemaphore, waitStage, renderCompletedSemaphore, frame->cmdBufferFence);
+  
+  gfx::presentFrame(frame, renderCompletedSemaphore);
+}
+
 int main(int argc, char* argv[]) {
   
   #ifdef DEBUG
@@ -166,24 +187,7 @@ int main(int argc, char* argv[]) {
       }
     }
     
-    gfx::SwapchainFrame *frame = gfx::getNextFrame(imageAvailableSemaphore);
-    
-    // Wait for the command buffer to finish executing
-    vkWaitForFences(gfx::device, 1, &frame->cmdBufferFence, VK_TRUE, INT64_MAX);
-    vkResetFences(gfx::device, 1, &frame->cmdBufferFence);
-    
-    beginCommandBuffer(frame);
-    
-    scene::addToCommandBuffer(frame->cmdBuffer, deltaTime);
-    imageViewer::render();
-    
-    endCommandBuffer(frame->cmdBuffer);
-    
-    // Submit the command buffer
-    VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    gfx::submitCommandBuffer(frame->cmdBuffer, imageAvailableSemaphore, waitStage, renderCompletedSemaphore, frame->cmdBufferFence);
-    
-    gfx::presentFrame(frame, renderCompletedSemaphore);
+    renderNextFrame(deltaTime);
     
     fflush(stdout);
   }

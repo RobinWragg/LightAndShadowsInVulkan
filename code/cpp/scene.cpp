@@ -125,11 +125,11 @@ namespace scene {
     printf("\nInitialised Vulkan\n");
   }
   
-  mat4 getUpdatedViewProjectionMatrix(float dt) {
+  mat4 getUpdatedViewProjectionMatrix(float deltaTime) {
     cameraAngle += input::getViewAngleInput();
     
     // Get player input for walking and take into account the direction the player is facing
-    vec2 lateralMovement = input::getMovementVector() * (dt * 2);
+    vec2 lateralMovement = input::getMovementVector() * (deltaTime * 2);
     lateralMovement = rotate(lateralMovement, -cameraAngle.x);
     
     cameraPosition.x += lateralMovement.x;
@@ -151,10 +151,10 @@ namespace scene {
     return viewProjectionMatrix;
   }
   
-  void addToCommandBuffer(VkCommandBuffer cmdBuffer, float dt) {
+  void addToCommandBuffer(VkCommandBuffer cmdBuffer, float deltaTime) {
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, scenePipeline);
     
-    mat4 viewProjectionMatrix =  getUpdatedViewProjectionMatrix(dt);
+    mat4 viewProjectionMatrix =  getUpdatedViewProjectionMatrix(deltaTime);
     vkCmdPushConstants(cmdBuffer, scenePipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
     
     pyramid->modelMatrix = glm::identity<mat4>();
