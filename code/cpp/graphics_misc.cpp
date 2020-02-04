@@ -1,5 +1,4 @@
 #include "graphics.h"
-#include "linear_algebra.h"
 
 namespace gfx {
   void submitCommandBuffer(VkCommandBuffer cmdBuffer, VkSemaphore optionalWaitSemaphore, VkPipelineStageFlags optionalWaitStage, VkSemaphore optionalSignalSemaphore, VkFence optionalFence) {

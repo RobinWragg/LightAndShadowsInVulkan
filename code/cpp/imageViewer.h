@@ -1,5 +1,7 @@
 #pragma once
+#include <vulkan/vulkan.h>
 
 namespace imageViewer {
-  void render();
+  void init();
+  void addToCommandBuffer(VkCommandBuffer cmdBuffer);
 }

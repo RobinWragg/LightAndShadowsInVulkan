@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
 #include <vector>
+#include "linear_algebra.h"
 using namespace std;
 
 namespace gfx {
@@ -37,12 +38,13 @@ namespace gfx {
   // creators (graphics_create.cpp)
   void createCoreHandles(SDL_Window *window);
   void createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
+  void createVec3Buffer(const vector<vec3> &vec3s, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
   void createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
   void createImage(bool forDepthTesting, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
   VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
   VkCommandBuffer createCommandBuffer();
-  VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts[], uint32_t descriptorSetLayoutCount);
-  VkPipeline createPipeline(VkPipelineLayout layout, VkRenderPass renderPass);
+  VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts[], uint32_t descriptorSetLayoutCount, uint32_t pushConstantSize);
+  VkPipeline createPipeline(VkPipelineLayout layout, VkRenderPass renderPass, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath);
     
   // getters (graphics_get.cpp)
   vector<const char*> getRequiredLayers();

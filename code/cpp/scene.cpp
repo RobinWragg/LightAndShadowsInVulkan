@@ -7,11 +7,8 @@
 
 namespace scene {
   
-  VkPipelineLayout scenePipelineLayout = VK_NULL_HANDLE;
-  VkPipeline       scenePipeline       = VK_NULL_HANDLE;
-  
-  VkPipelineLayout monitorPipelineLayout = VK_NULL_HANDLE;
-  VkPipeline       monitorPipeline       = VK_NULL_HANDLE;
+  VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+  VkPipeline       pipeline       = VK_NULL_HANDLE;
   
   DrawCall *pyramid = nullptr;
   DrawCall *ground  = nullptr;
@@ -70,8 +67,9 @@ namespace scene {
   }
 
   void init() {
-    scenePipelineLayout = gfx::createPipelineLayout(nullptr, 0);
-    scenePipeline = gfx::createPipeline(scenePipelineLayout, gfx::renderPass);
+    pipelineLayout = gfx::createPipelineLayout(nullptr, 0, sizeof(mat4) * 2);
+    uint32_t vertexAttributeCount = 2;
+    pipeline = gfx::createPipeline(pipelineLayout, gfx::renderPass, vertexAttributeCount, "scene.vert.spv", "scene.frag.spv");
     
     int imageWidth, imageHeight, componentsPerPixel;
     unsigned char *imageData = stbi_load("test.png", &imageWidth, &imageHeight, &componentsPerPixel, 4);
@@ -120,7 +118,7 @@ namespace scene {
     ground = new DrawCall(groundVertices);
     
     sphere0 = newSphereDrawCall(32, true);
-    sphere1 = newSphereDrawCall(32, true);
+    sphere1 = newSphereDrawCall(32, false);
     
     printf("\nInitialised Vulkan\n");
   }
@@ -139,8 +137,8 @@ namespace scene {
     
     // projection transformation
     VkExtent2D extent = gfx::getSurfaceExtent();
-    float aspect = extent.width / (float)extent.height;
-    viewProjectionMatrix = perspective(radians(50.0f), aspect, 0.1f, 100.0f);
+    float aspectRatio = extent.width / (float)extent.height;
+    viewProjectionMatrix = perspective(radians(50.0f), aspectRatio, 0.1f, 100.0f);
     
     // view transformation
     viewProjectionMatrix = scale(viewProjectionMatrix, vec3(1, -1, 1));
@@ -152,30 +150,30 @@ namespace scene {
   }
   
   void addToCommandBuffer(VkCommandBuffer cmdBuffer, float deltaTime) {
-    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, scenePipeline);
+    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     
     mat4 viewProjectionMatrix =  getUpdatedViewProjectionMatrix(deltaTime);
-    vkCmdPushConstants(cmdBuffer, scenePipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
+    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
     
     pyramid->modelMatrix = glm::identity<mat4>();
     pyramid->modelMatrix = translate(pyramid->modelMatrix, vec3(0, 0, -2));
     pyramid->modelMatrix = rotate(pyramid->modelMatrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
-    pyramid->addToCmdBuffer(cmdBuffer, scenePipelineLayout);
+    pyramid->addToCmdBuffer(cmdBuffer, pipelineLayout);
     
     sphere0->modelMatrix = glm::identity<mat4>();
     sphere0->modelMatrix = translate(sphere0->modelMatrix, vec3(-1.0f, 1.0f, 0.0f));
     sphere0->modelMatrix = rotate(sphere0->modelMatrix, (float)getTime(), vec3(0, 1, 0));
     sphere0->modelMatrix = scale(sphere0->modelMatrix, vec3(0.3, 1, 1));
-    sphere0->addToCmdBuffer(cmdBuffer, scenePipelineLayout);
+    sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
     
     sphere1->modelMatrix = glm::identity<mat4>();
     sphere1->modelMatrix = translate(sphere1->modelMatrix, vec3(1.0f, 1.0f, 0.0f));
     sphere1->modelMatrix = rotate(sphere1->modelMatrix, (float)getTime(), vec3(0, 0, 1));
     sphere1->modelMatrix = scale(sphere1->modelMatrix, vec3(0.3, 1, 1));
-    sphere1->addToCmdBuffer(cmdBuffer, scenePipelineLayout);
+    sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
     
     ground->modelMatrix = glm::identity<mat4>();
-    ground->addToCmdBuffer(cmdBuffer, scenePipelineLayout);
+    ground->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
 }
 

@@ -25,8 +25,6 @@ private:
   VkDeviceMemory normalBufferMemory;
   
   void initCommon(const vector<vec3> &positions, const vector<vec3> &normals);
-  
-  void createVec3Buffer(const vector<vec3> &vec3s, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) const;
 };
 
 

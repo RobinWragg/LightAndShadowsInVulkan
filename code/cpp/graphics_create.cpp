@@ -1,5 +1,4 @@
 #include "graphics.h"
-#include "linear_algebra.h"
 
 namespace gfx {
   
@@ -253,6 +252,15 @@ namespace gfx {
     SDL_assert_release(result == VK_SUCCESS);
     
     *memoryOut = allocateAndBindMemory(*bufferOut);
+  }
+  
+  void createVec3Buffer(const vector<vec3> &vec3s, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) {
+    
+    uint64_t dataSize = sizeof(vec3s[0]) * vec3s.size();
+    gfx::createBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, dataSize, bufferOut, memoryOut);
+    
+    uint8_t *data = (uint8_t*)vec3s.data();
+    gfx::setBufferMemory(*memoryOut, dataSize, data);
   }
   
   static VkFramebuffer createFramebuffer(VkImageView colorView) {
@@ -533,18 +541,17 @@ namespace gfx {
     return view;
   }
   
-  static VkPipelineVertexInputStateCreateInfo allocVertexInputInfo() {
+  static VkPipelineVertexInputStateCreateInfo allocVertexInputInfo(uint32_t attributeCount) {
     VkPipelineVertexInputStateCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     
-    const uint32_t attribCount = 2;
-    info.vertexBindingDescriptionCount = attribCount; // One binding per attribute.
-    info.vertexAttributeDescriptionCount = attribCount;
+    info.vertexBindingDescriptionCount = attributeCount; // One binding per attribute.
+    info.vertexAttributeDescriptionCount = attributeCount;
     
-    auto bindings = new VkVertexInputBindingDescription[attribCount];
-    auto attribs = new VkVertexInputAttributeDescription[attribCount];
+    auto bindings = new VkVertexInputBindingDescription[attributeCount];
+    auto attribs = new VkVertexInputAttributeDescription[attributeCount];
     
-    for (int i = 0; i < attribCount; i++) {
+    for (int i = 0; i < attributeCount; i++) {
       bindings[i].binding = i;
       bindings[i].stride = sizeof(vec3);
       bindings[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -640,7 +647,7 @@ namespace gfx {
     delete info.pScissors;
   }
   
-  VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts[], uint32_t descriptorSetLayoutCount) {
+  VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts[], uint32_t descriptorSetLayoutCount, uint32_t pushConstantSize) {
     VkPipelineLayoutCreateInfo layoutInfo = {};
     layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     
@@ -650,7 +657,7 @@ namespace gfx {
     VkPushConstantRange pushConstRange = {};
     pushConstRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     pushConstRange.offset = 0;
-    pushConstRange.size = sizeof(mat4) * 2;
+    pushConstRange.size = pushConstantSize;
     layoutInfo.pushConstantRangeCount = 1;
     layoutInfo.pPushConstantRanges = &pushConstRange;
     
@@ -683,7 +690,7 @@ namespace gfx {
     return stageInfo;
   }
   
-  VkPipeline createPipeline(VkPipelineLayout layout, VkRenderPass renderPass) {
+  VkPipeline createPipeline(VkPipelineLayout layout, VkRenderPass renderPass, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath) {
     VkPipelineColorBlendStateCreateInfo colorBlending = {};
     colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     
@@ -697,13 +704,13 @@ namespace gfx {
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     
     vector<VkPipelineShaderStageCreateInfo> shaderStages = {
-      createShaderStage("basic.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-      createShaderStage("basic.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
+      createShaderStage(vertexShaderPath, VK_SHADER_STAGE_VERTEX_BIT),
+      createShaderStage(fragmentShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT)
     };
     pipelineInfo.stageCount = (int)shaderStages.size();
     pipelineInfo.pStages = shaderStages.data();
     
-    auto vertexInputInfo = allocVertexInputInfo();
+    auto vertexInputInfo = allocVertexInputInfo(vertexAttributeCount);
     pipelineInfo.pVertexInputState = &vertexInputInfo;
     
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};

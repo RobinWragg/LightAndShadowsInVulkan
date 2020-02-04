@@ -30,19 +30,10 @@ DrawCall::DrawCall(const vector<vec3> &positions, const vector<vec3> &normals) {
 
 void DrawCall::initCommon(const vector<vec3> &positions, const vector<vec3> &normals) {
   vertexCount = (uint32_t)positions.size();
-  createVec3Buffer(positions, &positionBuffer, &positionBufferMemory);
-  createVec3Buffer(normals, &normalBuffer, &normalBufferMemory);
+  gfx::createVec3Buffer(positions, &positionBuffer, &positionBufferMemory);
+  gfx::createVec3Buffer(normals, &normalBuffer, &normalBufferMemory);
   
   modelMatrix = glm::identity<mat4>();
-}
-
-void DrawCall::createVec3Buffer(const vector<vec3> &vec3s, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) const {
-  
-  uint64_t dataSize = sizeof(vec3s[0]) * vec3s.size();
-  gfx::createBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, dataSize, bufferOut, memoryOut);
-  
-  uint8_t *data = (uint8_t*)vec3s.data();
-  gfx::setBufferMemory(*memoryOut, dataSize, data);
 }
 
 void DrawCall::addToCmdBuffer(VkCommandBuffer cmdBuffer, VkPipelineLayout layout) {

@@ -99,7 +99,7 @@ void renderNextFrame(float deltaTime) {
   beginCommandBuffer(frame);
   
   scene::addToCommandBuffer(frame->cmdBuffer, deltaTime);
-  imageViewer::render();
+  imageViewer::addToCommandBuffer(frame->cmdBuffer);
   
   endCommandBuffer(frame->cmdBuffer);
   
@@ -150,6 +150,7 @@ int main(int argc, char* argv[]) {
   createSemaphores();
   
   scene::init();
+  imageViewer::init();
   
   bool running = true;
   
