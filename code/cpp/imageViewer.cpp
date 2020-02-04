@@ -42,9 +42,8 @@ namespace imageViewer {
     VkExtent2D extent = gfx::getSurfaceExtent();
     float aspectRatio = extent.width / (float)extent.height;
     matrix = scale(matrix, vec3(1 / aspectRatio, 1, 1));
-    float border = 0.05;
-    matrix = translate(matrix, vec3(-aspectRatio + border, 0.5 - border, 0));
-    matrix = scale(matrix, vec3(0.5, 0.5, 1));
+    matrix = translate(matrix, vec3(-aspectRatio, 0, 0));
+    // matrix = scale(matrix, vec3(0.5, 0.5, 1));
     
     vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrix), &matrix);
     
