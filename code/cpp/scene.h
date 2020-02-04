@@ -4,4 +4,5 @@
 namespace scene {
   void init();
   void addToCommandBuffer(VkCommandBuffer cmdBuffer, float dt);
+  VkImageView getShadowMapView();
 }

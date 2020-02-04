@@ -29,6 +29,7 @@ shadow mapping
 https://www.youtube.com/watch?v=R18YahCJJoc
 multisampling during shadow map render
 anti-aliasing during scene render
+https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
 
 deferred renderer
 https://www.3dgep.com/forward-plus/

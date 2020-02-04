@@ -182,6 +182,7 @@ namespace gfx {
     deviceCreateInfo.pQueueCreateInfos = &queueInfo;
     
     VkPhysicalDeviceFeatures enabledDeviceFeatures = {};
+    enabledDeviceFeatures.samplerAnisotropy = VK_TRUE;
     deviceCreateInfo.pEnabledFeatures = &enabledDeviceFeatures;
     
     // Enable extensions
@@ -539,6 +540,33 @@ namespace gfx {
     SDL_assert_release(result == VK_SUCCESS);
     
     return view;
+  }
+  
+  VkSampler createSampler() {
+    VkSamplerCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    
+    info.magFilter = VK_FILTER_LINEAR; // or NEAREST
+    info.minFilter = VK_FILTER_LINEAR; // or NEAREST
+    
+    info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    
+    info.anisotropyEnable = VK_TRUE;
+    info.maxAnisotropy = 16;
+    
+    info.compareEnable = VK_FALSE;
+    info.compareOp = VK_COMPARE_OP_ALWAYS;
+    
+    info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    info.unnormalizedCoordinates = VK_FALSE;
+    
+    VkSampler sampler;
+    auto result = vkCreateSampler(gfx::device, &info, nullptr, &sampler);
+    SDL_assert_release(result == VK_SUCCESS);
+    
+    return sampler;
   }
   
   static VkPipelineVertexInputStateCreateInfo allocVertexInputInfo(uint32_t attributeCount) {

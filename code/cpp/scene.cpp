@@ -10,12 +10,21 @@ namespace scene {
   VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
   VkPipeline       pipeline       = VK_NULL_HANDLE;
   
+  VkImage shadowMap;
+  VkImageView shadowMapView;
+  VkDeviceMemory shadowMapMemory;
+  
   DrawCall *pyramid = nullptr;
   DrawCall *ground  = nullptr;
   DrawCall *sphere0 = nullptr;
   DrawCall *sphere1 = nullptr;
+  
   vec3 cameraPosition;
   vec2 cameraAngle;
+  
+  VkImageView getShadowMapView() {
+    return shadowMapView;
+  }
   
   void addRingVertices(vec3 translation, int sideCount, float height, float btmRadius, float topRadius, vector<vec3> *verts) {
     
@@ -65,12 +74,8 @@ namespace scene {
       return new DrawCall(verts, normals);
     } else return new DrawCall(verts);
   }
-
-  void init() {
-    pipelineLayout = gfx::createPipelineLayout(nullptr, 0, sizeof(mat4) * 2);
-    uint32_t vertexAttributeCount = 2;
-    pipeline = gfx::createPipeline(pipelineLayout, gfx::renderPass, vertexAttributeCount, "scene.vert.spv", "scene.frag.spv");
-    
+  
+  void createShadowMap() {
     int imageWidth, imageHeight, componentsPerPixel;
     unsigned char *imageData = stbi_load("test.png", &imageWidth, &imageHeight, &componentsPerPixel, 4);
     SDL_assert_release(imageData != nullptr);
@@ -85,14 +90,19 @@ namespace scene {
     
     stbi_image_free(imageData);
     
-    VkImage testImage;
-    VkDeviceMemory testImageMemory;
-    
-    gfx::createColorImage(imageWidth, imageHeight, &testImage, &testImageMemory);
-    
-    gfx::setImageMemoryRGBA(testImage, testImageMemory, imageWidth, imageHeight, imageFloatData);
+    gfx::createColorImage(imageWidth, imageHeight, &shadowMap, &shadowMapMemory);
+    gfx::setImageMemoryRGBA(shadowMap, shadowMapMemory, imageWidth, imageHeight, imageFloatData);
+    shadowMapView = gfx::createImageView(shadowMap, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
     
     delete [] imageFloatData;
+  }
+
+  void init() {
+    pipelineLayout = gfx::createPipelineLayout(nullptr, 0, sizeof(mat4) * 2);
+    uint32_t vertexAttributeCount = 2;
+    pipeline = gfx::createPipeline(pipelineLayout, gfx::renderPass, vertexAttributeCount, "scene.vert.spv", "scene.frag.spv");
+    
+    createShadowMap();
     
     cameraPosition.x = 0;
     cameraPosition.y = 2;

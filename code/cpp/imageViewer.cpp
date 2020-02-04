@@ -1,6 +1,7 @@
 #include "imageViewer.h"
 #include "main.h"
 #include "graphics.h"
+#include "scene.h"
 
 namespace imageViewer {
   VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
@@ -8,6 +9,8 @@ namespace imageViewer {
   
   VkBuffer vertexBuffer;
   VkDeviceMemory vertexBufferMemory;
+  
+  VkSampler shadowMapSampler;
   
   vector<vec3> vertices = {
     vec3(0, 0, 0), vec3(1, 0, 0), vec3(0, 1, 0),
@@ -19,6 +22,8 @@ namespace imageViewer {
     pipeline = gfx::createPipeline(pipelineLayout, gfx::renderPass, 1, "imageViewer.vert.spv", "imageViewer.frag.spv");
     
     gfx::createVec3Buffer(vertices, &vertexBuffer, &vertexBufferMemory);
+    
+    shadowMapSampler = gfx::createSampler();
   }
   
   void renderQuad(VkCommandBuffer cmdBuffer) {
@@ -39,6 +44,7 @@ namespace imageViewer {
   }
   
   void addToCommandBuffer(VkCommandBuffer cmdBuffer) {
+    VkImageView shadowMapView = scene::getShadowMapView();
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     renderQuad(cmdBuffer);
   }
