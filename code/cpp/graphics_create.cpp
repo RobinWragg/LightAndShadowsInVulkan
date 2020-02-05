@@ -265,8 +265,7 @@ namespace gfx {
     gfx::setBufferMemory(*memoryOut, dataSize, data);
   }
   
-  static VkFramebuffer createFramebuffer(VkImageView colorView) {
-    vector<VkImageView> attachments = { colorView, depthImageView };
+  VkFramebuffer createFramebuffer(VkRenderPass renderPass, vector<VkImageView> attachments, uint32_t width, uint32_t height) {
 
     VkFramebufferCreateInfo framebufferInfo = {};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -274,9 +273,8 @@ namespace gfx {
     framebufferInfo.attachmentCount = (uint32_t)attachments.size();
     framebufferInfo.pAttachments = attachments.data();
     
-    auto extent = getSurfaceExtent();
-    framebufferInfo.width = extent.width;
-    framebufferInfo.height = extent.height;
+    framebufferInfo.width = width;
+    framebufferInfo.height = height;
     
     framebufferInfo.layers = 1;
     
@@ -289,11 +287,13 @@ namespace gfx {
   static void createSwapchainFrames() {
     auto images = getSwapchainImages();
     
+    auto extent = getSurfaceExtent();
+    
     for (int i = 0; i < images.size(); i++) {
       swapchainFrames[i].index = i;
       
       swapchainFrames[i].view = createImageView(images[i], surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-      swapchainFrames[i].framebuffer = createFramebuffer(swapchainFrames[i].view);
+      swapchainFrames[i].framebuffer = createFramebuffer(renderPass, {swapchainFrames[i].view, depthImageView}, extent.width, extent.height);
       swapchainFrames[i].cmdBuffer = createCommandBuffer();
       
       VkFenceCreateInfo createInfo = {};

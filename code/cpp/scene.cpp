@@ -75,7 +75,7 @@ namespace scene {
     } else return new DrawCall(verts);
   }
   
-  void createShadowMap() {
+  void createShadowMapResources() {
     int imageWidth, imageHeight, componentsPerPixel;
     unsigned char *imageData = stbi_load("test.png", &imageWidth, &imageHeight, &componentsPerPixel, 4);
     SDL_assert_release(imageData != nullptr);
@@ -102,7 +102,7 @@ namespace scene {
     uint32_t vertexAttributeCount = 2;
     pipeline = gfx::createPipeline(pipelineLayout, gfx::renderPass, vertexAttributeCount, "scene.vert.spv", "scene.frag.spv");
     
-    createShadowMap();
+    createShadowMapResources();
     
     cameraPosition.x = 0;
     cameraPosition.y = 2;
