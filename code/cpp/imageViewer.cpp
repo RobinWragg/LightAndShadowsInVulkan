@@ -32,7 +32,7 @@ namespace imageViewer {
     createShadowMapResources();
     
     pipelineLayout = gfx::createPipelineLayout(&shadowMapSamplerDescriptorSetLayout, 1, sizeof(mat4));
-    pipeline = gfx::createPipeline(pipelineLayout, gfx::renderPass, 1, "imageViewer.vert.spv", "imageViewer.frag.spv");
+    pipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, 1, "imageViewer.vert.spv", "imageViewer.frag.spv");
     
     gfx::createVec3Buffer(vertices, &vertexBuffer, &vertexBufferMemory);
   }
@@ -55,8 +55,12 @@ namespace imageViewer {
     vkCmdDraw(cmdBuffer, (int)vertices.size(), 1, 0, 0);
   }
   
-  void addToCommandBuffer(VkCommandBuffer cmdBuffer) {
-    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-    renderQuad(cmdBuffer);
+  void addToCommandBuffer(const gfx::SwapchainFrame *frame) {
+    vkCmdBindPipeline(frame->cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    renderQuad(frame->cmdBuffer);
   }
 }
+
+
+
+

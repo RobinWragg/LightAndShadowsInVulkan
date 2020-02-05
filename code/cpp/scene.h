@@ -3,6 +3,8 @@
 
 namespace scene {
   void init();
-  void addToCommandBuffer(VkCommandBuffer cmdBuffer, float dt);
+  void update(float deltaTime);
+  void performShadowMapRenderPass(VkCommandBuffer cmdBuffer);
+  void renderScene(VkCommandBuffer cmdBuffer);
   VkImageView getShadowMapView();
 }

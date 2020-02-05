@@ -1,7 +1,7 @@
 #pragma once
-#include <vulkan/vulkan.h>
+#include "graphics.h"
 
 namespace imageViewer {
   void init();
-  void addToCommandBuffer(VkCommandBuffer cmdBuffer);
+  void addToCommandBuffer(const gfx::SwapchainFrame *frame);
 }

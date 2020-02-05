@@ -55,53 +55,27 @@ void createSemaphores() {
   SDL_assert_release(vkCreateSemaphore(gfx::device, &semaphoreInfo, nullptr, &renderCompletedSemaphore) == VK_SUCCESS);
 }
 
-void beginCommandBuffer(const gfx::SwapchainFrame *frame) {
-  VkRenderPassBeginInfo renderPassInfo = {};
-  renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  renderPassInfo.renderPass = gfx::renderPass;
-  renderPassInfo.framebuffer = frame->framebuffer;
-  
-  vector<VkClearValue> clearValues(2);
-  
-  clearValues[0].color.float32[0] = 0.5;
-  clearValues[0].color.float32[1] = 0.7;
-  clearValues[0].color.float32[2] = 1;
-  clearValues[0].color.float32[3] = 1;
-  
-  clearValues[1].depthStencil.depth = 1;
-  clearValues[1].depthStencil.stencil = 0;
-  
-  renderPassInfo.clearValueCount = (int)clearValues.size();
-  renderPassInfo.pClearValues = clearValues.data();
-
-  renderPassInfo.renderArea.offset = { 0, 0 };
-  renderPassInfo.renderArea.extent = gfx::getSurfaceExtent();
-  
-  gfx::beginCommandBuffer(frame->cmdBuffer);
-  
-  vkCmdBeginRenderPass(frame->cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-}
-
-void endCommandBuffer(VkCommandBuffer cmdBuffer) {
-  vkCmdEndRenderPass(cmdBuffer);
-
-  auto result = vkEndCommandBuffer(cmdBuffer);
-  SDL_assert(result == VK_SUCCESS);
-}
-
 void renderNextFrame(float deltaTime) {
+  scene::update(deltaTime);
+  
   gfx::SwapchainFrame *frame = gfx::getNextFrame(imageAvailableSemaphore);
   
   // Wait for the command buffer to finish executing
   vkWaitForFences(gfx::device, 1, &frame->cmdBufferFence, VK_TRUE, INT64_MAX);
   vkResetFences(gfx::device, 1, &frame->cmdBufferFence);
   
-  beginCommandBuffer(frame);
+  gfx::beginCommandBuffer(frame->cmdBuffer);
   
-  scene::addToCommandBuffer(frame->cmdBuffer, deltaTime);
-  imageViewer::addToCommandBuffer(frame->cmdBuffer);
+  scene::performShadowMapRenderPass(frame->cmdBuffer);
   
-  endCommandBuffer(frame->cmdBuffer);
+  auto extent = gfx::getSurfaceExtent();
+  gfx::cmdBeginRenderPass(gfx::renderPass, extent.width, extent.height, frame->framebuffer, frame->cmdBuffer);
+  scene::renderScene(frame->cmdBuffer);
+  imageViewer::addToCommandBuffer(frame);
+  vkCmdEndRenderPass(frame->cmdBuffer);
+  
+  auto result = vkEndCommandBuffer(frame->cmdBuffer);
+  SDL_assert(result == VK_SUCCESS);
   
   // Submit the command buffer
   VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;

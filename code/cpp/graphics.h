@@ -47,7 +47,7 @@ namespace gfx {
   VkSampler createSampler();
   VkCommandBuffer createCommandBuffer();
   VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts[], uint32_t descriptorSetLayoutCount, uint32_t pushConstantSize);
-  VkPipeline createPipeline(VkPipelineLayout layout, VkRenderPass renderPass, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath);
+  VkPipeline createPipeline(VkPipelineLayout layout, VkExtent2D extent, VkRenderPass renderPass, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath);
   VkDescriptorSetLayout createDescriptorSetLayout(VkDescriptorType descriptorType);
   VkDescriptorSet createDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout layout, VkImageView imageView, VkSampler sampler);
   VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout);
@@ -68,6 +68,8 @@ namespace gfx {
   void beginCommandBuffer(VkCommandBuffer cmdBuffer);
   void submitCommandBuffer(VkCommandBuffer cmdBuffer, VkSemaphore optionalWaitSemaphore = VK_NULL_HANDLE, VkPipelineStageFlags optionalWaitStage = 0, VkSemaphore optionalSignalSemaphore = VK_NULL_HANDLE, VkFence optionalFence = VK_NULL_HANDLE);
   void presentFrame(const SwapchainFrame *frame, VkSemaphore waitSemaphore);
+  void cmdBeginRenderPass(VkRenderPass renderPass, uint32_t width, uint32_t height, VkFramebuffer framebuffer, VkCommandBuffer cmdBuffer);
+  void cmdTransitionImageLayout(VkCommandBuffer cmdBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
 }
 
 

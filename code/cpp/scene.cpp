@@ -7,10 +7,12 @@
 
 namespace scene {
   
-  VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-  VkPipeline       pipeline       = VK_NULL_HANDLE;
+  VkPipelineLayout pipelineLayout    = VK_NULL_HANDLE;
+  VkPipeline       shadowMapPipeline = VK_NULL_HANDLE;
+  VkPipeline       scenePipeline     = VK_NULL_HANDLE;
   
   VkImage shadowMap;
+  int shadowMapWidth, shadowMapHeight;
   VkImageView shadowMapView;
   VkDeviceMemory shadowMapMemory;
   VkFramebuffer shadowMapFramebuffer;
@@ -23,6 +25,7 @@ namespace scene {
   
   vec3 cameraPosition;
   vec2 cameraAngle;
+  mat4 viewMatrix;
   
   VkImageView getShadowMapView() {
     return shadowMapView;
@@ -78,7 +81,7 @@ namespace scene {
   }
   
   void createShadowMapRenderPass(VkFormat format) {
-    VkAttachmentDescription attachment = gfx::createAttachmentDescription(format, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    VkAttachmentDescription attachment = gfx::createAttachmentDescription(format, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     
     VkAttachmentReference attachmentRef = {};
     attachmentRef.attachment = 0; // The first and only attachment
@@ -109,34 +112,26 @@ namespace scene {
   void createShadowMapResources() {
     const VkFormat format = VK_FORMAT_R32G32B32A32_SFLOAT;
     
-    int imageWidth, imageHeight, componentsPerPixel;
-    unsigned char *imageData = stbi_load("test.png", &imageWidth, &imageHeight, &componentsPerPixel, 4);
-    SDL_assert_release(imageData != nullptr);
-    SDL_assert_release(imageWidth == 128);
-    SDL_assert_release(imageHeight == 128);
+    shadowMapWidth = 512;
+    shadowMapHeight = 512;
     
-    uint32_t componentCount = 4 * imageWidth * imageHeight;
-    float *imageFloatData = new float[componentCount];
-    for (uint32_t i = 0; i < componentCount; i++) {
-      imageFloatData[i] = imageData[i] / 255.0f;
-    }
-    
-    stbi_image_free(imageData);
-    
-    gfx::createColorImage(imageWidth, imageHeight, &shadowMap, &shadowMapMemory);
-    gfx::setImageMemoryRGBA(shadowMap, shadowMapMemory, imageWidth, imageHeight, imageFloatData);
+    gfx::createColorImage(shadowMapWidth, shadowMapHeight, &shadowMap, &shadowMapMemory);
     shadowMapView = gfx::createImageView(shadowMap, format, VK_IMAGE_ASPECT_COLOR_BIT);
     
-    delete [] imageFloatData;
-    
     createShadowMapRenderPass(format);
-    shadowMapFramebuffer = gfx::createFramebuffer(shadowMapRenderPass, {shadowMapView}, imageWidth, imageHeight);
+    shadowMapFramebuffer = gfx::createFramebuffer(shadowMapRenderPass, {shadowMapView}, shadowMapWidth, shadowMapHeight);
+    
+    uint32_t vertexAttributeCount = 2;
+    VkExtent2D extent;
+    extent.width = shadowMapWidth;
+    extent.height = shadowMapHeight;
+    shadowMapPipeline = gfx::createPipeline(pipelineLayout, extent, shadowMapRenderPass, vertexAttributeCount, "shadowMap.vert.spv", "shadowMap.frag.spv");
   }
 
   void init() {
     pipelineLayout = gfx::createPipelineLayout(nullptr, 0, sizeof(mat4) * 2);
     uint32_t vertexAttributeCount = 2;
-    pipeline = gfx::createPipeline(pipelineLayout, gfx::renderPass, vertexAttributeCount, "scene.vert.spv", "scene.frag.spv");
+    scenePipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "scene.vert.spv", "scene.frag.spv");
     
     createShadowMapResources();
     
@@ -169,7 +164,12 @@ namespace scene {
     printf("\nInitialised Vulkan\n");
   }
   
-  mat4 getUpdatedViewProjectionMatrix(float deltaTime) {
+  static mat4 createProjectionMatrix(uint32_t width, uint32_t height) {
+    float aspectRatio = width / (float)height;
+    return perspective(radians(50.0f), aspectRatio, 0.1f, 100.0f);
+  }
+  
+  static void updateViewMatrix(float deltaTime) {
     cameraAngle += input::getViewAngleInput();
     
     // Get player input for walking and take into account the direction the player is facing
@@ -179,47 +179,81 @@ namespace scene {
     cameraPosition.x += lateralMovement.x;
     cameraPosition.z -= lateralMovement.y;
     
-    mat4 viewProjectionMatrix = glm::identity<mat4>();
-    
-    // projection transformation
-    VkExtent2D extent = gfx::getSurfaceExtent();
-    float aspectRatio = extent.width / (float)extent.height;
-    viewProjectionMatrix = perspective(radians(50.0f), aspectRatio, 0.1f, 100.0f);
+    viewMatrix = glm::identity<mat4>();
     
     // view transformation
-    viewProjectionMatrix = scale(viewProjectionMatrix, vec3(1, -1, 1));
-    viewProjectionMatrix = rotate(viewProjectionMatrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
-    viewProjectionMatrix = rotate(viewProjectionMatrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
-    viewProjectionMatrix = translate(viewProjectionMatrix, -cameraPosition);
-    
-    return viewProjectionMatrix;
+    viewMatrix = scale(viewMatrix, vec3(1, -1, 1));
+    viewMatrix = rotate(viewMatrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
+    viewMatrix = rotate(viewMatrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
+    viewMatrix = translate(viewMatrix, -cameraPosition);
   }
   
-  void addToCommandBuffer(VkCommandBuffer cmdBuffer, float deltaTime) {
-    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-    
-    mat4 viewProjectionMatrix =  getUpdatedViewProjectionMatrix(deltaTime);
-    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
+  void addDrawCallsToCommandBuffer(VkCommandBuffer cmdBuffer) {
+    pyramid->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    ground->addToCmdBuffer(cmdBuffer, pipelineLayout);
+  }
+  
+  void update(float deltaTime) {
+    updateViewMatrix(deltaTime);
     
     pyramid->modelMatrix = glm::identity<mat4>();
     pyramid->modelMatrix = translate(pyramid->modelMatrix, vec3(0, 0, -2));
     pyramid->modelMatrix = rotate(pyramid->modelMatrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
-    pyramid->addToCmdBuffer(cmdBuffer, pipelineLayout);
     
     sphere0->modelMatrix = glm::identity<mat4>();
     sphere0->modelMatrix = translate(sphere0->modelMatrix, vec3(-1.0f, 1.0f, 0.0f));
     sphere0->modelMatrix = rotate(sphere0->modelMatrix, (float)getTime(), vec3(0, 1, 0));
     sphere0->modelMatrix = scale(sphere0->modelMatrix, vec3(0.3, 1, 1));
-    sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
     
     sphere1->modelMatrix = glm::identity<mat4>();
     sphere1->modelMatrix = translate(sphere1->modelMatrix, vec3(1.0f, 1.0f, 0.0f));
     sphere1->modelMatrix = rotate(sphere1->modelMatrix, (float)getTime(), vec3(0, 0, 1));
     sphere1->modelMatrix = scale(sphere1->modelMatrix, vec3(0.3, 1, 1));
-    sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
     
     ground->modelMatrix = glm::identity<mat4>();
-    ground->addToCmdBuffer(cmdBuffer, pipelineLayout);
+  }
+  
+  void performShadowMapRenderPass(VkCommandBuffer cmdBuffer) {
+    gfx::cmdBeginRenderPass(shadowMapRenderPass, shadowMapWidth, shadowMapHeight, shadowMapFramebuffer, cmdBuffer);
+    
+    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowMapPipeline);
+    
+    mat4 viewProjectionMatrix = createProjectionMatrix(shadowMapWidth, shadowMapHeight) * viewMatrix;
+    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
+    
+    addDrawCallsToCommandBuffer(cmdBuffer);
+    
+    vkCmdEndRenderPass(cmdBuffer);
+    
+    // VkImageMemoryBarrier barrier = {};
+    // barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    // barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    // barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    // barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    // barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    // barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    // barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    // barrier.image = shadowMap;
+    
+    // barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    // barrier.subresourceRange.baseMipLevel = 0;
+    // barrier.subresourceRange.levelCount = 1;
+    // barrier.subresourceRange.baseArrayLayer = 0;
+    // barrier.subresourceRange.layerCount = 1;
+    
+    // vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+  }
+  
+  void renderScene(VkCommandBuffer cmdBuffer) {
+    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, scenePipeline);
+    
+    VkExtent2D extent = gfx::getSurfaceExtent();
+    mat4 viewProjectionMatrix = createProjectionMatrix(extent.width, extent.height) * viewMatrix;
+    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
+    
+    addDrawCallsToCommandBuffer(cmdBuffer);
   }
 }
 

@@ -2,17 +2,17 @@
 
 namespace gfx {
   
-  VkInstance               instance         = VK_NULL_HANDLE;
-  VkDebugUtilsMessengerEXT debugMsgr        = VK_NULL_HANDLE;
-  VkSurfaceKHR             surface          = VK_NULL_HANDLE;
-  VkPhysicalDevice         physDevice       = VK_NULL_HANDLE;
-  VkDevice                 device           = VK_NULL_HANDLE;
-  VkDescriptorPool         descriptorPool   = VK_NULL_HANDLE;
-  VkRenderPass             renderPass       = VK_NULL_HANDLE;
-  VkQueue                  queue            = VK_NULL_HANDLE;
-  int                      queueFamilyIndex = -1;
-  VkCommandPool            commandPool      = VK_NULL_HANDLE;
-  VkImageView              depthImageView   = VK_NULL_HANDLE;
+  VkInstance               instance            = VK_NULL_HANDLE;
+  VkDebugUtilsMessengerEXT debugMsgr           = VK_NULL_HANDLE;
+  VkSurfaceKHR             surface             = VK_NULL_HANDLE;
+  VkPhysicalDevice         physDevice          = VK_NULL_HANDLE;
+  VkDevice                 device              = VK_NULL_HANDLE;
+  VkDescriptorPool         descriptorPool      = VK_NULL_HANDLE;
+  VkRenderPass             renderPass          = VK_NULL_HANDLE;
+  VkQueue                  queue               = VK_NULL_HANDLE;
+  int                      queueFamilyIndex    = -1;
+  VkCommandPool            commandPool         = VK_NULL_HANDLE;
+  VkImageView              depthImageView      = VK_NULL_HANDLE;
   
   VkSwapchainKHR swapchain = VK_NULL_HANDLE;
   SwapchainFrame swapchainFrames[swapchainSize];
@@ -621,8 +621,8 @@ namespace gfx {
     VkSamplerCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     
-    info.magFilter = VK_FILTER_LINEAR; // or NEAREST
-    info.minFilter = VK_FILTER_LINEAR; // or NEAREST
+    info.magFilter = VK_FILTER_NEAREST; // or LINEAR
+    info.minFilter = VK_FILTER_NEAREST; // or LINEAR
     
     info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -717,8 +717,7 @@ namespace gfx {
     return attachment;
   }
   
-  static VkPipelineViewportStateCreateInfo allocViewportInfo() {
-    auto extent = getSurfaceExtent();
+  static VkPipelineViewportStateCreateInfo allocViewportInfo(VkExtent2D extent) {
     
     VkPipelineViewportStateCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -738,6 +737,7 @@ namespace gfx {
     bzero(scissor, sizeof(VkRect2D));
     scissor->offset.x = 0;
     scissor->offset.y = 0;
+    
     scissor->extent = extent;
     info.scissorCount = 1;
     info.pScissors = scissor;
@@ -793,7 +793,7 @@ namespace gfx {
     return stageInfo;
   }
   
-  VkPipeline createPipeline(VkPipelineLayout layout, VkRenderPass renderPass, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath) {
+  VkPipeline createPipeline(VkPipelineLayout layout, VkExtent2D extent, VkRenderPass renderPass, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath) {
     VkPipelineColorBlendStateCreateInfo colorBlending = {};
     colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     
@@ -822,7 +822,7 @@ namespace gfx {
     inputAssembly.primitiveRestartEnable = VK_FALSE;
     pipelineInfo.pInputAssemblyState = &inputAssembly;
     
-    auto viewportInfo = allocViewportInfo();
+    auto viewportInfo = allocViewportInfo(extent);
     pipelineInfo.pViewportState = &viewportInfo;
     
     VkPipelineDepthStencilStateCreateInfo depthStencilInfo = createDepthStencilInfo();
