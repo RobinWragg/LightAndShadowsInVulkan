@@ -354,7 +354,7 @@ namespace gfx {
     depthImageView = createImageView(depthImage, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT);
   }
   
-  static VkSubpassDependency createSubpassDependency() {
+  VkSubpassDependency createSubpassDependency() {
     VkSubpassDependency dependency = {};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     dependency.dstSubpass = 0;
@@ -368,7 +368,7 @@ namespace gfx {
     return dependency;
   }
   
-  static VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout) {
+  VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout) {
     VkAttachmentDescription description = {};
 
     description.format = format;
@@ -566,7 +566,8 @@ namespace gfx {
       
       imageInfo.usage = 0;
       imageInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT; // Enable data transfers to this image
-      imageInfo.usage |= VK_IMAGE_USAGE_SAMPLED_BIT; // Enable shader access
+      imageInfo.usage |= VK_IMAGE_USAGE_SAMPLED_BIT; // Enable shader usage via a sampler
+      imageInfo.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // Enable render-to-image
       
       memoryProperties = 0;
     }

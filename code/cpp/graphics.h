@@ -40,7 +40,7 @@ namespace gfx {
   void createCoreHandles(SDL_Window *window);
   void createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
   void createVec3Buffer(const vector<vec3> &vec3s, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
-  VkFramebuffer createFramebuffer(VkImageView colorView, VkRenderPass renderPass, uint32_t width, uint32_t height);
+  VkFramebuffer createFramebuffer(VkRenderPass renderPass, vector<VkImageView> attachments, uint32_t width, uint32_t height);
   void createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
   void createImage(bool forDepthTesting, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
   VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
@@ -50,6 +50,8 @@ namespace gfx {
   VkPipeline createPipeline(VkPipelineLayout layout, VkRenderPass renderPass, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath);
   VkDescriptorSetLayout createDescriptorSetLayout(VkDescriptorType descriptorType);
   VkDescriptorSet createDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout layout, VkImageView imageView, VkSampler sampler);
+  VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout);
+  VkSubpassDependency createSubpassDependency();
     
   // getters (graphics_get.cpp)
   vector<const char*> getRequiredLayers();

@@ -13,6 +13,8 @@ namespace scene {
   VkImage shadowMap;
   VkImageView shadowMapView;
   VkDeviceMemory shadowMapMemory;
+  VkFramebuffer shadowMapFramebuffer;
+  VkRenderPass shadowMapRenderPass;
   
   DrawCall *pyramid = nullptr;
   DrawCall *ground  = nullptr;
@@ -75,7 +77,38 @@ namespace scene {
     } else return new DrawCall(verts);
   }
   
+  void createShadowMapRenderPass(VkFormat format) {
+    VkAttachmentDescription attachment = gfx::createAttachmentDescription(format, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    
+    VkAttachmentReference attachmentRef = {};
+    attachmentRef.attachment = 0; // The first and only attachment
+    attachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    
+    VkSubpassDescription subpassDesc = {};
+    subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpassDesc.colorAttachmentCount = 1;
+    subpassDesc.pColorAttachments = &attachmentRef;
+    
+    VkRenderPassCreateInfo renderPassInfo = {};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    
+    renderPassInfo.subpassCount = 1;
+    renderPassInfo.pSubpasses = &subpassDesc;
+    
+    VkSubpassDependency subpassDep = gfx::createSubpassDependency();
+    renderPassInfo.dependencyCount = 1;
+    renderPassInfo.pDependencies = &subpassDep;
+    
+    renderPassInfo.attachmentCount = 1;
+    renderPassInfo.pAttachments = &attachment;
+    
+    auto result = vkCreateRenderPass(gfx::device, &renderPassInfo, nullptr, &shadowMapRenderPass);
+    SDL_assert_release(result == VK_SUCCESS);
+  }
+  
   void createShadowMapResources() {
+    const VkFormat format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    
     int imageWidth, imageHeight, componentsPerPixel;
     unsigned char *imageData = stbi_load("test.png", &imageWidth, &imageHeight, &componentsPerPixel, 4);
     SDL_assert_release(imageData != nullptr);
@@ -92,9 +125,12 @@ namespace scene {
     
     gfx::createColorImage(imageWidth, imageHeight, &shadowMap, &shadowMapMemory);
     gfx::setImageMemoryRGBA(shadowMap, shadowMapMemory, imageWidth, imageHeight, imageFloatData);
-    shadowMapView = gfx::createImageView(shadowMap, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
+    shadowMapView = gfx::createImageView(shadowMap, format, VK_IMAGE_ASPECT_COLOR_BIT);
     
     delete [] imageFloatData;
+    
+    createShadowMapRenderPass(format);
+    shadowMapFramebuffer = gfx::createFramebuffer(shadowMapRenderPass, {shadowMapView}, imageWidth, imageHeight);
   }
 
   void init() {
