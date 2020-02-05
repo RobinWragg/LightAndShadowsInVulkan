@@ -7,6 +7,6 @@ layout(location = 0) out vec4 outColor;
 layout(binding = 0) uniform sampler2D shadowMap;
 
 void main() {
-  vec4 texColor = texture(shadowMap, texCoord);
+  vec4 texColor = texture(shadowMap, texCoord) * 0.5;
   outColor = vec4(texColor.rgb * texColor.a, 1);
 }

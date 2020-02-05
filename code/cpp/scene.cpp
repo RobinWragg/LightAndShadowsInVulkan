@@ -81,16 +81,22 @@ namespace scene {
   }
   
   void createShadowMapRenderPass(VkFormat format) {
-    VkAttachmentDescription attachment = gfx::createAttachmentDescription(format, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    VkAttachmentDescription colorAttachment = gfx::createAttachmentDescription(format, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    VkAttachmentDescription depthAttachment = gfx::createAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     
-    VkAttachmentReference attachmentRef = {};
-    attachmentRef.attachment = 0; // The first and only attachment
-    attachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference colorAttachmentRef = {};
+    colorAttachmentRef.attachment = 0;
+    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    
+    VkAttachmentReference depthAttachmentRef = {};
+    depthAttachmentRef.attachment = 1;
+    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     
     VkSubpassDescription subpassDesc = {};
     subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpassDesc.colorAttachmentCount = 1;
-    subpassDesc.pColorAttachments = &attachmentRef;
+    subpassDesc.pColorAttachments = &colorAttachmentRef;
+    subpassDesc.pDepthStencilAttachment = &depthAttachmentRef;
     
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -102,8 +108,9 @@ namespace scene {
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &subpassDep;
     
-    renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments = &attachment;
+    vector<VkAttachmentDescription> attachments = { colorAttachment, depthAttachment };
+    renderPassInfo.attachmentCount = (uint32_t)attachments.size();
+    renderPassInfo.pAttachments = attachments.data();
     
     auto result = vkCreateRenderPass(gfx::device, &renderPassInfo, nullptr, &shadowMapRenderPass);
     SDL_assert_release(result == VK_SUCCESS);
@@ -119,7 +126,7 @@ namespace scene {
     shadowMapView = gfx::createImageView(shadowMap, format, VK_IMAGE_ASPECT_COLOR_BIT);
     
     createShadowMapRenderPass(format);
-    shadowMapFramebuffer = gfx::createFramebuffer(shadowMapRenderPass, {shadowMapView}, shadowMapWidth, shadowMapHeight);
+    shadowMapFramebuffer = gfx::createFramebuffer(shadowMapRenderPass, {shadowMapView, gfx::depthImageView}, shadowMapWidth, shadowMapHeight);
     
     uint32_t vertexAttributeCount = 2;
     VkExtent2D extent;
