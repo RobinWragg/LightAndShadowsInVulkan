@@ -438,17 +438,24 @@ namespace gfx {
     return renderPass;
   }
   
-  VkDescriptorPool createDescriptorPool(uint32_t descriptorCount) {
-    VkDescriptorPoolSize poolSize = {};
-    poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSize.descriptorCount = descriptorCount;
+  static VkDescriptorPool createDescriptorPool(uint32_t descriptorSetCount) {
+    
+    VkDescriptorPoolSize bufferPoolSize = {};
+    bufferPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    bufferPoolSize.descriptorCount = descriptorSetCount;
+    
+    VkDescriptorPoolSize samplerPoolSize = {};
+    samplerPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    samplerPoolSize.descriptorCount = descriptorSetCount;
     
     VkDescriptorPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = 1;
-    poolInfo.maxSets = descriptorCount; // Assumes one descriptor per set
-    poolInfo.pPoolSizes = &poolSize;
+    poolInfo.maxSets = descriptorSetCount;
     poolInfo.flags = 0;
+    
+    VkDescriptorPoolSize sizes[] = { bufferPoolSize, samplerPoolSize };
+    poolInfo.poolSizeCount = 2;
+    poolInfo.pPoolSizes = sizes;
     
     VkDescriptorPool pool;
     auto result = vkCreateDescriptorPool(device, &poolInfo, nullptr, &pool);
@@ -457,11 +464,11 @@ namespace gfx {
     return pool;
   }
   
-  VkDescriptorSet createDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout layout, VkImageView imageView, VkSampler sampler) {
+  static VkDescriptorSet createDescriptorSet(VkDescriptorSetLayout layout, VkDescriptorType descType, VkDescriptorBufferInfo *optionalBufferInfo, VkDescriptorImageInfo *optionalImageInfo) {
     
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = pool;
+    allocInfo.descriptorPool = descriptorPool;
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = &layout;
     
@@ -469,27 +476,42 @@ namespace gfx {
     auto result = vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet);
     SDL_assert_release(result == VK_SUCCESS);
     
-    VkDescriptorImageInfo imageInfo = {};
-    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    imageInfo.imageView = imageView;
-    imageInfo.sampler = sampler;
-    
     VkWriteDescriptorSet writeDescriptorSet = {};
     writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writeDescriptorSet.dstSet = descriptorSet;
     writeDescriptorSet.dstBinding = 0;
     writeDescriptorSet.dstArrayElement = 0;
-    writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    writeDescriptorSet.descriptorType = descType;
     writeDescriptorSet.descriptorCount = 1;
-    writeDescriptorSet.pImageInfo = &imageInfo;
+    
+    if (descType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+      writeDescriptorSet.pBufferInfo = optionalBufferInfo;
+    } else if (descType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+      writeDescriptorSet.pImageInfo = optionalImageInfo;
+    } else SDL_assert_release(false); // Unsupported descriptor type.
     
     vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
     
     return descriptorSet;
   }
   
+  VkDescriptorSet createDescriptorSet(VkDescriptorSetLayout layout, VkBuffer buffer) {
+    VkDescriptorBufferInfo bufferInfo = {};
+    bufferInfo.buffer = buffer;
+    bufferInfo.offset = 0;
+    bufferInfo.range = VK_WHOLE_SIZE;
+    return createDescriptorSet(layout, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, &bufferInfo, nullptr);
+  }
+  
+  VkDescriptorSet createDescriptorSet(VkDescriptorSetLayout layout, VkImageView imageView, VkSampler sampler) {
+    VkDescriptorImageInfo imageInfo = {};
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo.imageView = imageView;
+    imageInfo.sampler = sampler;
+    return createDescriptorSet(layout, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, nullptr, &imageInfo);
+  }
+  
   VkDescriptorSetLayout createDescriptorSetLayout(VkDescriptorType descriptorType) {
-    
     VkDescriptorSetLayoutBinding layoutBinding = {};
     layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     layoutBinding.binding = 0;

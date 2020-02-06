@@ -25,6 +25,8 @@ They say lighting is super important (it's why deferred rendering is a common ap
 risks WHAT
 I think the main risk whenever working to a deadline, especially when aiming to learn something new is that I can underestimate how much I can do in the timeframe; there are lots of unknowns; that's kind of the point of this sort of project. I've structured this project so that I get the basics done first (classical shadow mapping) then I can squeeze in as many incremental changes as the time allows.
 
+https://devblogs.nvidia.com/vulkan-dos-donts/
+
 shadow mapping
 https://www.youtube.com/watch?v=R18YahCJJoc
 multisampling during shadow map render

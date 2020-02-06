@@ -25,7 +25,7 @@ namespace imageViewer {
     
     shadowMapSamplerDescriptorSetLayout = gfx::createDescriptorSetLayout(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     
-    shadowMapSamplerDescriptorSet = gfx::createDescriptorSet(gfx::descriptorPool, shadowMapSamplerDescriptorSetLayout, scene::getShadowMapView(), shadowMapSampler);
+    shadowMapSamplerDescriptorSet = gfx::createDescriptorSet(shadowMapSamplerDescriptorSetLayout, scene::getShadowMapView(), shadowMapSampler);
   }
   
   void init() {
@@ -38,12 +38,14 @@ namespace imageViewer {
   }
   
   void renderQuad(VkCommandBuffer cmdBuffer) {
+    float size = 0.7;
+    
     mat4 matrix = glm::identity<mat4>();
     VkExtent2D extent = gfx::getSurfaceExtent();
     float aspectRatio = extent.width / (float)extent.height;
     matrix = scale(matrix, vec3(1 / aspectRatio, 1, 1));
-    matrix = translate(matrix, vec3(-aspectRatio, 0, 0));
-    // matrix = scale(matrix, vec3(0.5, 0.5, 1));
+    matrix = translate(matrix, vec3(-aspectRatio, 1 - size, 0));
+    matrix = scale(matrix, vec3(size, size, 1));
     
     vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrix), &matrix);
     

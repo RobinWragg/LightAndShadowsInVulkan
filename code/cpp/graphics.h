@@ -49,7 +49,8 @@ namespace gfx {
   VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts[], uint32_t descriptorSetLayoutCount, uint32_t pushConstantSize);
   VkPipeline createPipeline(VkPipelineLayout layout, VkExtent2D extent, VkRenderPass renderPass, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath);
   VkDescriptorSetLayout createDescriptorSetLayout(VkDescriptorType descriptorType);
-  VkDescriptorSet createDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout layout, VkImageView imageView, VkSampler sampler);
+  VkDescriptorSet createDescriptorSet(VkDescriptorSetLayout layout, VkBuffer buffer);
+  VkDescriptorSet createDescriptorSet(VkDescriptorSetLayout layout, VkImageView imageView, VkSampler sampler);
   VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout);
   VkSubpassDependency createSubpassDependency();
     
