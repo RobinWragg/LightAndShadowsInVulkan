@@ -61,8 +61,7 @@ void renderNextFrame(float deltaTime) {
   gfx::SwapchainFrame *frame = gfx::getNextFrame(imageAvailableSemaphore);
   
   // Wait for the command buffer to finish executing
-  vkWaitForFences(gfx::device, 1, &frame->cmdBufferFence, VK_TRUE, INT64_MAX);
-  vkResetFences(gfx::device, 1, &frame->cmdBufferFence);
+  vkQueueWaitIdle(gfx::queue);
   
   gfx::beginCommandBuffer(frame->cmdBuffer);
   
@@ -79,7 +78,7 @@ void renderNextFrame(float deltaTime) {
   
   // Submit the command buffer
   VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  gfx::submitCommandBuffer(frame->cmdBuffer, imageAvailableSemaphore, waitStage, renderCompletedSemaphore, frame->cmdBufferFence);
+  gfx::submitCommandBuffer(frame->cmdBuffer, imageAvailableSemaphore, waitStage, renderCompletedSemaphore, VK_NULL_HANDLE);
   
   gfx::presentFrame(frame, renderCompletedSemaphore);
 }

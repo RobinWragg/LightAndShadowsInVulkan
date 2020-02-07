@@ -2,17 +2,17 @@
 
 namespace gfx {
   
-  VkInstance               instance            = VK_NULL_HANDLE;
-  VkDebugUtilsMessengerEXT debugMsgr           = VK_NULL_HANDLE;
-  VkSurfaceKHR             surface             = VK_NULL_HANDLE;
-  VkPhysicalDevice         physDevice          = VK_NULL_HANDLE;
-  VkDevice                 device              = VK_NULL_HANDLE;
-  VkDescriptorPool         descriptorPool      = VK_NULL_HANDLE;
-  VkRenderPass             renderPass          = VK_NULL_HANDLE;
-  VkQueue                  queue               = VK_NULL_HANDLE;
-  int                      queueFamilyIndex    = -1;
-  VkCommandPool            commandPool         = VK_NULL_HANDLE;
-  VkImageView              depthImageView      = VK_NULL_HANDLE;
+  VkInstance               instance         = VK_NULL_HANDLE;
+  VkDebugUtilsMessengerEXT debugMsgr        = VK_NULL_HANDLE;
+  VkSurfaceKHR             surface          = VK_NULL_HANDLE;
+  VkPhysicalDevice         physDevice       = VK_NULL_HANDLE;
+  VkDevice                 device           = VK_NULL_HANDLE;
+  VkDescriptorPool         descriptorPool   = VK_NULL_HANDLE;
+  VkRenderPass             renderPass       = VK_NULL_HANDLE;
+  VkQueue                  queue            = VK_NULL_HANDLE;
+  int                      queueFamilyIndex = -1;
+  VkCommandPool            commandPool      = VK_NULL_HANDLE;
+  VkImageView              depthImageView   = VK_NULL_HANDLE;
   
   VkSwapchainKHR swapchain = VK_NULL_HANDLE;
   SwapchainFrame swapchainFrames[swapchainSize];
@@ -295,11 +295,6 @@ namespace gfx {
       swapchainFrames[i].view = createImageView(images[i], surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
       swapchainFrames[i].framebuffer = createFramebuffer(renderPass, {swapchainFrames[i].view, depthImageView}, extent.width, extent.height);
       swapchainFrames[i].cmdBuffer = createCommandBuffer();
-      
-      VkFenceCreateInfo createInfo = {};
-      createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-      createInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-      vkCreateFence(device, &createInfo, nullptr, &swapchainFrames[i].cmdBufferFence);
     }
   }
   

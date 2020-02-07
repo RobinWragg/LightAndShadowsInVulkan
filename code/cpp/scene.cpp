@@ -161,6 +161,30 @@ namespace scene {
     float aspectRatio = width / (float)height;
     return perspective(radians(50.0f), aspectRatio, 0.1f, 100.0f);
   }
+  
+  vector<vec3> createGroundVertices() {
+    const float halfWidth = 3;
+    const float height = 0.1;
+    
+    vector<vec3> vertices = {
+      {-halfWidth, 0, -halfWidth}, {halfWidth, 0, -halfWidth}, {-halfWidth, 0, halfWidth},
+      {-halfWidth, 0, halfWidth}, {halfWidth, 0, -halfWidth}, {halfWidth, 0, halfWidth},
+      
+      {-halfWidth, 0, -halfWidth}, {-halfWidth, -height, -halfWidth}, {halfWidth, 0, -halfWidth},
+      {-halfWidth, -height, -halfWidth}, {halfWidth, -height, -halfWidth}, {halfWidth, 0, -halfWidth},
+      
+      {-halfWidth, 0, -halfWidth}, {-halfWidth, 0, halfWidth}, {-halfWidth, -height, -halfWidth},
+      {-halfWidth, -height, -halfWidth}, {-halfWidth, 0, halfWidth}, {-halfWidth, -height, halfWidth},
+      
+      {-halfWidth, 0, halfWidth}, {halfWidth, 0, halfWidth}, {-halfWidth, -height, halfWidth},
+      {-halfWidth, -height, halfWidth}, {halfWidth, 0, halfWidth}, {halfWidth, -height, halfWidth},
+      
+      {halfWidth, 0, -halfWidth}, {halfWidth, -height, -halfWidth}, {halfWidth, 0, halfWidth},
+      {halfWidth, -height, -halfWidth}, {halfWidth, -height, halfWidth}, {halfWidth, 0, halfWidth},
+    };
+    
+    return vertices;
+  }
 
   void init() {
     initDescriptorSetsForPass(shadowMapPass);
@@ -182,12 +206,12 @@ namespace scene {
     presentationPass.projectionMatrix = createProjectionMatrix(extent.width, extent.height);
     shadowMapPass.projectionMatrix = createProjectionMatrix(shadowMapWidth, shadowMapHeight);
     
-    cameraPosition.x = 0;
+    cameraPosition.x = 4;
     cameraPosition.y = 2;
-    cameraPosition.z = 5;
+    cameraPosition.z = 6.2;
     
-    cameraAngle.x = 0;
-    cameraAngle.y = 0;
+    cameraAngle.x = -0.57;
+    cameraAngle.y = 0.27;
     
     vector<vec3> pyramidVertices = {
       {0, 0, 0}, {1, 0, 0}, {0, 1, 0},
@@ -197,14 +221,7 @@ namespace scene {
     };
     
     pyramid = new DrawCall(pyramidVertices);
-    
-    vector<vec3> groundVertices = {
-      {-3, 0, -3}, {3, 0, -3}, {-3, 0, 3},
-      {-3, 0, 3}, {3, 0, -3}, {3, 0, 3}
-    };
-    
-    ground = new DrawCall(groundVertices);
-    
+    ground = new DrawCall(createGroundVertices());
     sphere0 = newSphereDrawCall(32, true);
     sphere1 = newSphereDrawCall(32, false);
     
@@ -228,6 +245,12 @@ namespace scene {
     presentationPass.viewMatrix = rotate(presentationPass.viewMatrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
     presentationPass.viewMatrix = rotate(presentationPass.viewMatrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
     presentationPass.viewMatrix = translate(presentationPass.viewMatrix, -cameraPosition);
+    
+    printf("ax: %f\n", cameraAngle.x);
+    printf("ay: %f\n", cameraAngle.y);
+    printf("px: %f\n", cameraPosition.x);
+    printf("pz: %f\n", cameraPosition.z);
+    printf("\n");
   }
   
   static void updateShadowMapViewMatrix(float deltaTime) {

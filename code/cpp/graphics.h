@@ -17,7 +17,6 @@ namespace gfx {
     VkImageView view = VK_NULL_HANDLE;
     VkFramebuffer framebuffer = VK_NULL_HANDLE;
     VkCommandBuffer cmdBuffer = VK_NULL_HANDLE;
-    VkFence cmdBufferFence = VK_NULL_HANDLE;
     uint32_t index;
   };
   

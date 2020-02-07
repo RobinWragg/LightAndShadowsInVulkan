@@ -25,8 +25,7 @@ void main() {
   normalMatrix = transpose(inverse(normalMatrix)); // TODO: Learn why this works. Inverting and transposing the matrix is required to handle scaled normals correctly, but I don't understand how it works at this time.
   vec3 worldNormal = normalize(normalMatrix * normal);
   
-  fragmentColor = vec3(1, 1, 1) * dot(worldNormal, vec3(0.707, 0.707, 0));
-  // fragmentColor = normal;
+  fragmentColor = vec3(1, 1, 1) * dot(worldNormal, normalize(vec3(0.2, 0.4, 0.3)));
 }
 
 
