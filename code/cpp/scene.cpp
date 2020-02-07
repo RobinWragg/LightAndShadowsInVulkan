@@ -12,6 +12,9 @@ namespace scene {
   VkPipeline       scenePipeline     = VK_NULL_HANDLE;
   
   struct Pass {
+    mat4 viewMatrix;
+    mat4 projectionMatrix;
+    
     VkBuffer              viewMatrixBuffer        = VK_NULL_HANDLE;
     VkDeviceMemory        viewMatrixBufferMemory  = VK_NULL_HANDLE;
     VkDescriptorSet       viewMatrixDescSet       = VK_NULL_HANDLE;
@@ -37,7 +40,6 @@ namespace scene {
   
   vec3 cameraPosition;
   vec2 cameraAngle;
-  mat4 viewMatrix;
   
   VkImageView getShadowMapView() {
     return shadowMapView;
@@ -154,6 +156,11 @@ namespace scene {
     gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(mat4), &pass.projectionMatrixBuffer, &pass.projectionMatrixBufferMemory);
     gfx::createDescriptorSet(pass.projectionMatrixBuffer, &pass.projectionMatrixDescSet, &pass.projectionMatrixDescSetLayout);
   }
+  
+  static mat4 createProjectionMatrix(uint32_t width, uint32_t height) {
+    float aspectRatio = width / (float)height;
+    return perspective(radians(50.0f), aspectRatio, 0.1f, 100.0f);
+  }
 
   void init() {
     initDescriptorSetsForPass(shadowMapPass);
@@ -170,6 +177,10 @@ namespace scene {
     scenePipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "scene.vert.spv", "scene.frag.spv");
     
     createShadowMapResources();
+    
+    VkExtent2D extent = gfx::getSurfaceExtent();
+    presentationPass.projectionMatrix = createProjectionMatrix(extent.width, extent.height);
+    shadowMapPass.projectionMatrix = createProjectionMatrix(shadowMapWidth, shadowMapHeight);
     
     cameraPosition.x = 0;
     cameraPosition.y = 2;
@@ -200,12 +211,7 @@ namespace scene {
     printf("\nInitialised Vulkan\n");
   }
   
-  static mat4 createProjectionMatrix(uint32_t width, uint32_t height) {
-    float aspectRatio = width / (float)height;
-    return perspective(radians(50.0f), aspectRatio, 0.1f, 100.0f);
-  }
-  
-  static void updateViewMatrix(float deltaTime) {
+  static void updatePresentationViewMatrix(float deltaTime) {
     cameraAngle += input::getViewAngleInput();
     
     // Get player input for walking and take into account the direction the player is facing
@@ -215,16 +221,20 @@ namespace scene {
     cameraPosition.x += lateralMovement.x;
     cameraPosition.z -= lateralMovement.y;
     
-    viewMatrix = glm::identity<mat4>();
+    presentationPass.viewMatrix = glm::identity<mat4>();
     
     // view transformation
-    viewMatrix = scale(viewMatrix, vec3(1, -1, 1));
-    viewMatrix = rotate(viewMatrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
-    viewMatrix = rotate(viewMatrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
-    viewMatrix = translate(viewMatrix, -cameraPosition);
+    presentationPass.viewMatrix = scale(presentationPass.viewMatrix, vec3(1, -1, 1));
+    presentationPass.viewMatrix = rotate(presentationPass.viewMatrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
+    presentationPass.viewMatrix = rotate(presentationPass.viewMatrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
+    presentationPass.viewMatrix = translate(presentationPass.viewMatrix, -cameraPosition);
   }
   
-  void addDrawCallsToCommandBuffer(VkCommandBuffer cmdBuffer) {
+  static void updateShadowMapViewMatrix(float deltaTime) {
+    shadowMapPass.viewMatrix = presentationPass.viewMatrix;
+  }
+  
+  static void addDrawCallsToCommandBuffer(VkCommandBuffer cmdBuffer) {
     pyramid->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
@@ -232,7 +242,8 @@ namespace scene {
   }
   
   void update(float deltaTime) {
-    updateViewMatrix(deltaTime);
+    updatePresentationViewMatrix(deltaTime);
+    updateShadowMapViewMatrix(deltaTime);
     
     pyramid->modelMatrix = glm::identity<mat4>();
     pyramid->modelMatrix = translate(pyramid->modelMatrix, vec3(0, 0, -2));
@@ -256,11 +267,10 @@ namespace scene {
     
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowMapPipeline);
     
-    gfx::setBufferMemory(shadowMapPass.viewMatrixBufferMemory, sizeof(viewMatrix), &viewMatrix);
+    gfx::setBufferMemory(shadowMapPass.viewMatrixBufferMemory, sizeof(shadowMapPass.viewMatrix), &shadowMapPass.viewMatrix);
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowMapPass.viewMatrixDescSet, 0, nullptr);
     
-    mat4 projectionMatrix = createProjectionMatrix(shadowMapWidth, shadowMapHeight);
-    gfx::setBufferMemory(shadowMapPass.projectionMatrixBufferMemory, sizeof(projectionMatrix), &projectionMatrix);
+    gfx::setBufferMemory(shadowMapPass.projectionMatrixBufferMemory, sizeof(shadowMapPass.projectionMatrix), &shadowMapPass.projectionMatrix);
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &shadowMapPass.projectionMatrixDescSet, 0, nullptr);
     
     addDrawCallsToCommandBuffer(cmdBuffer);
@@ -271,19 +281,18 @@ namespace scene {
   void renderScene(VkCommandBuffer cmdBuffer) {
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, scenePipeline);
     
-    gfx::setBufferMemory(presentationPass.viewMatrixBufferMemory, sizeof(viewMatrix), &viewMatrix);
+    gfx::setBufferMemory(presentationPass.viewMatrixBufferMemory, sizeof(presentationPass.viewMatrix), &presentationPass.viewMatrix);
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &presentationPass.viewMatrixDescSet, 0, nullptr);
     
-    VkExtent2D extent = gfx::getSurfaceExtent();
-    mat4 projectionMatrix = createProjectionMatrix(extent.width, extent.height);
-    gfx::setBufferMemory(presentationPass.projectionMatrixBufferMemory, sizeof(projectionMatrix), &projectionMatrix);
+    gfx::setBufferMemory(presentationPass.projectionMatrixBufferMemory, sizeof(presentationPass.projectionMatrix), &presentationPass.projectionMatrix);
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3, 1, &presentationPass.projectionMatrixDescSet, 0, nullptr);
     
     addDrawCallsToCommandBuffer(cmdBuffer);
   }
 }
 
-// TODO: consolidate the view matrices
+
+
 
 
 
