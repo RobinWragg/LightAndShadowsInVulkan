@@ -3,7 +3,8 @@
 	[
 		{
 			"path": ".",
-      "folder_exclude_patterns": ["*.framework", "*.noindex", "DerivedData/LightAndShadow", "VulkanSDK*"]
+      "folder_exclude_patterns": ["*.framework", "*.noindex", "DerivedData", "VulkanSDK*"],
+      "file_exclude_patterns": ["*.spv", "glslc"]
 		}
 	],
   "build_systems":

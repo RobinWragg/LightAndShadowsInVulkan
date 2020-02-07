@@ -11,6 +11,18 @@ namespace scene {
   VkPipeline       shadowMapPipeline = VK_NULL_HANDLE;
   VkPipeline       scenePipeline     = VK_NULL_HANDLE;
   
+  struct Pass {
+    VkBuffer              viewMatrixBuffer        = VK_NULL_HANDLE;
+    VkDeviceMemory        viewMatrixBufferMemory  = VK_NULL_HANDLE;
+    VkDescriptorSet       viewMatrixDescSet       = VK_NULL_HANDLE;
+    VkDescriptorSetLayout viewMatrixDescSetLayout = VK_NULL_HANDLE;
+    
+    VkBuffer              projectionMatrixBuffer        = VK_NULL_HANDLE;
+    VkDeviceMemory        projectionMatrixBufferMemory  = VK_NULL_HANDLE;
+    VkDescriptorSet       projectionMatrixDescSet       = VK_NULL_HANDLE;
+    VkDescriptorSetLayout projectionMatrixDescSetLayout = VK_NULL_HANDLE;
+  } shadowMapPass, presentationPass;
+  
   VkImage shadowMap;
   int shadowMapWidth, shadowMapHeight;
   VkImageView shadowMapView;
@@ -134,9 +146,26 @@ namespace scene {
     extent.height = shadowMapHeight;
     shadowMapPipeline = gfx::createPipeline(pipelineLayout, extent, shadowMapRenderPass, vertexAttributeCount, "shadowMap.vert.spv", "shadowMap.frag.spv");
   }
+  
+  void initDescriptorSetsForPass(Pass &pass) {
+    gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(mat4), &pass.viewMatrixBuffer, &pass.viewMatrixBufferMemory);
+    gfx::createDescriptorSet(pass.viewMatrixBuffer, &pass.viewMatrixDescSet, &pass.viewMatrixDescSetLayout);
+    
+    gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(mat4), &pass.projectionMatrixBuffer, &pass.projectionMatrixBufferMemory);
+    gfx::createDescriptorSet(pass.projectionMatrixBuffer, &pass.projectionMatrixDescSet, &pass.projectionMatrixDescSetLayout);
+  }
 
   void init() {
-    pipelineLayout = gfx::createPipelineLayout(nullptr, 0, sizeof(mat4) * 2);
+    initDescriptorSetsForPass(shadowMapPass);
+    initDescriptorSetsForPass(presentationPass);
+    
+    VkDescriptorSetLayout descSetLayouts[] = {
+      shadowMapPass.viewMatrixDescSetLayout,
+      shadowMapPass.projectionMatrixDescSetLayout,
+      presentationPass.viewMatrixDescSetLayout,
+      presentationPass.projectionMatrixDescSetLayout
+    };
+    pipelineLayout = gfx::createPipelineLayout(descSetLayouts, 4, sizeof(mat4));
     uint32_t vertexAttributeCount = 2;
     scenePipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "scene.vert.spv", "scene.frag.spv");
     
@@ -227,42 +256,34 @@ namespace scene {
     
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowMapPipeline);
     
-    mat4 viewProjectionMatrix = createProjectionMatrix(shadowMapWidth, shadowMapHeight) * viewMatrix;
-    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
+    gfx::setBufferMemory(shadowMapPass.viewMatrixBufferMemory, sizeof(viewMatrix), &viewMatrix);
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowMapPass.viewMatrixDescSet, 0, nullptr);
+    
+    mat4 projectionMatrix = createProjectionMatrix(shadowMapWidth, shadowMapHeight);
+    gfx::setBufferMemory(shadowMapPass.projectionMatrixBufferMemory, sizeof(projectionMatrix), &projectionMatrix);
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &shadowMapPass.projectionMatrixDescSet, 0, nullptr);
     
     addDrawCallsToCommandBuffer(cmdBuffer);
     
     vkCmdEndRenderPass(cmdBuffer);
-    
-    // VkImageMemoryBarrier barrier = {};
-    // barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    // barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    // barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    // barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    // barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    // barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    // barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    // barrier.image = shadowMap;
-    
-    // barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    // barrier.subresourceRange.baseMipLevel = 0;
-    // barrier.subresourceRange.levelCount = 1;
-    // barrier.subresourceRange.baseArrayLayer = 0;
-    // barrier.subresourceRange.layerCount = 1;
-    
-    // vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
   }
   
   void renderScene(VkCommandBuffer cmdBuffer) {
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, scenePipeline);
     
+    gfx::setBufferMemory(presentationPass.viewMatrixBufferMemory, sizeof(viewMatrix), &viewMatrix);
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &presentationPass.viewMatrixDescSet, 0, nullptr);
+    
     VkExtent2D extent = gfx::getSurfaceExtent();
-    mat4 viewProjectionMatrix = createProjectionMatrix(extent.width, extent.height) * viewMatrix;
-    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(viewProjectionMatrix), &viewProjectionMatrix);
+    mat4 projectionMatrix = createProjectionMatrix(extent.width, extent.height);
+    gfx::setBufferMemory(presentationPass.projectionMatrixBufferMemory, sizeof(projectionMatrix), &projectionMatrix);
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3, 1, &presentationPass.projectionMatrixDescSet, 0, nullptr);
     
     addDrawCallsToCommandBuffer(cmdBuffer);
   }
 }
+
+// TODO: consolidate the view matrices
 
 
 

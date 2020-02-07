@@ -37,7 +37,7 @@ void DrawCall::initCommon(const vector<vec3> &positions, const vector<vec3> &nor
 }
 
 void DrawCall::addToCmdBuffer(VkCommandBuffer cmdBuffer, VkPipelineLayout layout) {
-  vkCmdPushConstants(cmdBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(mat4), sizeof(modelMatrix), &modelMatrix);
+  vkCmdPushConstants(cmdBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(modelMatrix), &modelMatrix);
   
   const int bufferCount = 2;
   VkBuffer buffers[bufferCount] = {
