@@ -9,7 +9,8 @@ namespace scene {
   
   VkPipelineLayout pipelineLayout    = VK_NULL_HANDLE;
   VkPipeline       shadowMapPipeline = VK_NULL_HANDLE;
-  VkPipeline       scenePipeline     = VK_NULL_HANDLE;
+  VkPipeline       litPipeline       = VK_NULL_HANDLE;
+  VkPipeline       unlitPipeline     = VK_NULL_HANDLE;
   
   struct Pass {
     mat4 viewMatrix;
@@ -33,10 +34,11 @@ namespace scene {
   VkFramebuffer shadowMapFramebuffer;
   VkRenderPass shadowMapRenderPass;
   
-  DrawCall *pyramid = nullptr;
-  DrawCall *ground  = nullptr;
-  DrawCall *sphere0 = nullptr;
-  DrawCall *sphere1 = nullptr;
+  DrawCall *pyramid     = nullptr;
+  DrawCall *ground      = nullptr;
+  DrawCall *sphere0     = nullptr;
+  DrawCall *sphere1     = nullptr;
+  DrawCall *lightSource = nullptr;
   
   vec3 cameraPosition;
   vec2 cameraAngle;
@@ -157,9 +159,12 @@ namespace scene {
     gfx::createDescriptorSet(pass.projectionMatrixBuffer, &pass.projectionMatrixDescSet, &pass.projectionMatrixDescSetLayout);
   }
   
-  static mat4 createProjectionMatrix(uint32_t width, uint32_t height) {
+  static mat4 createProjectionMatrix(uint32_t width, uint32_t height, float fieldOfView) {
     float aspectRatio = width / (float)height;
-    return perspective(radians(50.0f), aspectRatio, 0.1f, 100.0f);
+    mat4 proj = perspective(fieldOfView, aspectRatio, 0.1f, 100.0f);
+    
+    // Flip the Y axis because Vulkan shaders expect positive Y to point downwards
+    return scale(proj, vec3(1, -1, 1));
   }
   
   vector<vec3> createGroundVertices() {
@@ -198,13 +203,14 @@ namespace scene {
     };
     pipelineLayout = gfx::createPipelineLayout(descSetLayouts, 4, sizeof(mat4));
     uint32_t vertexAttributeCount = 2;
-    scenePipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "scene.vert.spv", "scene.frag.spv");
+    litPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "litScene.vert.spv", "scene.frag.spv");
+    unlitPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "unlitScene.vert.spv", "scene.frag.spv");
     
     createShadowMapResources();
     
     VkExtent2D extent = gfx::getSurfaceExtent();
-    presentationPass.projectionMatrix = createProjectionMatrix(extent.width, extent.height);
-    shadowMapPass.projectionMatrix = createProjectionMatrix(shadowMapWidth, shadowMapHeight);
+    presentationPass.projectionMatrix = createProjectionMatrix(extent.width, extent.height, 0.87);
+    shadowMapPass.projectionMatrix = createProjectionMatrix(shadowMapWidth, shadowMapHeight, 1.5);
     
     cameraPosition.x = 4;
     cameraPosition.y = 2;
@@ -223,7 +229,8 @@ namespace scene {
     pyramid = new DrawCall(pyramidVertices);
     ground = new DrawCall(createGroundVertices());
     sphere0 = newSphereDrawCall(32, true);
-    sphere1 = newSphereDrawCall(32, false);
+    sphere1 = newSphereDrawCall(32, true);
+    lightSource = newSphereDrawCall(16, true);
     
     printf("\nInitialised Vulkan\n");
   }
@@ -241,20 +248,16 @@ namespace scene {
     presentationPass.viewMatrix = glm::identity<mat4>();
     
     // view transformation
-    presentationPass.viewMatrix = scale(presentationPass.viewMatrix, vec3(1, -1, 1));
     presentationPass.viewMatrix = rotate(presentationPass.viewMatrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
     presentationPass.viewMatrix = rotate(presentationPass.viewMatrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
     presentationPass.viewMatrix = translate(presentationPass.viewMatrix, -cameraPosition);
-    
-    printf("ax: %f\n", cameraAngle.x);
-    printf("ay: %f\n", cameraAngle.y);
-    printf("px: %f\n", cameraPosition.x);
-    printf("pz: %f\n", cameraPosition.z);
-    printf("\n");
   }
   
   static void updateShadowMapViewMatrix(float deltaTime) {
-    shadowMapPass.viewMatrix = presentationPass.viewMatrix;
+    shadowMapPass.viewMatrix = glm::identity<mat4>();
+    shadowMapPass.viewMatrix = translate(shadowMapPass.viewMatrix, vec3(0, 0, -4));
+    shadowMapPass.viewMatrix = rotate(shadowMapPass.viewMatrix, 0.7f, vec3(1.0f, 0.0f, 0.0f));
+    shadowMapPass.viewMatrix = rotate(shadowMapPass.viewMatrix, (float)getTime()*1.3f, vec3(0.0f, 1.0f, 0.0f));
   }
   
   static void addDrawCallsToCommandBuffer(VkCommandBuffer cmdBuffer) {
@@ -270,19 +273,22 @@ namespace scene {
     
     pyramid->modelMatrix = glm::identity<mat4>();
     pyramid->modelMatrix = translate(pyramid->modelMatrix, vec3(0, 0, -2));
-    pyramid->modelMatrix = rotate(pyramid->modelMatrix, (float)getTime(), vec3(0.0f, 1.0f, 0.0f));
     
     sphere0->modelMatrix = glm::identity<mat4>();
     sphere0->modelMatrix = translate(sphere0->modelMatrix, vec3(-1.0f, 1.0f, 0.0f));
-    sphere0->modelMatrix = rotate(sphere0->modelMatrix, (float)getTime(), vec3(0, 1, 0));
+    sphere0->modelMatrix = rotate(sphere0->modelMatrix, (float)M_PI*1.5f, vec3(0, 1, 0));
     sphere0->modelMatrix = scale(sphere0->modelMatrix, vec3(0.3, 1, 1));
     
     sphere1->modelMatrix = glm::identity<mat4>();
     sphere1->modelMatrix = translate(sphere1->modelMatrix, vec3(1.0f, 1.0f, 0.0f));
-    sphere1->modelMatrix = rotate(sphere1->modelMatrix, (float)getTime(), vec3(0, 0, 1));
     sphere1->modelMatrix = scale(sphere1->modelMatrix, vec3(0.3, 1, 1));
     
     ground->modelMatrix = glm::identity<mat4>();
+    
+    vec4 lightPos4 = inverse(shadowMapPass.viewMatrix) * vec4(0, 0, 0, 1);
+    vec3 lightPos = vec3(lightPos4.x, lightPos4.y, lightPos4.z);
+    lightSource->modelMatrix = translate(glm::identity<mat4>(), lightPos);
+    lightSource->modelMatrix = scale(lightSource->modelMatrix, vec3(0.1, 0.1, 0.1));
   }
   
   void performShadowMapRenderPass(VkCommandBuffer cmdBuffer) {
@@ -301,16 +307,39 @@ namespace scene {
     vkCmdEndRenderPass(cmdBuffer);
   }
   
-  void renderScene(VkCommandBuffer cmdBuffer) {
-    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, scenePipeline);
+  void renderLightSource(VkCommandBuffer cmdBuffer) {
+    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, unlitPipeline);
     
-    gfx::setBufferMemory(presentationPass.viewMatrixBufferMemory, sizeof(presentationPass.viewMatrix), &presentationPass.viewMatrix);
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowMapPass.viewMatrixDescSet, 0, nullptr);
+    
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &presentationPass.viewMatrixDescSet, 0, nullptr);
     
-    gfx::setBufferMemory(presentationPass.projectionMatrixBufferMemory, sizeof(presentationPass.projectionMatrix), &presentationPass.projectionMatrix);
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3, 1, &presentationPass.projectionMatrixDescSet, 0, nullptr);
+    
+    lightSource->addToCmdBuffer(cmdBuffer, pipelineLayout);
+  }
+  
+  void renderGeometry(VkCommandBuffer cmdBuffer) {
+    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, litPipeline);
+    
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowMapPass.viewMatrixDescSet, 0, nullptr);
+    
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &presentationPass.viewMatrixDescSet, 0, nullptr);
+    
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3, 1, &presentationPass.projectionMatrixDescSet, 0, nullptr);
     
     addDrawCallsToCommandBuffer(cmdBuffer);
+  }
+  
+  void renderScene(VkCommandBuffer cmdBuffer) {
+    
+    // Update uniform buffers
+    gfx::setBufferMemory(presentationPass.viewMatrixBufferMemory, sizeof(presentationPass.viewMatrix), &presentationPass.viewMatrix);
+    gfx::setBufferMemory(presentationPass.projectionMatrixBufferMemory, sizeof(presentationPass.projectionMatrix), &presentationPass.projectionMatrix);
+    
+    // Record commands
+    renderGeometry(cmdBuffer);
+    renderLightSource(cmdBuffer);
   }
 }
 

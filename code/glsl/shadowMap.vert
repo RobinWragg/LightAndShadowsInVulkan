@@ -3,7 +3,7 @@
 layout(location = 0) in vec3 vertPosition;
 layout(location = 1) in vec3 normal;
 
-layout(location = 0) out vec4 worldPosition;
+layout(location = 0) out vec4 viewPosition;
 
 layout(set = 0, binding = 0) uniform ViewMatrix {
   mat4 value;
@@ -18,8 +18,8 @@ layout(push_constant) uniform PushConstant {
 } pushConstant;
 
 void main() {
-  worldPosition = pushConstant.model * vec4(vertPosition, 1.0);
-  gl_Position = projMatrix.value * viewMatrix.value * worldPosition;
+  viewPosition = viewMatrix.value * pushConstant.model * vec4(vertPosition, 1.0);
+  gl_Position = projMatrix.value * viewPosition;
 }
 
 
