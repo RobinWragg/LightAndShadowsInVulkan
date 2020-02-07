@@ -242,7 +242,7 @@ namespace gfx {
     return memory;
   }
   
-  void createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) {
+  void createBuffer(VkBufferUsageFlags usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) {
     
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -259,10 +259,10 @@ namespace gfx {
   void createVec3Buffer(const vector<vec3> &vec3s, VkBuffer *bufferOut, VkDeviceMemory *memoryOut) {
     
     uint64_t dataSize = sizeof(vec3s[0]) * vec3s.size();
-    gfx::createBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, dataSize, bufferOut, memoryOut);
+    createBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, dataSize, bufferOut, memoryOut);
     
     uint8_t *data = (uint8_t*)vec3s.data();
-    gfx::setBufferMemory(*memoryOut, dataSize, data);
+    setBufferMemory(*memoryOut, dataSize, data);
   }
   
   VkFramebuffer createFramebuffer(VkRenderPass renderPass, vector<VkImageView> attachments, uint32_t width, uint32_t height) {
@@ -464,58 +464,10 @@ namespace gfx {
     return pool;
   }
   
-  static VkDescriptorSet createDescriptorSet(VkDescriptorSetLayout layout, VkDescriptorType descType, VkDescriptorBufferInfo *optionalBufferInfo, VkDescriptorImageInfo *optionalImageInfo) {
-    
-    VkDescriptorSetAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &layout;
-    
-    VkDescriptorSet descriptorSet;
-    auto result = vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet);
-    SDL_assert_release(result == VK_SUCCESS);
-    
-    VkWriteDescriptorSet writeDescriptorSet = {};
-    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writeDescriptorSet.dstSet = descriptorSet;
-    writeDescriptorSet.dstBinding = 0;
-    writeDescriptorSet.dstArrayElement = 0;
-    writeDescriptorSet.descriptorType = descType;
-    writeDescriptorSet.descriptorCount = 1;
-    
-    if (descType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
-      writeDescriptorSet.pBufferInfo = optionalBufferInfo;
-    } else if (descType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
-      writeDescriptorSet.pImageInfo = optionalImageInfo;
-    } else SDL_assert_release(false); // Unsupported descriptor type.
-    
-    vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
-    
-    return descriptorSet;
-  }
-  
-  VkDescriptorSet createDescriptorSet(VkDescriptorSetLayout layout, VkBuffer buffer) {
-    VkDescriptorBufferInfo bufferInfo = {};
-    bufferInfo.buffer = buffer;
-    bufferInfo.offset = 0;
-    bufferInfo.range = VK_WHOLE_SIZE;
-    return createDescriptorSet(layout, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, &bufferInfo, nullptr);
-  }
-  
-  VkDescriptorSet createDescriptorSet(VkDescriptorSetLayout layout, VkImageView imageView, VkSampler sampler) {
-    VkDescriptorImageInfo imageInfo = {};
-    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    imageInfo.imageView = imageView;
-    imageInfo.sampler = sampler;
-    return createDescriptorSet(layout, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, nullptr, &imageInfo);
-  }
-  
-  VkDescriptorSetLayout createDescriptorSetLayout(VkDescriptorType descriptorType) {
+  static VkDescriptorSetLayout createDescriptorSetLayout(VkDescriptorType descriptorType) {
     VkDescriptorSetLayoutBinding layoutBinding = {};
-    layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    layoutBinding.binding = 0;
     layoutBinding.descriptorType = descriptorType;
+    layoutBinding.binding = 0;
     layoutBinding.descriptorCount = 1;
     layoutBinding.stageFlags = VK_SHADER_STAGE_ALL;
     
@@ -529,6 +481,52 @@ namespace gfx {
     SDL_assert_release(result == VK_SUCCESS);
     
     return layout;
+  }
+  
+  static void createDescriptorSet(VkDescriptorType descriptorType, const VkDescriptorBufferInfo *optionalBufferInfo, const VkDescriptorImageInfo *optionalImageInfo, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut) {
+    
+    *layoutOut = createDescriptorSetLayout(descriptorType);
+    
+    VkDescriptorSetAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = descriptorPool;
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = layoutOut;
+    
+    auto result = vkAllocateDescriptorSets(device, &allocInfo, descSetOut);
+    SDL_assert_release(result == VK_SUCCESS);
+    
+    VkWriteDescriptorSet writeDescriptorSet = {};
+    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSet.dstSet = *descSetOut;
+    writeDescriptorSet.dstBinding = 0;
+    writeDescriptorSet.dstArrayElement = 0;
+    writeDescriptorSet.descriptorType = descriptorType;
+    writeDescriptorSet.descriptorCount = 1;
+    
+    if (descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+      writeDescriptorSet.pBufferInfo = optionalBufferInfo;
+    } else if (descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+      writeDescriptorSet.pImageInfo = optionalImageInfo;
+    } else SDL_assert_release(false); // Unsupported descriptor type.
+    
+    vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
+  }
+  
+  void createDescriptorSet(VkBuffer buffer, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut) {
+    VkDescriptorBufferInfo bufferInfo = {};
+    bufferInfo.buffer = buffer;
+    bufferInfo.offset = 0;
+    bufferInfo.range = VK_WHOLE_SIZE;
+    createDescriptorSet(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, &bufferInfo, nullptr, descSetOut, layoutOut);
+  }
+  
+  void createDescriptorSet(VkImageView imageView, VkSampler sampler, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut) {
+    VkDescriptorImageInfo imageInfo = {};
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo.imageView = imageView;
+    imageInfo.sampler = sampler;
+    createDescriptorSet(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, nullptr, &imageInfo, descSetOut, layoutOut);
   }
   
   void createCoreHandles(SDL_Window *window) {
@@ -660,7 +658,7 @@ namespace gfx {
     info.unnormalizedCoordinates = VK_FALSE;
     
     VkSampler sampler;
-    auto result = vkCreateSampler(gfx::device, &info, nullptr, &sampler);
+    auto result = vkCreateSampler(device, &info, nullptr, &sampler);
     SDL_assert_release(result == VK_SUCCESS);
     
     return sampler;

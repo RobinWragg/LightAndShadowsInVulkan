@@ -4,7 +4,7 @@ layout(location = 0) in vec2 texCoord;
 layout(location = 1) in vec3 fragmentColor;
 layout(location = 0) out vec4 outColor;
 
-layout(binding = 0) uniform sampler2D shadowMap;
+layout(set = 1, binding = 0) uniform sampler2D shadowMap;
 
 void main() {
   vec4 texColor = texture(shadowMap, texCoord) * 0.5;

@@ -38,7 +38,7 @@ namespace gfx {
   
   // creators (graphics_create.cpp)
   void createCoreHandles(SDL_Window *window);
-  void createBuffer(VkBufferUsageFlagBits usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
+  void createBuffer(VkBufferUsageFlags usage, uint64_t dataSize, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
   void createVec3Buffer(const vector<vec3> &vec3s, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
   VkFramebuffer createFramebuffer(VkRenderPass renderPass, vector<VkImageView> attachments, uint32_t width, uint32_t height);
   void createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
@@ -48,9 +48,8 @@ namespace gfx {
   VkCommandBuffer createCommandBuffer();
   VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts[], uint32_t descriptorSetLayoutCount, uint32_t pushConstantSize);
   VkPipeline createPipeline(VkPipelineLayout layout, VkExtent2D extent, VkRenderPass renderPass, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath);
-  VkDescriptorSetLayout createDescriptorSetLayout(VkDescriptorType descriptorType);
-  VkDescriptorSet createDescriptorSet(VkDescriptorSetLayout layout, VkBuffer buffer);
-  VkDescriptorSet createDescriptorSet(VkDescriptorSetLayout layout, VkImageView imageView, VkSampler sampler);
+  void createDescriptorSet(VkBuffer buffer, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut);
+  void createDescriptorSet(VkImageView imageView, VkSampler sampler, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut);
   VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout);
   VkSubpassDependency createSubpassDependency();
     
