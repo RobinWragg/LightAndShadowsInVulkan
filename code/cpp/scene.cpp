@@ -203,8 +203,8 @@ namespace scene {
     };
     pipelineLayout = gfx::createPipelineLayout(descSetLayouts, 4, sizeof(mat4));
     uint32_t vertexAttributeCount = 2;
-    litPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "litScene.vert.spv", "scene.frag.spv");
-    unlitPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "unlitScene.vert.spv", "scene.frag.spv");
+    litPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "lit.vert.spv", "scene.frag.spv");
+    unlitPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "unlit.vert.spv", "scene.frag.spv");
     
     createShadowMapResources();
     
@@ -255,7 +255,7 @@ namespace scene {
   
   static void updateShadowMapViewMatrix(float deltaTime) {
     shadowMapPass.viewMatrix = glm::identity<mat4>();
-    shadowMapPass.viewMatrix = translate(shadowMapPass.viewMatrix, vec3(0, 0, -4));
+    shadowMapPass.viewMatrix = translate(shadowMapPass.viewMatrix, vec3(0, 0, -6));
     shadowMapPass.viewMatrix = rotate(shadowMapPass.viewMatrix, 0.7f, vec3(1.0f, 0.0f, 0.0f));
     shadowMapPass.viewMatrix = rotate(shadowMapPass.viewMatrix, (float)getTime()*1.3f, vec3(0.0f, 1.0f, 0.0f));
   }
