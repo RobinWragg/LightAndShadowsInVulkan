@@ -1,7 +1,8 @@
 #pragma once
 #include "graphics.h"
+#include "ShadowMap.h"
 
-namespace imageViewer {
-  void init();
+namespace shadowMapViewer {
+  void init(ShadowMap *shadowMap);
   void addToCommandBuffer(const gfx::SwapchainFrame *frame);
 }

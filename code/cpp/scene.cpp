@@ -1,3 +1,4 @@
+#include "scene.h"
 #include "main.h"
 #include "input.h"
 #include "DrawCall.h"
@@ -27,10 +28,7 @@ namespace scene {
     VkDescriptorSetLayout projectionMatrixDescSetLayout = VK_NULL_HANDLE;
   } shadowMapPass, presentationPass;
   
-  VkImage shadowMap;
-  int shadowMapWidth, shadowMapHeight;
-  VkImageView shadowMapView;
-  VkDeviceMemory shadowMapMemory;
+  ShadowMap *shadowMap;
   VkFramebuffer shadowMapFramebuffer;
   VkRenderPass shadowMapRenderPass;
   
@@ -42,10 +40,6 @@ namespace scene {
   
   vec3 cameraPosition;
   vec2 cameraAngle;
-  
-  VkImageView getShadowMapView() {
-    return shadowMapView;
-  }
   
   void addRingVertices(vec3 translation, int sideCount, float height, float btmRadius, float topRadius, vector<vec3> *verts) {
     
@@ -133,21 +127,13 @@ namespace scene {
   }
   
   void createShadowMapResources() {
-    const VkFormat format = VK_FORMAT_R32G32B32A32_SFLOAT;
-    
-    shadowMapWidth = 512;
-    shadowMapHeight = 512;
-    
-    gfx::createColorImage(shadowMapWidth, shadowMapHeight, &shadowMap, &shadowMapMemory);
-    shadowMapView = gfx::createImageView(shadowMap, format, VK_IMAGE_ASPECT_COLOR_BIT);
-    
-    createShadowMapRenderPass(format);
-    shadowMapFramebuffer = gfx::createFramebuffer(shadowMapRenderPass, {shadowMapView, gfx::depthImageView}, shadowMapWidth, shadowMapHeight);
+    createShadowMapRenderPass(shadowMap->format);
+    shadowMapFramebuffer = gfx::createFramebuffer(shadowMapRenderPass, {shadowMap->imageView, gfx::depthImageView}, shadowMap->width, shadowMap->height);
     
     uint32_t vertexAttributeCount = 2;
     VkExtent2D extent;
-    extent.width = shadowMapWidth;
-    extent.height = shadowMapHeight;
+    extent.width = shadowMap->width;
+    extent.height = shadowMap->height;
     shadowMapPipeline = gfx::createPipeline(pipelineLayout, extent, shadowMapRenderPass, vertexAttributeCount, "shadowMap.vert.spv", "shadowMap.frag.spv");
   }
   
@@ -191,7 +177,9 @@ namespace scene {
     return vertices;
   }
 
-  void init() {
+  void init(ShadowMap *shadowMap_) {
+    shadowMap = shadowMap_;
+    
     initDescriptorSetsForPass(shadowMapPass);
     initDescriptorSetsForPass(presentationPass);
     
@@ -203,14 +191,14 @@ namespace scene {
     };
     pipelineLayout = gfx::createPipelineLayout(descSetLayouts, 4, sizeof(mat4));
     uint32_t vertexAttributeCount = 2;
-    litPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "lit.vert.spv", "scene.frag.spv");
-    unlitPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "unlit.vert.spv", "scene.frag.spv");
+    litPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "lit.vert.spv", "basic.frag.spv");
+    unlitPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "unlit.vert.spv", "basic.frag.spv");
     
     createShadowMapResources();
     
     VkExtent2D extent = gfx::getSurfaceExtent();
     presentationPass.projectionMatrix = createProjectionMatrix(extent.width, extent.height, 0.87);
-    shadowMapPass.projectionMatrix = createProjectionMatrix(shadowMapWidth, shadowMapHeight, 1.5);
+    shadowMapPass.projectionMatrix = createProjectionMatrix(shadowMap->width, shadowMap->height, 1.5);
     
     cameraPosition.x = 4;
     cameraPosition.y = 2;
@@ -292,7 +280,7 @@ namespace scene {
   }
   
   void performShadowMapRenderPass(VkCommandBuffer cmdBuffer) {
-    gfx::cmdBeginRenderPass(shadowMapRenderPass, shadowMapWidth, shadowMapHeight, shadowMapFramebuffer, cmdBuffer);
+    gfx::cmdBeginRenderPass(shadowMapRenderPass, shadowMap->width, shadowMap->height, shadowMapFramebuffer, cmdBuffer);
     
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowMapPipeline);
     

@@ -1,19 +1,14 @@
-#include "imageViewer.h"
+#include "shadowMapViewer.h"
 #include "main.h"
 #include "graphics.h"
 #include "scene.h"
 
-namespace imageViewer {
+namespace shadowMapViewer {
   VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
   VkPipeline       pipeline       = VK_NULL_HANDLE;
   
   VkBuffer vertexBuffer;
   VkDeviceMemory vertexBufferMemory;
-  
-  VkSampler shadowMapSampler;
-  
-  VkDescriptorSetLayout shadowMapDescriptorSetLayout;
-  VkDescriptorSet shadowMapDescriptorSet;
   
   VkBuffer matrixBuffer;
   VkDeviceMemory matrixBufferMemory; // TODO: do i need this handle?
@@ -25,23 +20,19 @@ namespace imageViewer {
     vec3(0, 1, 0), vec3(1, 0, 0), vec3(1, 1, 0)
   };
   
-  void createShadowMapResources() {
-    shadowMapSampler = gfx::createSampler();
-    
-    gfx::createDescriptorSet(scene::getShadowMapView(), shadowMapSampler, &shadowMapDescriptorSet, &shadowMapDescriptorSetLayout);
-  }
+  ShadowMap *shadowMap;
   
-  void init() {
-    createShadowMapResources();
+  void init(ShadowMap *shadowMap_) {
+    shadowMap = shadowMap_;
     
     // Create matrix handles
     gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(mat4), &matrixBuffer, &matrixBufferMemory);
     gfx::createDescriptorSet(matrixBuffer, &matrixDescriptorSet, &matrixDescriptorSetLayout);
     
     // Create pipeline
-    VkDescriptorSetLayout descSetLayouts[] = {matrixDescriptorSetLayout, shadowMapDescriptorSetLayout};
+    VkDescriptorSetLayout descSetLayouts[] = {matrixDescriptorSetLayout, shadowMap->samplerDescriptorSetLayout};
     pipelineLayout = gfx::createPipelineLayout(descSetLayouts, 2, sizeof(mat4));
-    pipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, 1, "imageViewer.vert.spv", "imageViewer.frag.spv");
+    pipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, 1, "shadowMapViewer.vert.spv", "shadowMapViewer.frag.spv");
     
     gfx::createVec3Buffer(vertices, &vertexBuffer, &vertexBufferMemory);
   }
@@ -59,7 +50,7 @@ namespace imageViewer {
     gfx::setBufferMemory(matrixBufferMemory, sizeof(matrix), &matrix);
     
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &matrixDescriptorSet, 0, nullptr);
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &shadowMapDescriptorSet, 0, nullptr);
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &shadowMap->samplerDescriptorSet, 0, nullptr);
     
     VkDeviceSize vertexBufferOffset = 0;
     vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffer, &vertexBufferOffset);

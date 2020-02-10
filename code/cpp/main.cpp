@@ -10,9 +10,10 @@
 
 #include "main.h"
 #include "input.h"
-#include "imageViewer.h"
+#include "shadowMapViewer.h"
 #include "graphics.h"
 #include "scene.h"
+#include "ShadowMap.h"
 
 double getTime() {
   static uint64_t startCount = SDL_GetPerformanceCounter();
@@ -70,7 +71,7 @@ void renderNextFrame(float deltaTime) {
   auto extent = gfx::getSurfaceExtent();
   gfx::cmdBeginRenderPass(gfx::renderPass, extent.width, extent.height, frame->framebuffer, frame->cmdBuffer);
   scene::renderScene(frame->cmdBuffer);
-  imageViewer::addToCommandBuffer(frame);
+  shadowMapViewer::addToCommandBuffer(frame);
   vkCmdEndRenderPass(frame->cmdBuffer);
   
   auto result = vkEndCommandBuffer(frame->cmdBuffer);
@@ -122,8 +123,10 @@ int main(int argc, char* argv[]) {
   gfx::createCoreHandles(window);
   createSemaphores();
   
-  scene::init();
-  imageViewer::init();
+  ShadowMap shadowMap(512, 512);
+  
+  scene::init(&shadowMap);
+  shadowMapViewer::init(&shadowMap);
   
   bool running = true;
   
