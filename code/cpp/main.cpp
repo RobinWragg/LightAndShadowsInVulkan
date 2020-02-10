@@ -70,8 +70,8 @@ void renderNextFrame(float deltaTime) {
   
   auto extent = gfx::getSurfaceExtent();
   gfx::cmdBeginRenderPass(gfx::renderPass, extent.width, extent.height, frame->framebuffer, frame->cmdBuffer);
-  scene::renderScene(frame->cmdBuffer);
-  shadowMapViewer::addToCommandBuffer(frame);
+  scene::render(frame->cmdBuffer);
+  shadowMapViewer::render(frame);
   vkCmdEndRenderPass(frame->cmdBuffer);
   
   auto result = vkEndCommandBuffer(frame->cmdBuffer);

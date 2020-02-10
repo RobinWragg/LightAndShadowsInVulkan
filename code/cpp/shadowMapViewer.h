@@ -4,5 +4,5 @@
 
 namespace shadowMapViewer {
   void init(ShadowMap *shadowMap);
-  void addToCommandBuffer(const gfx::SwapchainFrame *frame);
+  void render(const gfx::SwapchainFrame *frame);
 }

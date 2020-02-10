@@ -13,6 +13,8 @@ namespace scene {
   VkPipeline       litPipeline       = VK_NULL_HANDLE;
   VkPipeline       unlitPipeline     = VK_NULL_HANDLE;
   
+  vector<VkDescriptorSet> descriptorSets;
+  
   struct Pass {
     mat4 viewMatrix;
     mat4 projectionMatrix;
@@ -183,21 +185,29 @@ namespace scene {
     initDescriptorSetsForPass(shadowMapPass);
     initDescriptorSetsForPass(presentationPass);
     
-    VkDescriptorSetLayout descSetLayouts[] = {
+    vector<VkDescriptorSetLayout> descriptorSetLayouts = {
       shadowMapPass.viewMatrixDescSetLayout,
       shadowMapPass.projectionMatrixDescSetLayout,
       presentationPass.viewMatrixDescSetLayout,
-      presentationPass.projectionMatrixDescSetLayout
+      presentationPass.projectionMatrixDescSetLayout,
+      shadowMap->samplerDescriptorSetLayout
     };
-    pipelineLayout = gfx::createPipelineLayout(descSetLayouts, 4, sizeof(mat4));
+    descriptorSets = {
+      shadowMapPass.viewMatrixDescSet,
+      shadowMapPass.projectionMatrixDescSet,
+      presentationPass.viewMatrixDescSet,
+      presentationPass.projectionMatrixDescSet,
+      shadowMap->samplerDescriptorSet
+    };
+    pipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(mat4));
     uint32_t vertexAttributeCount = 2;
-    litPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "lit.vert.spv", "basic.frag.spv");
-    unlitPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "unlit.vert.spv", "basic.frag.spv");
+    litPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "lit.vert.spv", "lit.frag.spv");
+    unlitPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "unlit.vert.spv", "unlit.frag.spv");
     
     createShadowMapResources();
     
     VkExtent2D extent = gfx::getSurfaceExtent();
-    presentationPass.projectionMatrix = createProjectionMatrix(extent.width, extent.height, 0.87);
+    presentationPass.projectionMatrix = createProjectionMatrix(extent.width, extent.height, 1.5);
     shadowMapPass.projectionMatrix = createProjectionMatrix(shadowMap->width, shadowMap->height, 1.5);
     
     cameraPosition.x = 4;
@@ -279,53 +289,42 @@ namespace scene {
     lightSource->modelMatrix = scale(lightSource->modelMatrix, vec3(0.1, 0.1, 0.1));
   }
   
+  static void bindDescriptorSets(VkCommandBuffer cmdBuffer) {
+    // Update uniform buffers
+    gfx::setBufferMemory(shadowMapPass.viewMatrixBufferMemory, sizeof(shadowMapPass.viewMatrix), &shadowMapPass.viewMatrix);
+    gfx::setBufferMemory(shadowMapPass.projectionMatrixBufferMemory, sizeof(shadowMapPass.projectionMatrix), &shadowMapPass.projectionMatrix);
+    gfx::setBufferMemory(presentationPass.viewMatrixBufferMemory, sizeof(presentationPass.viewMatrix), &presentationPass.viewMatrix);
+    gfx::setBufferMemory(presentationPass.projectionMatrixBufferMemory, sizeof(presentationPass.projectionMatrix), &presentationPass.projectionMatrix);
+    
+    // Bind
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, (int)descriptorSets.size(), descriptorSets.data(), 0, nullptr);
+  }
+  
   void performShadowMapRenderPass(VkCommandBuffer cmdBuffer) {
     gfx::cmdBeginRenderPass(shadowMapRenderPass, shadowMap->width, shadowMap->height, shadowMapFramebuffer, cmdBuffer);
     
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowMapPipeline);
     
-    gfx::setBufferMemory(shadowMapPass.viewMatrixBufferMemory, sizeof(shadowMapPass.viewMatrix), &shadowMapPass.viewMatrix);
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowMapPass.viewMatrixDescSet, 0, nullptr);
-    
-    gfx::setBufferMemory(shadowMapPass.projectionMatrixBufferMemory, sizeof(shadowMapPass.projectionMatrix), &shadowMapPass.projectionMatrix);
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &shadowMapPass.projectionMatrixDescSet, 0, nullptr);
-    
+    bindDescriptorSets(cmdBuffer);
     addDrawCallsToCommandBuffer(cmdBuffer);
     
     vkCmdEndRenderPass(cmdBuffer);
   }
   
-  void renderLightSource(VkCommandBuffer cmdBuffer) {
-    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, unlitPipeline);
-    
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowMapPass.viewMatrixDescSet, 0, nullptr);
-    
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &presentationPass.viewMatrixDescSet, 0, nullptr);
-    
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3, 1, &presentationPass.projectionMatrixDescSet, 0, nullptr);
-    
-    lightSource->addToCmdBuffer(cmdBuffer, pipelineLayout);
-  }
-  
   void renderGeometry(VkCommandBuffer cmdBuffer) {
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, litPipeline);
-    
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowMapPass.viewMatrixDescSet, 0, nullptr);
-    
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &presentationPass.viewMatrixDescSet, 0, nullptr);
-    
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3, 1, &presentationPass.projectionMatrixDescSet, 0, nullptr);
     
     addDrawCallsToCommandBuffer(cmdBuffer);
   }
   
-  void renderScene(VkCommandBuffer cmdBuffer) {
+  void renderLightSource(VkCommandBuffer cmdBuffer) {
+    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, unlitPipeline);
     
-    // Update uniform buffers
-    gfx::setBufferMemory(presentationPass.viewMatrixBufferMemory, sizeof(presentationPass.viewMatrix), &presentationPass.viewMatrix);
-    gfx::setBufferMemory(presentationPass.projectionMatrixBufferMemory, sizeof(presentationPass.projectionMatrix), &presentationPass.projectionMatrix);
-    
-    // Record commands
+    lightSource->addToCmdBuffer(cmdBuffer, pipelineLayout);
+  }
+  
+  void render(VkCommandBuffer cmdBuffer) {
+    bindDescriptorSets(cmdBuffer);
     renderGeometry(cmdBuffer);
     renderLightSource(cmdBuffer);
   }

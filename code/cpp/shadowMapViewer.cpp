@@ -58,7 +58,7 @@ namespace shadowMapViewer {
     vkCmdDraw(cmdBuffer, (int)vertices.size(), 1, 0, 0);
   }
   
-  void addToCommandBuffer(const gfx::SwapchainFrame *frame) {
+  void render(const gfx::SwapchainFrame *frame) {
     vkCmdBindPipeline(frame->cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     renderQuad(frame->cmdBuffer);
   }
