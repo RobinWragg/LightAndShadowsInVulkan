@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
   gfx::createCoreHandles(window);
   createSemaphores();
   
-  ShadowMap shadowMap(512, 512);
+  ShadowMap shadowMap(256, 256);
   
   scene::init(&shadowMap);
   shadowMapViewer::init(&shadowMap);

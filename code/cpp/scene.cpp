@@ -207,7 +207,7 @@ namespace scene {
     createShadowMapResources();
     
     VkExtent2D extent = gfx::getSurfaceExtent();
-    presentationPass.projectionMatrix = createProjectionMatrix(extent.width, extent.height, 1.5);
+    presentationPass.projectionMatrix = createProjectionMatrix(extent.width, extent.height, 0.8);
     shadowMapPass.projectionMatrix = createProjectionMatrix(shadowMap->width, shadowMap->height, 1.5);
     
     cameraPosition.x = 4;
@@ -226,8 +226,8 @@ namespace scene {
     
     pyramid = new DrawCall(pyramidVertices);
     ground = new DrawCall(createGroundVertices());
-    sphere0 = newSphereDrawCall(32, true);
-    sphere1 = newSphereDrawCall(32, true);
+    sphere0 = newSphereDrawCall(16, true);
+    sphere1 = newSphereDrawCall(16, false);
     lightSource = newSphereDrawCall(16, true);
     
     printf("\nInitialised Vulkan\n");
@@ -269,17 +269,11 @@ namespace scene {
     updatePresentationViewMatrix(deltaTime);
     updateShadowMapViewMatrix(deltaTime);
     
-    pyramid->modelMatrix = glm::identity<mat4>();
-    pyramid->modelMatrix = translate(pyramid->modelMatrix, vec3(0, 0, -2));
+    pyramid->modelMatrix = translate(glm::identity<mat4>(), vec3(0, 0, -2));
     
-    sphere0->modelMatrix = glm::identity<mat4>();
-    sphere0->modelMatrix = translate(sphere0->modelMatrix, vec3(-1.0f, 1.0f, 0.0f));
-    sphere0->modelMatrix = rotate(sphere0->modelMatrix, (float)M_PI*1.5f, vec3(0, 1, 0));
-    sphere0->modelMatrix = scale(sphere0->modelMatrix, vec3(0.3, 1, 1));
+    sphere0->modelMatrix = translate(glm::identity<mat4>(), vec3(-1.0f, 1.0f, 0.0f));
     
-    sphere1->modelMatrix = glm::identity<mat4>();
-    sphere1->modelMatrix = translate(sphere1->modelMatrix, vec3(1.0f, 1.0f, 0.0f));
-    sphere1->modelMatrix = scale(sphere1->modelMatrix, vec3(0.3, 1, 1));
+    sphere1->modelMatrix = translate(glm::identity<mat4>(), vec3(1.0f, 1.0f, 0.0f));
     
     ground->modelMatrix = glm::identity<mat4>();
     

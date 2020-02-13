@@ -1,8 +1,9 @@
 #version 450
 
 layout(location = 0) in vec3 fragmentColor;
-layout(location = 1) in vec4 worldPosition;
-layout(location = 2) in vec3 lightPosition;
+layout(location = 1) in vec4 vertWorldPos;
+layout(location = 2) in vec3 lightSourcePos;
+
 layout(location = 0) out vec4 outColor;
 
 layout(set = 0, binding = 0) uniform LightViewMatrix {
@@ -15,20 +16,28 @@ layout(set = 1, binding = 0) uniform LightProjMatrix {
 
 layout(set = 4, binding = 0) uniform sampler2D shadowMap;
 
+float getLightTravelDistance() {
+  vec4 vertLightProjPos = lightProjMatrix.value * lightViewMatrix.value * vertWorldPos;
+  
+  // This is the perspective division that transforms projection space into normalised device space.
+  vec3 normalisedDevicePos = vertLightProjPos.xyz / vertLightProjPos.w;
+  
+  // Change the bounds from [-0.5,+0.5] to [0,1].
+  vec2 texCoord = vec2(normalisedDevicePos.x, normalisedDevicePos.y) * 0.5 + 0.5;
+  
+  // Only the R value is used because the other components are only used for debugging.
+  return texture(shadowMap, texCoord).r;
+}
+
 void main() {
-  vec4 vertLightProjectionPosition = lightProjMatrix.value * lightViewMatrix.value * worldPosition;
-  vec2 texCoord = vec2(vertLightProjectionPosition.x * 0.5 + 0.5, vertLightProjectionPosition.y + 0.5);
-  float vertToLightDistance = length(lightPosition - worldPosition.xyz);
-  float texelColor = texture(shadowMap, texCoord).r;
+  outColor = vec4(fragmentColor, 1);
   
-  outColor = vec4(texelColor * 0.15, texelColor * 0.15, vertToLightDistance * 0.2, 1.0);
-  // outColor.b = vertToLightDistance * 0.1;
-  
-  // texCoord debug
-  if (abs(texCoord.x) <= 0.01 || (abs(texCoord.x) >= 0.99 && abs(texCoord.x) <= 1.01) || abs(texCoord.y) <= 0.01 || (abs(texCoord.y) >= 0.99 && abs(texCoord.y) <= 1.01)) {
-    outColor = vec4(1, 1, 0, 1.0);
+  // Attenuate the fragment color if it is in shadow
+  float vertToLightSourceDistance = length(lightSourcePos - vertWorldPos.xyz);
+  float nearlyZero = 0.01; // This is necessary due to floating point inaccuracy
+  if (vertToLightSourceDistance - getLightTravelDistance() > nearlyZero) {
+    outColor.xyz *= 0.5;
   }
-  
 }
 
 

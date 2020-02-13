@@ -636,8 +636,8 @@ namespace gfx {
     VkSamplerCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     
-    info.magFilter = VK_FILTER_NEAREST; // or LINEAR
-    info.minFilter = VK_FILTER_NEAREST; // or LINEAR
+    info.magFilter = VK_FILTER_LINEAR; // or NEAREST
+    info.minFilter = VK_FILTER_LINEAR; // or NEAREST
     
     info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;

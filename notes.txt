@@ -33,6 +33,9 @@ multisampling during shadow map render
 anti-aliasing during scene render
 https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
 
+https://www.learnopengles.com/tag/perspective-divide/
+https://computergraphics.stackexchange.com/questions/1769/world-coordinates-normalised-device-coordinates-and-device-coordinates
+
 deferred renderer
 https://www.3dgep.com/forward-plus/
 https://evermotion.org/shop/show_product/archinteriors-vol-43-for-blender/14563
