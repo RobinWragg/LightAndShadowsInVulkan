@@ -155,7 +155,7 @@ namespace gfx {
     SDL_assert(result == VK_SUCCESS);
   }
   
-  void cmdBeginRenderPass(VkRenderPass renderPass, uint32_t width, uint32_t height, VkFramebuffer framebuffer, VkCommandBuffer cmdBuffer) {
+  void cmdBeginRenderPass(VkRenderPass renderPass, uint32_t width, uint32_t height, vec3 clearColor, VkFramebuffer framebuffer, VkCommandBuffer cmdBuffer) {
     VkRenderPassBeginInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     info.renderPass = renderPass;
@@ -163,9 +163,9 @@ namespace gfx {
     
     static vector<VkClearValue> clearValues(2);
     
-    clearValues[0].color.float32[0] = 0.5;
-    clearValues[0].color.float32[1] = 0.7;
-    clearValues[0].color.float32[2] = 1;
+    clearValues[0].color.float32[0] = clearColor.x;
+    clearValues[0].color.float32[1] = clearColor.y;
+    clearValues[0].color.float32[2] = clearColor.z;
     clearValues[0].color.float32[3] = 1;
     
     clearValues[1].depthStencil.depth = 1;

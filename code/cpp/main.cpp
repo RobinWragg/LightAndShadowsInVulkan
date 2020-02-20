@@ -69,7 +69,8 @@ void renderNextFrame(float deltaTime) {
   scene::performShadowMapRenderPass(frame->cmdBuffer);
   
   auto extent = gfx::getSurfaceExtent();
-  gfx::cmdBeginRenderPass(gfx::renderPass, extent.width, extent.height, frame->framebuffer, frame->cmdBuffer);
+  vec3 clearColor = {0.5, 0.7, 1};
+  gfx::cmdBeginRenderPass(gfx::renderPass, extent.width, extent.height, clearColor, frame->framebuffer, frame->cmdBuffer);
   scene::render(frame->cmdBuffer);
   shadowMapViewer::render(frame);
   vkCmdEndRenderPass(frame->cmdBuffer);
@@ -123,7 +124,7 @@ int main(int argc, char* argv[]) {
   gfx::createCoreHandles(window);
   createSemaphores();
   
-  ShadowMap shadowMap(256, 256);
+  ShadowMap shadowMap(SHADOWMAP_RESOLUTION, SHADOWMAP_RESOLUTION);
   
   scene::init(&shadowMap);
   shadowMapViewer::init(&shadowMap);

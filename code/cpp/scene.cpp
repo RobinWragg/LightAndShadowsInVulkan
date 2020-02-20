@@ -252,10 +252,11 @@ namespace scene {
   }
   
   static void updateShadowMapViewMatrix(float deltaTime) {
+    // TODO: set this by setting the light source position.
     shadowMapPass.viewMatrix = glm::identity<mat4>();
     shadowMapPass.viewMatrix = translate(shadowMapPass.viewMatrix, vec3(0, 0, -6));
-    shadowMapPass.viewMatrix = rotate(shadowMapPass.viewMatrix, 0.7f, vec3(1.0f, 0.0f, 0.0f));
-    shadowMapPass.viewMatrix = rotate(shadowMapPass.viewMatrix, (float)getTime()*1.3f, vec3(0.0f, 1.0f, 0.0f));
+    shadowMapPass.viewMatrix = rotate(shadowMapPass.viewMatrix, 0.8f, vec3(1.0f, 0.0f, 0.0f));
+    shadowMapPass.viewMatrix = rotate(shadowMapPass.viewMatrix, (float)getTime()*0.1f, vec3(0.0f, 1.0f, 0.0f));
   }
   
   static void addDrawCallsToCommandBuffer(VkCommandBuffer cmdBuffer) {
@@ -295,7 +296,9 @@ namespace scene {
   }
   
   void performShadowMapRenderPass(VkCommandBuffer cmdBuffer) {
-    gfx::cmdBeginRenderPass(shadowMapRenderPass, shadowMap->width, shadowMap->height, shadowMapFramebuffer, cmdBuffer);
+    // This clear color must be higher than all rendered distances. The INFINITY macro cannot be used as it causes buggy rasterisation behaviour; GLSL doesn't officially support the IEEE infinity constant.
+    vec3 clearColor = {1000, 1000, 1000};
+    gfx::cmdBeginRenderPass(shadowMapRenderPass, shadowMap->width, shadowMap->height, clearColor, shadowMapFramebuffer, cmdBuffer);
     
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowMapPipeline);
     

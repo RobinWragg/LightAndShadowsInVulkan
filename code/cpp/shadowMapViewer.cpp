@@ -11,7 +11,7 @@ namespace shadowMapViewer {
   VkDeviceMemory vertexBufferMemory;
   
   VkBuffer matrixBuffer;
-  VkDeviceMemory matrixBufferMemory; // TODO: do i need this handle?
+  VkDeviceMemory matrixBufferMemory;
   VkDescriptorSetLayout matrixDescriptorSetLayout;
   VkDescriptorSet matrixDescriptorSet;
   
