@@ -337,16 +337,15 @@ namespace gfx {
     createSwapchainFrames();
   }
   
-  static void createDepthImageAndView() {
+  VkImageView createDepthImageAndView(uint32 width, uint32_t height) {
     SDL_assert_release(commandPool != VK_NULL_HANDLE);
     
-    VkImage depthImage;
-    VkDeviceMemory depthImageMemory;
+    VkImage image;
+    VkDeviceMemory imageMemory;
     
-    auto extent = getSurfaceExtent();
-    createImage(true, extent.width, extent.height, &depthImage, &depthImageMemory);
+    createImage(true, width, height, &image, &imageMemory);
 
-    depthImageView = createImageView(depthImage, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT);
+    return createImageView(image, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT);
   }
   
   VkSubpassDependency createSubpassDependency() {
@@ -547,7 +546,8 @@ namespace gfx {
     
     createCommandPool();
     
-    createDepthImageAndView();
+    auto extent = getSurfaceExtent();
+    depthImageView = createDepthImageAndView(extent.width, extent.height);
     
     renderPass = createRenderPass();
     

@@ -10,6 +10,7 @@ public:
   VkImage image;
   VkDeviceMemory imageMemory;
   VkImageView imageView;
+  VkImageView depthImageView;
   
   VkSampler sampler;
   VkDescriptorSetLayout samplerDescriptorSetLayout;
@@ -23,6 +24,7 @@ public:
     
     gfx::createColorImage(width, height, &image, &imageMemory);
     imageView = gfx::createImageView(image, format, VK_IMAGE_ASPECT_COLOR_BIT);
+    depthImageView = gfx::createDepthImageAndView(width, height);
     
     sampler = gfx::createSampler();
     

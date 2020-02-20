@@ -130,7 +130,7 @@ namespace scene {
   
   void createShadowMapResources() {
     createShadowMapRenderPass(shadowMap->format);
-    shadowMapFramebuffer = gfx::createFramebuffer(shadowMapRenderPass, {shadowMap->imageView, gfx::depthImageView}, shadowMap->width, shadowMap->height);
+    shadowMapFramebuffer = gfx::createFramebuffer(shadowMapRenderPass, {shadowMap->imageView, shadowMap->depthImageView}, shadowMap->width, shadowMap->height);
     
     uint32_t vertexAttributeCount = 2;
     VkExtent2D extent;
