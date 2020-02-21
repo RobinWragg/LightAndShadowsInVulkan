@@ -31,20 +31,17 @@ float getLightTravelDistance() {
 
 void main() {
   
-  vec3 preShadowColor = vec3(1, 1, 1) * dot(vertNormalInWorld, normalize(lightPosInWorld - vertPosInWorld));
+  vec3 vertToLightVector = lightPosInWorld - vertPosInWorld;
+  
+  vec3 preShadowColor = vec3(1, 1, 1) * dot(vertNormalInWorld, normalize(vertToLightVector));
   outColor = vec4(preShadowColor, 1);
   
   // Attenuate the fragment color if it is in shadow
-  float vertToLightSourceDistance = length(lightPosInWorld - vertPosInWorld);
+  float vertToLightSourceDistance = length(vertToLightVector);
   float nearlyZero = 0.01; // This is necessary due to floating point inaccuracy
   if (vertToLightSourceDistance - getLightTravelDistance() > nearlyZero) {
     outColor.xyz *= 0.5;
   }
-  
-  // float d = getLightTravelDistance();
-  // outColor.x = d * 0.1;
-  // outColor.y = d * 0.1;
-  // outColor.z = d * 0.1;
 }
 
 
