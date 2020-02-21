@@ -16,6 +16,9 @@ namespace scene {
   vector<VkDescriptorSet> descriptorSets;
   
   struct Pass {
+    vec3 cameraPos;
+    vec2 cameraAngle;
+    
     mat4 viewMatrix;
     mat4 projectionMatrix;
     
@@ -39,9 +42,6 @@ namespace scene {
   DrawCall *sphere0     = nullptr;
   DrawCall *sphere1     = nullptr;
   DrawCall *lightSource = nullptr;
-  
-  vec3 cameraPosition;
-  vec2 cameraAngle;
   
   void addRingVertices(vec3 translation, int sideCount, float height, float btmRadius, float topRadius, vector<vec3> *verts) {
     
@@ -210,12 +210,12 @@ namespace scene {
     presentationPass.projectionMatrix = createProjectionMatrix(extent.width, extent.height, 0.8);
     shadowMapPass.projectionMatrix = createProjectionMatrix(shadowMap->width, shadowMap->height, 1.5);
     
-    cameraPosition.x = 4;
-    cameraPosition.y = 2;
-    cameraPosition.z = 6.2;
+    presentationPass.cameraPos.x = 4;
+    presentationPass.cameraPos.y = 2;
+    presentationPass.cameraPos.z = 6.2;
     
-    cameraAngle.x = -0.57;
-    cameraAngle.y = 0.27;
+    presentationPass.cameraAngle.x = -0.57;
+    presentationPass.cameraAngle.y = 0.27;
     
     vector<vec3> pyramidVertices = {
       {0, 0, 0}, {1, 0, 0}, {0, 1, 0},
@@ -234,29 +234,51 @@ namespace scene {
   }
   
   static void updatePresentationViewMatrix(float deltaTime) {
-    cameraAngle += input::getViewAngleInput();
+    presentationPass.cameraAngle += input::getViewAngleInput();
     
     // Get player input for walking and take into account the direction the player is facing
     vec2 lateralMovement = input::getMovementVector() * (deltaTime * 2);
-    lateralMovement = rotate(lateralMovement, -cameraAngle.x);
+    lateralMovement = rotate(lateralMovement, -presentationPass.cameraAngle.x);
     
-    cameraPosition.x += lateralMovement.x;
-    cameraPosition.z -= lateralMovement.y;
+    presentationPass.cameraPos.x += lateralMovement.x;
+    presentationPass.cameraPos.z -= lateralMovement.y;
     
     presentationPass.viewMatrix = glm::identity<mat4>();
     
     // view transformation
-    presentationPass.viewMatrix = rotate(presentationPass.viewMatrix, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
-    presentationPass.viewMatrix = rotate(presentationPass.viewMatrix, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
-    presentationPass.viewMatrix = translate(presentationPass.viewMatrix, -cameraPosition);
+    presentationPass.viewMatrix = rotate(presentationPass.viewMatrix, presentationPass.cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
+    presentationPass.viewMatrix = rotate(presentationPass.viewMatrix, presentationPass.cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
+    presentationPass.viewMatrix = translate(presentationPass.viewMatrix, -presentationPass.cameraPos);
   }
   
   static void updateShadowMapViewMatrix(float deltaTime) {
-    // TODO: set this by setting the light source position.
-    shadowMapPass.viewMatrix = glm::identity<mat4>();
-    shadowMapPass.viewMatrix = translate(shadowMapPass.viewMatrix, vec3(0, 0, -6));
-    shadowMapPass.viewMatrix = rotate(shadowMapPass.viewMatrix, 0.8f, vec3(1.0f, 0.0f, 0.0f));
-    shadowMapPass.viewMatrix = rotate(shadowMapPass.viewMatrix, (float)getTime()*0.1f, vec3(0.0f, 1.0f, 0.0f));
+    
+    // Camera positioning settings
+    float lateralDistanceFromOrigin = 4;
+    float minHeight = 0.999;
+    float maxHeight = 1;
+    double lateralAngle = getTime() * 0.7;
+    
+    float currentHeight = minHeight + (sinf(getTime() * 0.6) + 1) * 0.5 * (maxHeight - minHeight);
+    
+    // Set cameraPos
+    shadowMapPass.cameraPos.x = sinf(lateralAngle) * lateralDistanceFromOrigin;
+    shadowMapPass.cameraPos.y = currentHeight;
+    shadowMapPass.cameraPos.z = cosf(lateralAngle) * lateralDistanceFromOrigin;
+        
+    // Set cameraAngle; point the camera at the origin of the scene
+    
+    shadowMapPass.cameraAngle.x = -lateralAngle;
+    
+    // sin(theta) = opposite / hypotenuse
+    // Therefore: theta = asin(opposite / hypotenuse)
+    // float hypotenuse = hypot(lateralDistanceFromOrigin, shadowMapPass.cameraPos.y);
+    shadowMapPass.cameraAngle.y = asinf(shadowMapPass.cameraPos.y / length(shadowMapPass.cameraPos));
+    
+    // Set the view matrix according to cameraPos and cameraAngle
+    shadowMapPass.viewMatrix = rotate(glm::identity<mat4>(), shadowMapPass.cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
+    shadowMapPass.viewMatrix = rotate(shadowMapPass.viewMatrix, shadowMapPass.cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
+    shadowMapPass.viewMatrix = translate(shadowMapPass.viewMatrix, -shadowMapPass.cameraPos);
   }
   
   static void addDrawCallsToCommandBuffer(VkCommandBuffer cmdBuffer) {

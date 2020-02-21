@@ -3,9 +3,9 @@
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;
 
-layout(location = 0) out vec3 fragmentColor;
-layout(location = 1) out vec4 worldPosition;
-layout(location = 2) out vec3 lightPosition;
+layout(location = 0) out vec3 vertPosInWorld;
+layout(location = 1) out vec3 vertNormalInWorld;
+layout(location = 2) out vec3 lightPosInWorld;
 
 layout(set = 0, binding = 0) uniform LightViewMatrix {
   mat4 value;
@@ -24,17 +24,17 @@ layout(push_constant) uniform PushConstant {
 } pushConstant;
 
 void main() {
-  worldPosition = pushConstant.model * vec4(position, 1.0);
+  vec4 vertPosInWorld4 = pushConstant.model * vec4(position, 1.0);
+  vertPosInWorld = vertPosInWorld.xyz;
   
-  gl_Position = projMatrix.value * viewMatrix.value * worldPosition;
+  gl_Position = projMatrix.value * viewMatrix.value * vertPosInWorld4;
   
   // Transform the normal to world space
   mat3 normalMatrix = mat3(pushConstant.model);
   normalMatrix = transpose(inverse(normalMatrix)); // TODO: Learn why this works. Inverting and transposing the matrix is required to handle scaled normals correctly, but I don't understand how it works at this time.
-  vec3 worldNormal = normalize(normalMatrix * normal);
+  vertNormalInWorld = normalize(normalMatrix * normal);
   
-  lightPosition = (inverse(lightViewMatrix.value) * vec4(0, 0, 0, 1)).xyz;
-  fragmentColor = vec3(1, 1, 1) * dot(worldNormal, normalize(lightPosition - worldPosition.xyz));
+  lightPosInWorld = (inverse(lightViewMatrix.value) * vec4(0, 0, 0, 1)).xyz;
 }
 
 

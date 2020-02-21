@@ -1,8 +1,8 @@
 #version 450
 
-layout(location = 0) in vec3 fragmentColor;
-layout(location = 1) in vec4 vertWorldPos;
-layout(location = 2) in vec3 lightSourcePos;
+layout(location = 0) in vec3 vertPosInWorld;
+layout(location = 1) in vec3 vertNormalInWorld;
+layout(location = 2) in vec3 lightPosInWorld;
 
 layout(location = 0) out vec4 outColor;
 
@@ -17,7 +17,7 @@ layout(set = 1, binding = 0) uniform LightProjMatrix {
 layout(set = 4, binding = 0) uniform sampler2D shadowMap;
 
 float getLightTravelDistance() {
-  vec4 vertLightProjPos = lightProjMatrix.value * lightViewMatrix.value * vertWorldPos;
+  vec4 vertLightProjPos = lightProjMatrix.value * lightViewMatrix.value * vec4(vertPosInWorld, 1);
   
   // This is the perspective division that transforms projection space into normalised device space.
   vec3 normalisedDevicePos = vertLightProjPos.xyz / vertLightProjPos.w;
@@ -30,14 +30,21 @@ float getLightTravelDistance() {
 }
 
 void main() {
-  outColor = vec4(fragmentColor, 1);
+  
+  vec3 preShadowColor = vec3(1, 1, 1) * dot(vertNormalInWorld, normalize(lightPosInWorld - vertPosInWorld));
+  outColor = vec4(preShadowColor, 1);
   
   // Attenuate the fragment color if it is in shadow
-  float vertToLightSourceDistance = length(lightSourcePos - vertWorldPos.xyz);
+  float vertToLightSourceDistance = length(lightPosInWorld - vertPosInWorld);
   float nearlyZero = 0.01; // This is necessary due to floating point inaccuracy
   if (vertToLightSourceDistance - getLightTravelDistance() > nearlyZero) {
     outColor.xyz *= 0.5;
   }
+  
+  // float d = getLightTravelDistance();
+  // outColor.x = d * 0.1;
+  // outColor.y = d * 0.1;
+  // outColor.z = d * 0.1;
 }
 
 
