@@ -17,12 +17,12 @@ layout(set = 1, binding = 0) uniform LightProjMatrix {
 layout(set = 4, binding = 0) uniform sampler2D shadowMap;
 
 float getLightTravelDistance() {
-  vec4 vertLightProjPos = lightProjMatrix.value * lightViewMatrix.value * vec4(vertPosInWorld, 1);
+  vec4 vertPosInLightProj = lightProjMatrix.value * lightViewMatrix.value * vec4(vertPosInWorld, 1);
   
   // This is the perspective division that transforms projection space into normalised device space.
-  vec3 normalisedDevicePos = vertLightProjPos.xyz / vertLightProjPos.w;
+  vec3 normalisedDevicePos = vertPosInLightProj.xyz / vertPosInLightProj.w;
   
-  // Change the bounds from [-0.5,+0.5] to [0,1].
+  // Change the bounds from [-1,1] to [0,1].
   vec2 texCoord = vec2(normalisedDevicePos.x, normalisedDevicePos.y) * 0.5 + 0.5;
   
   // Only the R value is used because the other components are only used for debugging.

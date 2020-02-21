@@ -639,9 +639,9 @@ namespace gfx {
     info.magFilter = VK_FILTER_LINEAR; // or NEAREST
     info.minFilter = VK_FILTER_LINEAR; // or NEAREST
     
-    info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+    info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+    info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
     
     info.anisotropyEnable = VK_TRUE;
     info.maxAnisotropy = 16;
@@ -649,7 +649,7 @@ namespace gfx {
     info.compareEnable = VK_FALSE;
     info.compareOp = VK_COMPARE_OP_ALWAYS;
     
-    info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
     info.unnormalizedCoordinates = VK_FALSE;
     
     VkSampler sampler;
