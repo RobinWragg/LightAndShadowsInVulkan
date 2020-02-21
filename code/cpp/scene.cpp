@@ -254,12 +254,13 @@ namespace scene {
   static void updateShadowMapViewMatrix(float deltaTime) {
     
     // Camera positioning settings
-    float lateralDistanceFromOrigin = 4;
-    float minHeight = 0.999;
-    float maxHeight = 1;
-    double lateralAngle = getTime() * 0.7;
+    const float lateralDistanceFromOrigin = 6;
+    const float minHeight = 1;
+    const float maxHeight = 10;
+    const float heightChangeSpeed = 0.5;
+    const float lateralAngle = getTime() * 0.7;
     
-    float currentHeight = minHeight + (sinf(getTime() * 0.6) + 1) * 0.5 * (maxHeight - minHeight);
+    float currentHeight = minHeight + (sinf(getTime() * heightChangeSpeed) + 1) * 0.5 * (maxHeight - minHeight);
     
     // Set cameraPos
     shadowMapPass.cameraPos.x = sinf(lateralAngle) * lateralDistanceFromOrigin;
