@@ -16,7 +16,7 @@ layout(set = 1, binding = 0) uniform LightProjMatrix {
 
 layout(set = 4, binding = 0) uniform sampler2D shadowMap;
 
-float getLightTravelDistance() {
+float getLightTravelDistance(vec2 texCoordOffset) {
   vec4 vertPosInLightProj = lightProjMatrix.value * lightViewMatrix.value * vec4(vertPosInWorld, 1);
   
   // This is the perspective division that transforms projection space into normalised device space.
@@ -25,8 +25,8 @@ float getLightTravelDistance() {
   // Change the bounds from [-1,1] to [0,1].
   vec2 texCoord = vec2(normalisedDevicePos.x, normalisedDevicePos.y) * 0.5 + 0.5;
   
-  // Only the R value is used because the other components are only used for debugging.
-  return texture(shadowMap, texCoord).r;
+  // Only the R value is used because the other components are used for debugging.
+  return texture(shadowMap, texCoord + texCoordOffset).r;
 }
 
 void main() {
@@ -37,10 +37,12 @@ void main() {
   outColor = vec4(preShadowColor, 1);
   
   // Attenuate the fragment color if it is in shadow
-  float vertToLightSourceDistance = length(vertToLightVector);
   float nearlyZero = 0.01; // This is necessary due to floating point inaccuracy
-  if (vertToLightSourceDistance - getLightTravelDistance() > nearlyZero) {
-    outColor.xyz *= 0.5;
+  float maxLightAttenuation = 0.7;
+  
+  float texelSize = 1.0 / textureSize(shadowMap, 0).x;
+  if (length(vertToLightVector) - getLightTravelDistance(vec2(0, 0)) > nearlyZero) {
+    outColor.xyz *= 1 - maxLightAttenuation;
   }
 }
 
