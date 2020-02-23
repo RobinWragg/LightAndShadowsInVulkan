@@ -37,7 +37,8 @@ namespace scene {
   VkFramebuffer shadowMapFramebuffer;
   VkRenderPass shadowMapRenderPass;
   
-  DrawCall *pyramid     = nullptr;
+  DrawCall *pyramid0    = nullptr;
+  DrawCall *pyramid1    = nullptr;
   DrawCall *ground      = nullptr;
   DrawCall *sphere0     = nullptr;
   DrawCall *sphere1     = nullptr;
@@ -136,7 +137,7 @@ namespace scene {
     VkExtent2D extent;
     extent.width = shadowMap->width;
     extent.height = shadowMap->height;
-    shadowMapPipeline = gfx::createPipeline(pipelineLayout, extent, shadowMapRenderPass, vertexAttributeCount, "shadowMap.vert.spv", "shadowMap.frag.spv");
+    shadowMapPipeline = gfx::createPipeline(pipelineLayout, extent, shadowMapRenderPass, VK_CULL_MODE_FRONT_BIT, vertexAttributeCount, "shadowMap.vert.spv", "shadowMap.frag.spv");
   }
   
   void initDescriptorSetsForPass(Pass &pass) {
@@ -201,8 +202,8 @@ namespace scene {
     };
     pipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(mat4));
     uint32_t vertexAttributeCount = 2;
-    litPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "lit.vert.spv", "lit.frag.spv");
-    unlitPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, vertexAttributeCount, "unlit.vert.spv", "unlit.frag.spv");
+    litPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, vertexAttributeCount, "lit.vert.spv", "lit.frag.spv");
+    unlitPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, vertexAttributeCount, "unlit.vert.spv", "unlit.frag.spv");
     
     createShadowMapResources();
     
@@ -224,7 +225,8 @@ namespace scene {
       {1, 0, 0}, {0, 0, 1}, {0, 1, 0},
     };
     
-    pyramid = new DrawCall(pyramidVertices);
+    pyramid0 = new DrawCall(pyramidVertices);
+    pyramid1 = new DrawCall(pyramidVertices);
     ground = new DrawCall(createGroundVertices());
     sphere0 = newSphereDrawCall(16, true);
     sphere1 = newSphereDrawCall(16, false);
@@ -283,7 +285,8 @@ namespace scene {
   }
   
   static void addDrawCallsToCommandBuffer(VkCommandBuffer cmdBuffer) {
-    pyramid->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    pyramid0->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    pyramid1->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
     ground->addToCmdBuffer(cmdBuffer, pipelineLayout);
@@ -293,7 +296,8 @@ namespace scene {
     updatePresentationViewMatrix(deltaTime);
     updateShadowMapViewMatrix(deltaTime);
     
-    pyramid->modelMatrix = translate(glm::identity<mat4>(), vec3(2, 0, 2));
+    pyramid0->modelMatrix = translate(glm::identity<mat4>(), vec3(2, 0, 2));
+    pyramid1->modelMatrix = translate(glm::identity<mat4>(), vec3(1, 0, 2));
     
     sphere0->modelMatrix = translate(glm::identity<mat4>(), vec3(-2.0f, 1.0f, -2));
     

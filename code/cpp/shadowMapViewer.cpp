@@ -32,7 +32,7 @@ namespace shadowMapViewer {
     // Create pipeline
     VkDescriptorSetLayout descSetLayouts[] = {matrixDescriptorSetLayout, shadowMap->samplerDescriptorSetLayout};
     pipelineLayout = gfx::createPipelineLayout(descSetLayouts, 2, sizeof(mat4));
-    pipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, 1, "shadowMapViewer.vert.spv", "shadowMapViewer.frag.spv");
+    pipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, 1, "shadowMapViewer.vert.spv", "shadowMapViewer.frag.spv");
     
     gfx::createVec3Buffer(vertices, &vertexBuffer, &vertexBufferMemory);
   }
