@@ -156,7 +156,7 @@ namespace scene {
   }
   
   vector<vec3> createGroundVertices() {
-    const float halfWidth = 3;
+    const float halfWidth = 4;
     const float height = 0.1;
     
     vector<vec3> vertices = {
@@ -257,8 +257,8 @@ namespace scene {
     const float lateralDistanceFromOrigin = 6;
     const float minHeight = 1;
     const float maxHeight = 10;
-    const float heightChangeSpeed = 0.5;
-    const float lateralAngle = getTime() * 0.7;
+    const float heightChangeSpeed = 0.1;
+    const float lateralAngle = getTime() * 0.1;
     
     float currentHeight = minHeight + (sinf(getTime() * heightChangeSpeed) + 1) * 0.5 * (maxHeight - minHeight);
     
@@ -293,11 +293,11 @@ namespace scene {
     updatePresentationViewMatrix(deltaTime);
     updateShadowMapViewMatrix(deltaTime);
     
-    pyramid->modelMatrix = translate(glm::identity<mat4>(), vec3(0, 0, -2));
+    pyramid->modelMatrix = translate(glm::identity<mat4>(), vec3(2, 0, 2));
     
-    sphere0->modelMatrix = translate(glm::identity<mat4>(), vec3(-1.0f, 1.0f, 0.0f));
+    sphere0->modelMatrix = translate(glm::identity<mat4>(), vec3(-2.0f, 1.0f, -2));
     
-    sphere1->modelMatrix = translate(glm::identity<mat4>(), vec3(1.0f, 1.0f, 0.0f));
+    sphere1->modelMatrix = translate(glm::identity<mat4>(), vec3(2.0f, 1.0f, -2));
     
     ground->modelMatrix = glm::identity<mat4>();
     
