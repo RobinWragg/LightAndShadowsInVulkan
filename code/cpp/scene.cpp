@@ -37,8 +37,7 @@ namespace scene {
   VkFramebuffer shadowMapFramebuffer;
   VkRenderPass shadowMapRenderPass;
   
-  DrawCall *pyramid0    = nullptr;
-  DrawCall *pyramid1    = nullptr;
+  DrawCall *pyramid     = nullptr;
   DrawCall *ground      = nullptr;
   DrawCall *sphere0     = nullptr;
   DrawCall *sphere1     = nullptr;
@@ -209,14 +208,14 @@ namespace scene {
     
     VkExtent2D extent = gfx::getSurfaceExtent();
     presentationPass.projectionMatrix = createProjectionMatrix(extent.width, extent.height, 0.8);
-    shadowMapPass.projectionMatrix = createProjectionMatrix(shadowMap->width, shadowMap->height, 1.5);
+    shadowMapPass.projectionMatrix = createProjectionMatrix(shadowMap->width, shadowMap->height, 2);
     
-    presentationPass.cameraPos.x = 4;
+    presentationPass.cameraPos.x = 3.388;
     presentationPass.cameraPos.y = 2;
-    presentationPass.cameraPos.z = 6.2;
+    presentationPass.cameraPos.z = 1.294;
     
-    presentationPass.cameraAngle.x = -0.57;
-    presentationPass.cameraAngle.y = 0.27;
+    presentationPass.cameraAngle.x = -0.858;
+    presentationPass.cameraAngle.y = 0.698;
     
     vector<vec3> pyramidVertices = {
       {0, 0, 0}, {1, 0, 0}, {0, 1, 0},
@@ -225,11 +224,10 @@ namespace scene {
       {1, 0, 0}, {0, 0, 1}, {0, 1, 0},
     };
     
-    pyramid0 = new DrawCall(pyramidVertices);
-    pyramid1 = new DrawCall(pyramidVertices);
+    pyramid = new DrawCall(pyramidVertices);
     ground = new DrawCall(createGroundVertices());
-    sphere0 = newSphereDrawCall(16, true);
-    sphere1 = newSphereDrawCall(16, false);
+    sphere0 = newSphereDrawCall(8, false);
+    sphere1 = newSphereDrawCall(32, true);
     lightSource = newSphereDrawCall(16, true);
     
     printf("\nInitialised Vulkan\n");
@@ -255,12 +253,12 @@ namespace scene {
   
   static void updateShadowMapViewMatrix(float deltaTime) {
     
-    // Camera positioning settings
+    // Camera/light positioning settings
     const float lateralDistanceFromOrigin = 6;
     const float minHeight = 1;
-    const float maxHeight = 10;
-    const float heightChangeSpeed = 0.1;
-    const float lateralAngle = getTime() * 0.1;
+    const float maxHeight = 7;
+    const float heightChangeSpeed = 0;
+    const float lateralAngle = 2.5;
     
     float currentHeight = minHeight + (sinf(getTime() * heightChangeSpeed) + 1) * 0.5 * (maxHeight - minHeight);
     
@@ -285,8 +283,7 @@ namespace scene {
   }
   
   static void addDrawCallsToCommandBuffer(VkCommandBuffer cmdBuffer) {
-    pyramid0->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    pyramid1->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    pyramid->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
     ground->addToCmdBuffer(cmdBuffer, pipelineLayout);
@@ -296,8 +293,7 @@ namespace scene {
     updatePresentationViewMatrix(deltaTime);
     updateShadowMapViewMatrix(deltaTime);
     
-    pyramid0->modelMatrix = translate(glm::identity<mat4>(), vec3(2, 0, 2));
-    pyramid1->modelMatrix = translate(glm::identity<mat4>(), vec3(1, 0, 2));
+    pyramid->modelMatrix = translate(glm::identity<mat4>(), vec3(1, 0, 2));
     
     sphere0->modelMatrix = translate(glm::identity<mat4>(), vec3(-2.0f, 1.0f, -2));
     
