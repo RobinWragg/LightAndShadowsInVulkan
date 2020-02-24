@@ -21,7 +21,7 @@ layout(set = 4, binding = 0) uniform sampler2D shadowMap;
 float getShadowFactor(vec3 posInWorld) {
   vec3 posInLightView = (lightViewMatrix.value * vec4(posInWorld, 1)).xyz;
   
-  const float texelSize = 1.0 / textureSize(shadowMap, 0).x;
+  float texelSize = 1.0 / textureSize(shadowMap, 0).x;
   
   const vec4 posInLightProj = lightProjMatrix.value * vec4(posInLightView, 1);
   
@@ -39,9 +39,9 @@ float getShadowFactor(vec3 posInWorld) {
   int totalSampleCount = 0;
   int shadowSampleCount = 0;
   
-  // Use a 3x3 sample kernel.
-  for (int x = -1; x <= 1; x++) {
-    for (int y = -1; y <= 1; y++) {
+  // Use a 5x5 sample kernel.
+  for (int x = -2; x <= 2; x++) {
+    for (int y = -2; y <= 2; y++) {
       totalSampleCount++;
       
       const vec2 texCoordWithOffset = centreTexCoord + vec2(x, y) * texelSize;
