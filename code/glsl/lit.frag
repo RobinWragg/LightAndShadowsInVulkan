@@ -61,13 +61,17 @@ float getShadowFactor(vec3 posInWorld) {
 void main() {
   const vec3 vertToLightVector = lightPosInWorld - vertPosInWorld;
   
-  vec3 preShadowColor = vec3(1, 1, 1) * dot(vertNormalInWorld, normalize(vertToLightVector));
+  float lightNormalDot = dot(vertNormalInWorld, normalize(vertToLightVector));
+  
+  vec3 preShadowColor = vec3(1, 1, 1) * lightNormalDot;
   outColor = vec4(preShadowColor, 1);
   
-  // Attenuate the fragment color if it is in shadow
-  float maxLightAttenuation = 0.7;
-  float lightAttenuation = getShadowFactor(vertPosInWorld) * maxLightAttenuation;
-  outColor.rgb *= 1 - lightAttenuation;
+  if (lightNormalDot > 0) {
+    // Attenuate the fragment color if it is in shadow
+    float maxLightAttenuation = 0.7;
+    float lightAttenuation = getShadowFactor(vertPosInWorld) * maxLightAttenuation;
+    outColor.rgb *= 1 - lightAttenuation;
+  }
 }
 
 

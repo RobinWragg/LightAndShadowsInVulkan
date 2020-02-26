@@ -41,6 +41,8 @@ namespace scene {
   DrawCall *ground      = nullptr;
   DrawCall *sphere0     = nullptr;
   DrawCall *sphere1     = nullptr;
+  DrawCall *sphere2     = nullptr;
+  DrawCall *sphere3     = nullptr;
   DrawCall *lightSource = nullptr;
   
   void addRingVertices(vec3 translation, int sideCount, float height, float btmRadius, float topRadius, vector<vec3> *verts) {
@@ -226,8 +228,10 @@ namespace scene {
     
     pyramid = new DrawCall(pyramidVertices);
     ground = new DrawCall(createGroundVertices());
-    sphere0 = newSphereDrawCall(8, false);
-    sphere1 = newSphereDrawCall(32, true);
+    sphere0 = newSphereDrawCall(2, true);
+    sphere1 = newSphereDrawCall(3, true);
+    sphere2 = newSphereDrawCall(8, true);
+    sphere3 = newSphereDrawCall(64, true);
     lightSource = newSphereDrawCall(16, true);
     
     printf("\nInitialised Vulkan\n");
@@ -254,11 +258,11 @@ namespace scene {
   static void updateShadowMapViewMatrix(float deltaTime) {
     
     // Camera/light positioning settings
-    const float lateralDistanceFromOrigin = 6;
-    const float minHeight = 1;
-    const float maxHeight = 7;
-    const float heightChangeSpeed = 0;
-    const float lateralAngle = 2.5;
+    const float lateralDistanceFromOrigin = 7;
+    const float minHeight = 2;
+    const float maxHeight = 5;
+    const float heightChangeSpeed = 1;
+    const float lateralAngle = 2.5 + getTime()*0.4;
     
     float currentHeight = minHeight + (sinf(getTime() * heightChangeSpeed) + 1) * 0.5 * (maxHeight - minHeight);
     
@@ -286,6 +290,8 @@ namespace scene {
     pyramid->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    sphere2->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    sphere3->addToCmdBuffer(cmdBuffer, pipelineLayout);
     ground->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
   
@@ -295,9 +301,18 @@ namespace scene {
     
     pyramid->modelMatrix = translate(glm::identity<mat4>(), vec3(1, 0, 2));
     
-    sphere0->modelMatrix = translate(glm::identity<mat4>(), vec3(-2.0f, 1.0f, -2));
+    float sphereScale = 0.7;
+    sphere0->modelMatrix = translate(glm::identity<mat4>(), vec3(-2.5, sphereScale, -2.5));
+    sphere0->modelMatrix = scale(sphere0->modelMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
-    sphere1->modelMatrix = translate(glm::identity<mat4>(), vec3(2.0f, 1.0f, -2));
+    sphere1->modelMatrix = translate(glm::identity<mat4>(), vec3(-0.8333, sphereScale, -2.5));
+    sphere1->modelMatrix = scale(sphere1->modelMatrix, vec3(sphereScale, sphereScale, sphereScale));
+    
+    sphere2->modelMatrix = translate(glm::identity<mat4>(), vec3(0.8333, sphereScale, -2.5));
+    sphere2->modelMatrix = scale(sphere2->modelMatrix, vec3(sphereScale, sphereScale, sphereScale));
+    
+    sphere3->modelMatrix = translate(glm::identity<mat4>(), vec3(2.5, sphereScale, -2.5));
+    sphere3->modelMatrix = scale(sphere3->modelMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
     ground->modelMatrix = glm::identity<mat4>();
     
