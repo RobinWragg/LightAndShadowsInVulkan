@@ -7,7 +7,6 @@ code/assets/*.spv
 *.user
 *.tlog/
 *.log
-*.obj
 *.pdb
 *.idb
 *.ilk

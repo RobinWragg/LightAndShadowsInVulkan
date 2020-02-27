@@ -31,8 +31,8 @@ void main() {
   
   // Transform the normal to world space
   mat3 normalMatrix = mat3(pushConstant.model);
-  normalMatrix = transpose(inverse(normalMatrix)); // TODO: Learn why this works. Inverting and transposing the matrix is required to handle scaled normals correctly, but I don't understand how it works at this time.
-  vertNormalInWorld = normalize(normalMatrix * vertNormalInMesh);
+  normalMatrix = transpose(inverse(normalMatrix));
+  vertNormalInWorld = normalMatrix * vertNormalInMesh;
   
   lightPosInWorld = (inverse(lightViewMatrix.value) * vec4(0, 0, 0, 1)).xyz;
 }

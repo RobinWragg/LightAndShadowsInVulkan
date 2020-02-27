@@ -1,7 +1,7 @@
 #version 450
 
 layout(location = 0) in vec3 vertPosInWorld;
-layout(location = 1) in vec3 vertNormalInWorld;
+layout(location = 1) in vec3 interpVertNormalInWorld;
 layout(location = 2) in vec3 lightPosInWorld;
 
 layout(location = 0) out vec4 outColor;
@@ -59,6 +59,9 @@ float getShadowFactor(vec3 posInWorld) {
 }
 
 void main() {
+  // Interpolation can cause normals to be non-unit length, so we re-normalise them here
+  vec3 vertNormalInWorld = normalize(interpVertNormalInWorld);
+  
   const vec3 vertToLightVector = lightPosInWorld - vertPosInWorld;
   
   float lightNormalDot = dot(vertNormalInWorld, normalize(vertToLightVector));

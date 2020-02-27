@@ -6,6 +6,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
+
 namespace scene {
   
   VkPipelineLayout pipelineLayout    = VK_NULL_HANDLE;
@@ -37,12 +40,13 @@ namespace scene {
   VkFramebuffer shadowMapFramebuffer;
   VkRenderPass shadowMapRenderPass;
   
-  DrawCall *pyramid     = nullptr;
   DrawCall *ground      = nullptr;
   DrawCall *sphere0     = nullptr;
   DrawCall *sphere1     = nullptr;
   DrawCall *sphere2     = nullptr;
   DrawCall *sphere3     = nullptr;
+  DrawCall *aeroplane   = nullptr;
+  DrawCall *frog        = nullptr;
   DrawCall *lightSource = nullptr;
   
   void addRingVertices(vec3 translation, int sideCount, float height, float btmRadius, float topRadius, vector<vec3> *verts) {
@@ -158,7 +162,7 @@ namespace scene {
   }
   
   vector<vec3> createGroundVertices() {
-    const float halfWidth = 4;
+    const float halfWidth = 6;
     const float height = 0.1;
     
     vector<vec3> vertices = {
@@ -180,8 +184,79 @@ namespace scene {
     
     return vertices;
   }
+  
+  DrawCall * newDrawCallFromObjFile(const char *filePath) {
+    vector<vec3> vertices;
+    vector<vec3> normals;
+    
+    tinyobj::attrib_t attributes;
+    vector<tinyobj::shape_t> shapes;
+    vector<tinyobj::material_t> materials;
+    string warning;
+    string error;
+    bool ret = tinyobj::LoadObj(&attributes, &shapes, &materials, &warning, &error, filePath);
+    printf("OBJ file errors: %s\n", error.c_str());
+    printf("OBJ file warnings: %s\n", warning.c_str());
+    SDL_assert_release(ret);
+    
+    // For each shape
+    for (uint32_t s = 0; s < shapes.size(); s++) {
+      uint32_t indexOffset = 0;
+      
+      // For each face
+      for (uint32_t faceIndex = 0; faceIndex < shapes[s].mesh.num_face_vertices.size(); faceIndex++) {
+        int faceVertCount = shapes[s].mesh.num_face_vertices[faceIndex];
+        SDL_assert_release(faceVertCount == 3);
+        
+        // For each vertex
+        for (uint32_t vertIndex = 0; vertIndex < faceVertCount; vertIndex++) {
+          tinyobj::index_t idx = shapes[s].mesh.indices[indexOffset + vertIndex];
+          
+          vec3 vertex = vec3(
+            attributes.vertices[3*idx.vertex_index],
+            attributes.vertices[3*idx.vertex_index+1],
+            attributes.vertices[3*idx.vertex_index+2]
+            );
+          vertices.push_back(vertex);
+          
+          vec3 normal = vec3(
+            attributes.normals[3*idx.normal_index],
+            attributes.normals[3*idx.normal_index+1],
+            attributes.normals[3*idx.normal_index+2]
+            );
+          normals.push_back(normal);
+          
+          // vec2 texCoord = vec2(
+          //   attributes.texcoords[2*idx.texcoord_index],
+          //   attributes.texcoords[2*idx.texcoord_index+1]
+          //   );
+        }
+        
+        indexOffset += faceVertCount;
+      }
+    }
+    
+    // Convert to clockwise front faces
+    for (uint32_t i = 0; i < vertices.size(); i += 3) {
+      vec3 temp = vertices[i];
+      vertices[i] = vertices[i+1];
+      vertices[i+1] = temp;
+      
+      temp = normals[i];
+      normals[i] = normals[i+1];
+      normals[i+1] = temp;
+    }
+    
+    SDL_assert_release(vertices.size() == normals.size());
+    
+    return new DrawCall(vertices, normals);
+  }
 
   void init(ShadowMap *shadowMap_) {
+    
+    aeroplane = newDrawCallFromObjFile("aeroplane.obj");
+    frog = newDrawCallFromObjFile("frog.obj");
+    
     shadowMap = shadowMap_;
     
     initDescriptorSetsForPass(shadowMapPass);
@@ -219,14 +294,6 @@ namespace scene {
     presentationPass.cameraAngle.x = -0.858;
     presentationPass.cameraAngle.y = 0.698;
     
-    vector<vec3> pyramidVertices = {
-      {0, 0, 0}, {1, 0, 0}, {0, 1, 0},
-      {0, 0, 0}, {0, 0, 1}, {1, 0, 0},
-      {0, 0, 0}, {0, 1, 0}, {0, 0, 1},
-      {1, 0, 0}, {0, 0, 1}, {0, 1, 0},
-    };
-    
-    pyramid = new DrawCall(pyramidVertices);
     ground = new DrawCall(createGroundVertices());
     sphere0 = newSphereDrawCall(2, true);
     sphere1 = newSphereDrawCall(3, true);
@@ -255,14 +322,14 @@ namespace scene {
     presentationPass.viewMatrix = translate(presentationPass.viewMatrix, -presentationPass.cameraPos);
   }
   
-  static void updateShadowMapViewMatrix(float deltaTime) {
+  static void updateShadowMapViewMatrix() {
     
     // Camera/light positioning settings
-    const float lateralDistanceFromOrigin = 7;
-    const float minHeight = 2;
-    const float maxHeight = 5;
-    const float heightChangeSpeed = 1;
-    const float lateralAngle = 2.5 + getTime()*0.4;
+    const float lateralDistanceFromOrigin = 9;
+    const float minHeight = 4;
+    const float maxHeight = 20;
+    const float heightChangeSpeed = 0.4;
+    const float lateralAngle = 2.5 + getTime()*0.5;
     
     float currentHeight = minHeight + (sinf(getTime() * heightChangeSpeed) + 1) * 0.5 * (maxHeight - minHeight);
     
@@ -287,32 +354,41 @@ namespace scene {
   }
   
   static void addDrawCallsToCommandBuffer(VkCommandBuffer cmdBuffer) {
-    pyramid->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere2->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere3->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
     ground->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
   
   void update(float deltaTime) {
     updatePresentationViewMatrix(deltaTime);
-    updateShadowMapViewMatrix(deltaTime);
-    
-    pyramid->modelMatrix = translate(glm::identity<mat4>(), vec3(1, 0, 2));
+    updateShadowMapViewMatrix();
     
     float sphereScale = 0.7;
-    sphere0->modelMatrix = translate(glm::identity<mat4>(), vec3(-2.5, sphereScale, -2.5));
+    sphere0->modelMatrix = translate(glm::identity<mat4>(), vec3(-2.5, sphereScale, -3.5));
     sphere0->modelMatrix = scale(sphere0->modelMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
-    sphere1->modelMatrix = translate(glm::identity<mat4>(), vec3(-0.8333, sphereScale, -2.5));
+    sphere1->modelMatrix = translate(glm::identity<mat4>(), vec3(-0.8333, sphereScale, -3.5));
     sphere1->modelMatrix = scale(sphere1->modelMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
-    sphere2->modelMatrix = translate(glm::identity<mat4>(), vec3(0.8333, sphereScale, -2.5));
+    sphere2->modelMatrix = translate(glm::identity<mat4>(), vec3(0.8333, sphereScale, -3.5));
     sphere2->modelMatrix = scale(sphere2->modelMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
-    sphere3->modelMatrix = translate(glm::identity<mat4>(), vec3(2.5, sphereScale, -2.5));
+    sphere3->modelMatrix = translate(glm::identity<mat4>(), vec3(2.5, sphereScale, -3.5));
     sphere3->modelMatrix = scale(sphere3->modelMatrix, vec3(sphereScale, sphereScale, sphereScale));
+    
+    float aeroplaneScale = 0.6;
+    aeroplane->modelMatrix = translate(glm::identity<mat4>(), vec3(0, 4, 0));
+    aeroplane->modelMatrix = scale(aeroplane->modelMatrix, vec3(aeroplaneScale, aeroplaneScale, aeroplaneScale));
+    aeroplane->modelMatrix = rotate(aeroplane->modelMatrix, 1.5f, vec3(-0.3, 1, 0));
+    
+    float frogScale = 1;
+    frog->modelMatrix = translate(glm::identity<mat4>(), vec3(2, 0.35, -1.5));
+    frog->modelMatrix = scale(frog->modelMatrix, vec3(frogScale, frogScale, frogScale));
+    frog->modelMatrix = rotate(frog->modelMatrix, -0.1f, vec3(1, 0, 0));
     
     ground->modelMatrix = glm::identity<mat4>();
     

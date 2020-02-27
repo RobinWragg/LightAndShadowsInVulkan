@@ -34,6 +34,8 @@ void DrawCall::initCommon(const vector<vec3> &positions, const vector<vec3> &nor
   gfx::createVec3Buffer(normals, &normalBuffer, &normalBufferMemory);
   
   modelMatrix = glm::identity<mat4>();
+  
+  printf("Created draw call with %li vertices\n", positions.size());
 }
 
 void DrawCall::addToCmdBuffer(VkCommandBuffer cmdBuffer, VkPipelineLayout layout) {

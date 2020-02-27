@@ -518,6 +518,7 @@
 				HEADER_SEARCH_PATHS = (
 					../../libs/stb_image,
 					"../../libs/glm-0.9.9.6",
+					../../libs/tiny_obj_loader,
 				);
 				INFOPLIST_FILE = LightAndShadow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -547,6 +548,7 @@
 				HEADER_SEARCH_PATHS = (
 					../../libs/stb_image,
 					"../../libs/glm-0.9.9.6",
+					../../libs/tiny_obj_loader,
 				);
 				INFOPLIST_FILE = LightAndShadow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -576,6 +578,7 @@
 				HEADER_SEARCH_PATHS = (
 					../../libs/stb_image,
 					"../../libs/glm-0.9.9.6",
+					../../libs/tiny_obj_loader,
 				);
 				INFOPLIST_FILE = LightAndShadow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -605,6 +608,7 @@
 				HEADER_SEARCH_PATHS = (
 					../../libs/stb_image,
 					"../../libs/glm-0.9.9.6",
+					../../libs/tiny_obj_loader,
 				);
 				INFOPLIST_FILE = LightAndShadow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
