@@ -66,7 +66,7 @@ void renderNextFrame(float deltaTime) {
   
   gfx::beginCommandBuffer(frame->cmdBuffer);
   
-  scene::performShadowMapRenderPass(frame->cmdBuffer);
+  scene::performShadowMapRenderPasses(frame->cmdBuffer);
   
   auto extent = gfx::getSurfaceExtent();
   vec3 clearColor = {0.5, 0.7, 1};
@@ -124,10 +124,11 @@ int main(int argc, char* argv[]) {
   gfx::createCoreHandles(window);
   createSemaphores();
   
-  ShadowMap shadowMap(SHADOWMAP_RESOLUTION, SHADOWMAP_RESOLUTION);
+  vector<ShadowMap> shadowMaps;
+  for (int i = 0; i < 6; i++) shadowMaps.push_back(ShadowMap(SHADOWMAP_RESOLUTION, SHADOWMAP_RESOLUTION));
   
-  scene::init(&shadowMap);
-  shadowMapViewer::init(&shadowMap);
+  scene::init(&shadowMaps);
+  shadowMapViewer::init(&shadowMaps);
   
   bool running = true;
   

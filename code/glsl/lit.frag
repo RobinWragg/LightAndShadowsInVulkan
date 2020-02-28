@@ -6,24 +6,21 @@ layout(location = 2) in vec3 lightPosInWorld;
 
 layout(location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 0) uniform LightViewMatrix {
-  mat4 value;
-} lightViewMatrix;
+layout(set = 0, binding = 0) uniform LightMatrices {
+  mat4 view;
+  mat4 proj;
+} lightMatrices;
 
-layout(set = 1, binding = 0) uniform LightProjMatrix {
-  mat4 value;
-} lightProjMatrix;
-
-layout(set = 4, binding = 0) uniform sampler2D shadowMap;
+layout(set = 2, binding = 0) uniform sampler2D shadowMap;
 
 // Returns the degree to which a world position is shadowed.
 // 0 for no shadow, 1 for completely shadowed.
 float getShadowFactor(vec3 posInWorld) {
-  vec3 posInLightView = (lightViewMatrix.value * vec4(posInWorld, 1)).xyz;
+  vec3 posInLightView = (lightMatrices.view * vec4(posInWorld, 1)).xyz;
   
   float texelSize = 1.0 / textureSize(shadowMap, 0).x;
   
-  const vec4 posInLightProj = lightProjMatrix.value * vec4(posInLightView, 1);
+  const vec4 posInLightProj = lightMatrices.proj * vec4(posInLightView, 1);
   
   // This is the perspective division that transforms projection space into normalised device space.
   const vec3 normalisedDevicePos = posInLightProj.xyz / posInLightProj.w;

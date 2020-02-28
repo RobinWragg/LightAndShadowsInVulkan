@@ -3,9 +3,9 @@
 #include "ShadowMap.h"
 
 namespace scene {
-  void init(ShadowMap *shadowMap);
+  void init(vector<ShadowMap> *shadowMaps);
   void update(float deltaTime);
-  void performShadowMapRenderPass(VkCommandBuffer cmdBuffer);
+  void performShadowMapRenderPasses(VkCommandBuffer cmdBuffer);
   void render(VkCommandBuffer cmdBuffer);
   VkImageView getShadowMapView();
 }

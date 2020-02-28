@@ -22,22 +22,20 @@ namespace scene {
     vec3 cameraPos;
     vec2 cameraAngle;
     
-    mat4 viewMatrix;
-    mat4 projectionMatrix;
+    struct {
+      mat4 view;
+      mat4 proj;
+    } matrices;
     
-    VkBuffer              viewMatrixBuffer        = VK_NULL_HANDLE;
-    VkDeviceMemory        viewMatrixBufferMemory  = VK_NULL_HANDLE;
-    VkDescriptorSet       viewMatrixDescSet       = VK_NULL_HANDLE;
-    VkDescriptorSetLayout viewMatrixDescSetLayout = VK_NULL_HANDLE;
+    VkBuffer              matricesBuffer        = VK_NULL_HANDLE;
+    VkDeviceMemory        matricesBufferMemory  = VK_NULL_HANDLE;
+    VkDescriptorSet       matricesDescSet       = VK_NULL_HANDLE;
+    VkDescriptorSetLayout matricesDescSetLayout = VK_NULL_HANDLE;
     
-    VkBuffer              projectionMatrixBuffer        = VK_NULL_HANDLE;
-    VkDeviceMemory        projectionMatrixBufferMemory  = VK_NULL_HANDLE;
-    VkDescriptorSet       projectionMatrixDescSet       = VK_NULL_HANDLE;
-    VkDescriptorSetLayout projectionMatrixDescSetLayout = VK_NULL_HANDLE;
   } shadowMapPass, presentationPass;
   
-  ShadowMap *shadowMap;
-  VkFramebuffer shadowMapFramebuffer;
+  vector<ShadowMap> *shadowMaps;
+  vector<VkFramebuffer> shadowMapFramebuffers;
   VkRenderPass shadowMapRenderPass;
   
   DrawCall *ground      = nullptr;
@@ -135,22 +133,24 @@ namespace scene {
   }
   
   void createShadowMapResources() {
-    createShadowMapRenderPass(shadowMap->format);
-    shadowMapFramebuffer = gfx::createFramebuffer(shadowMapRenderPass, {shadowMap->imageView, shadowMap->depthImageView}, shadowMap->width, shadowMap->height);
+    createShadowMapRenderPass((*shadowMaps)[0].format);
+    
+    shadowMapFramebuffers.resize(shadowMaps->size());
+    for (int i = 0; i < shadowMaps->size(); i++) {
+      ShadowMap &shadowMap = (*shadowMaps)[i];
+      shadowMapFramebuffers[i] = gfx::createFramebuffer(shadowMapRenderPass, {shadowMap.imageView, shadowMap.depthImageView}, shadowMap.width, shadowMap.height);
+    }
     
     uint32_t vertexAttributeCount = 2;
     VkExtent2D extent;
-    extent.width = shadowMap->width;
-    extent.height = shadowMap->height;
+    extent.width = (*shadowMaps)[0].width;
+    extent.height = (*shadowMaps)[0].height;
     shadowMapPipeline = gfx::createPipeline(pipelineLayout, extent, shadowMapRenderPass, VK_CULL_MODE_FRONT_BIT, vertexAttributeCount, "shadowMap.vert.spv", "shadowMap.frag.spv");
   }
   
   void initDescriptorSetsForPass(Pass &pass) {
-    gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(mat4), &pass.viewMatrixBuffer, &pass.viewMatrixBufferMemory);
-    gfx::createDescriptorSet(pass.viewMatrixBuffer, &pass.viewMatrixDescSet, &pass.viewMatrixDescSetLayout);
-    
-    gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(mat4), &pass.projectionMatrixBuffer, &pass.projectionMatrixBufferMemory);
-    gfx::createDescriptorSet(pass.projectionMatrixBuffer, &pass.projectionMatrixDescSet, &pass.projectionMatrixDescSetLayout);
+    gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(pass.matrices), &pass.matricesBuffer, &pass.matricesBufferMemory);
+    gfx::createDescriptorSet(pass.matricesBuffer, &pass.matricesDescSet, &pass.matricesDescSetLayout);    
   }
   
   static mat4 createProjectionMatrix(uint32_t width, uint32_t height, float fieldOfView) {
@@ -252,29 +252,24 @@ namespace scene {
     return new DrawCall(vertices, normals);
   }
 
-  void init(ShadowMap *shadowMap_) {
+  void init(vector<ShadowMap> *shadowMaps_) {
+    shadowMaps = shadowMaps_;
     
     aeroplane = newDrawCallFromObjFile("aeroplane.obj");
     frog = newDrawCallFromObjFile("frog.obj");
-    
-    shadowMap = shadowMap_;
     
     initDescriptorSetsForPass(shadowMapPass);
     initDescriptorSetsForPass(presentationPass);
     
     vector<VkDescriptorSetLayout> descriptorSetLayouts = {
-      shadowMapPass.viewMatrixDescSetLayout,
-      shadowMapPass.projectionMatrixDescSetLayout,
-      presentationPass.viewMatrixDescSetLayout,
-      presentationPass.projectionMatrixDescSetLayout,
-      shadowMap->samplerDescriptorSetLayout
+      shadowMapPass.matricesDescSetLayout,
+      presentationPass.matricesDescSetLayout,
+      (*shadowMaps)[0].samplerDescriptorSetLayout
     };
     descriptorSets = {
-      shadowMapPass.viewMatrixDescSet,
-      shadowMapPass.projectionMatrixDescSet,
-      presentationPass.viewMatrixDescSet,
-      presentationPass.projectionMatrixDescSet,
-      shadowMap->samplerDescriptorSet
+      shadowMapPass.matricesDescSet,
+      presentationPass.matricesDescSet,
+      (*shadowMaps)[0].samplerDescriptorSet
     };
     pipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(mat4));
     uint32_t vertexAttributeCount = 2;
@@ -284,8 +279,8 @@ namespace scene {
     createShadowMapResources();
     
     VkExtent2D extent = gfx::getSurfaceExtent();
-    presentationPass.projectionMatrix = createProjectionMatrix(extent.width, extent.height, 0.8);
-    shadowMapPass.projectionMatrix = createProjectionMatrix(shadowMap->width, shadowMap->height, 2);
+    presentationPass.matrices.proj = createProjectionMatrix(extent.width, extent.height, 0.8);
+    shadowMapPass.matrices.proj = createProjectionMatrix((*shadowMaps)[0].width, (*shadowMaps)[0].height, 2);
     
     presentationPass.cameraPos.x = 3.388;
     presentationPass.cameraPos.y = 2;
@@ -314,12 +309,12 @@ namespace scene {
     presentationPass.cameraPos.x += lateralMovement.x;
     presentationPass.cameraPos.z -= lateralMovement.y;
     
-    presentationPass.viewMatrix = glm::identity<mat4>();
+    presentationPass.matrices.view = glm::identity<mat4>();
     
     // view transformation
-    presentationPass.viewMatrix = rotate(presentationPass.viewMatrix, presentationPass.cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
-    presentationPass.viewMatrix = rotate(presentationPass.viewMatrix, presentationPass.cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
-    presentationPass.viewMatrix = translate(presentationPass.viewMatrix, -presentationPass.cameraPos);
+    presentationPass.matrices.view = rotate(presentationPass.matrices.view, presentationPass.cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
+    presentationPass.matrices.view = rotate(presentationPass.matrices.view, presentationPass.cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
+    presentationPass.matrices.view = translate(presentationPass.matrices.view, -presentationPass.cameraPos);
   }
   
   static void updateShadowMapViewMatrix() {
@@ -348,9 +343,9 @@ namespace scene {
     shadowMapPass.cameraAngle.y = asinf(shadowMapPass.cameraPos.y / length(shadowMapPass.cameraPos));
     
     // Set the view matrix according to cameraPos and cameraAngle
-    shadowMapPass.viewMatrix = rotate(glm::identity<mat4>(), shadowMapPass.cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
-    shadowMapPass.viewMatrix = rotate(shadowMapPass.viewMatrix, shadowMapPass.cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
-    shadowMapPass.viewMatrix = translate(shadowMapPass.viewMatrix, -shadowMapPass.cameraPos);
+    shadowMapPass.matrices.view = rotate(glm::identity<mat4>(), shadowMapPass.cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
+    shadowMapPass.matrices.view = rotate(shadowMapPass.matrices.view, shadowMapPass.cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
+    shadowMapPass.matrices.view = translate(shadowMapPass.matrices.view, -shadowMapPass.cameraPos);
   }
   
   static void addDrawCallsToCommandBuffer(VkCommandBuffer cmdBuffer) {
@@ -394,7 +389,7 @@ namespace scene {
     
     ground->modelMatrix = glm::identity<mat4>();
     
-    vec4 lightPos4 = inverse(shadowMapPass.viewMatrix) * vec4(0, 0, 0, 1);
+    vec4 lightPos4 = inverse(shadowMapPass.matrices.view) * vec4(0, 0, 0, 1);
     vec3 lightPos = vec3(lightPos4.x, lightPos4.y, lightPos4.z);
     lightSource->modelMatrix = translate(glm::identity<mat4>(), lightPos);
     lightSource->modelMatrix = scale(lightSource->modelMatrix, vec3(0.1, 0.1, 0.1));
@@ -402,26 +397,28 @@ namespace scene {
   
   static void bindDescriptorSets(VkCommandBuffer cmdBuffer) {
     // Update uniform buffers
-    gfx::setBufferMemory(shadowMapPass.viewMatrixBufferMemory, sizeof(shadowMapPass.viewMatrix), &shadowMapPass.viewMatrix);
-    gfx::setBufferMemory(shadowMapPass.projectionMatrixBufferMemory, sizeof(shadowMapPass.projectionMatrix), &shadowMapPass.projectionMatrix);
-    gfx::setBufferMemory(presentationPass.viewMatrixBufferMemory, sizeof(presentationPass.viewMatrix), &presentationPass.viewMatrix);
-    gfx::setBufferMemory(presentationPass.projectionMatrixBufferMemory, sizeof(presentationPass.projectionMatrix), &presentationPass.projectionMatrix);
+    gfx::setBufferMemory(shadowMapPass.matricesBufferMemory, sizeof(shadowMapPass.matrices), &shadowMapPass.matrices);
+    gfx::setBufferMemory(presentationPass.matricesBufferMemory, sizeof(presentationPass.matrices), &presentationPass.matrices);
     
     // Bind
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, (int)descriptorSets.size(), descriptorSets.data(), 0, nullptr);
   }
   
-  void performShadowMapRenderPass(VkCommandBuffer cmdBuffer) {
+  void performShadowMapRenderPasses(VkCommandBuffer cmdBuffer) {
     // This clear color must be higher than all rendered distances. The INFINITY macro cannot be used as it causes buggy rasterisation behaviour; GLSL doesn't officially support the IEEE infinity constant.
     vec3 clearColor = {1000, 1000, 1000};
-    gfx::cmdBeginRenderPass(shadowMapRenderPass, shadowMap->width, shadowMap->height, clearColor, shadowMapFramebuffer, cmdBuffer);
     
-    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowMapPipeline);
-    
-    bindDescriptorSets(cmdBuffer);
-    addDrawCallsToCommandBuffer(cmdBuffer);
-    
-    vkCmdEndRenderPass(cmdBuffer);
+    for (int i = 0; i < SHADOWMAP_COUNT; i++) {
+      ShadowMap &shadowMap = (*shadowMaps)[i];
+      gfx::cmdBeginRenderPass(shadowMapRenderPass, shadowMap.width, shadowMap.height, clearColor, shadowMapFramebuffers[i], cmdBuffer);
+      
+      vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowMapPipeline);
+      
+      bindDescriptorSets(cmdBuffer);
+      addDrawCallsToCommandBuffer(cmdBuffer);
+      
+      vkCmdEndRenderPass(cmdBuffer);
+    }
   }
   
   void renderGeometry(VkCommandBuffer cmdBuffer) {

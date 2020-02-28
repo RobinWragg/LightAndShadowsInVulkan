@@ -3,6 +3,6 @@
 #include "ShadowMap.h"
 
 namespace shadowMapViewer {
-  void init(ShadowMap *shadowMap);
+  void init(vector<ShadowMap> *shadowMaps);
   void render(const gfx::SwapchainFrame *frame);
 }
