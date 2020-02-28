@@ -1,7 +1,6 @@
 #include "shadowMapViewer.h"
 #include "main.h"
 #include "graphics.h"
-#include "scene.h"
 
 namespace shadowMapViewer {
   VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;

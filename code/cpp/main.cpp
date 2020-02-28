@@ -12,8 +12,10 @@
 #include "input.h"
 #include "shadowMapViewer.h"
 #include "graphics.h"
-#include "scene.h"
 #include "ShadowMap.h"
+#include "presentation.h"
+#include "shadows.h"
+#include "geometry.h"
 
 double getTime() {
   static uint64_t startCount = SDL_GetPerformanceCounter();
@@ -45,6 +47,8 @@ vector<uint8_t> loadBinaryFile(const char *filename) {
   return bytes;
 }
 
+vector<ShadowMap> shadowMaps;
+
 VkSemaphore imageAvailableSemaphore  = VK_NULL_HANDLE;
 VkSemaphore renderCompletedSemaphore = VK_NULL_HANDLE;
 
@@ -52,12 +56,12 @@ void createSemaphores() {
   VkSemaphoreCreateInfo semaphoreInfo = {};
   semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
   vkCreateSemaphore(gfx::device, &semaphoreInfo, nullptr, &imageAvailableSemaphore);
-  //SDL_assert_release( == VK_SUCCESS);
   SDL_assert_release(vkCreateSemaphore(gfx::device, &semaphoreInfo, nullptr, &renderCompletedSemaphore) == VK_SUCCESS);
 }
 
 void renderNextFrame(float deltaTime) {
-  scene::update(deltaTime);
+  presentation::update(deltaTime);
+  shadows::update();
   
   gfx::SwapchainFrame *frame = gfx::getNextFrame(imageAvailableSemaphore);
   
@@ -66,12 +70,12 @@ void renderNextFrame(float deltaTime) {
   
   gfx::beginCommandBuffer(frame->cmdBuffer);
   
-  scene::performShadowMapRenderPasses(frame->cmdBuffer);
+  shadows::performRenderPasses(frame->cmdBuffer);
   
   auto extent = gfx::getSurfaceExtent();
   vec3 clearColor = {0.5, 0.7, 1};
   gfx::cmdBeginRenderPass(gfx::renderPass, extent.width, extent.height, clearColor, frame->framebuffer, frame->cmdBuffer);
-  scene::render(frame->cmdBuffer);
+  presentation::render(frame->cmdBuffer, &shadowMaps);
   shadowMapViewer::render(frame);
   vkCmdEndRenderPass(frame->cmdBuffer);
   
@@ -124,10 +128,11 @@ int main(int argc, char* argv[]) {
   gfx::createCoreHandles(window);
   createSemaphores();
   
-  vector<ShadowMap> shadowMaps;
   for (int i = 0; i < 6; i++) shadowMaps.push_back(ShadowMap(SHADOWMAP_RESOLUTION, SHADOWMAP_RESOLUTION));
   
-  scene::init(&shadowMaps);
+  geometry::init();
+  shadows::init(&shadowMaps);
+  presentation::init(shadowMaps[0].samplerDescriptorSetLayout);
   shadowMapViewer::init(&shadowMaps);
   
   bool running = true;

@@ -16,7 +16,8 @@ layout(set = 2, binding = 0) uniform sampler2D shadowMap;
 // Returns the degree to which a world position is shadowed.
 // 0 for no shadow, 1 for completely shadowed.
 float getShadowFactor(vec3 posInWorld) {
-  vec3 posInLightView = (lightMatrices.view * vec4(posInWorld, 1)).xyz;
+  vec3 viewOffsetTODO = vec3(0, 0, 0);
+  vec3 posInLightView = (lightMatrices.view * vec4(posInWorld, 1)).xyz + viewOffsetTODO;
   
   float texelSize = 1.0 / textureSize(shadowMap, 0).x;
   

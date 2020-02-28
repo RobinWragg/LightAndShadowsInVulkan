@@ -15,7 +15,8 @@ layout(push_constant) uniform PushConstant {
 } pushConstant;
 
 void main() {
-  vertPosInView = matrices.view * pushConstant.model * vec4(vertPos, 1.0);
+  vec4 viewOffsetTODO = vec4(0, 0, 0, 0);
+  vertPosInView = matrices.view * pushConstant.model * vec4(vertPos, 1.0) + viewOffsetTODO;
   gl_Position = matrices.proj * vertPosInView;
 }
 
