@@ -718,12 +718,16 @@ namespace gfx {
     VkPipelineColorBlendAttachmentState attachment = {};
     
     attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    attachment.blendEnable = VK_TRUE;
-
+    attachment.blendEnable = VK_FALSE;
+    
+    // If blendEnable were VK_TRUE, the below settings would perform standard alpha blending.
+    
+    // dstColor.rgb = (srcColor.rgb * srcColorBlendFactor) <colorBlendOp> (dstColor.rgb * dstColorBlendFactor);
     attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
     attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
     attachment.colorBlendOp = VK_BLEND_OP_ADD;
 
+    // dstColor.a = (srcColor.a * srcAlphaBlendFactor) <alphaBlendOp> (dstColor.a * dstAlphaBlendFactor);
     attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
     attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
     attachment.alphaBlendOp = VK_BLEND_OP_ADD;

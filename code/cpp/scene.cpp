@@ -381,14 +381,16 @@ namespace scene {
     sphere3->modelMatrix = scale(sphere3->modelMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
     float aeroplaneScale = 0.6;
-    aeroplane->modelMatrix = translate(glm::identity<mat4>(), vec3(0, 4, 0));
+    aeroplane->modelMatrix = translate(glm::identity<mat4>(), vec3(2, 1.6, 2));
     aeroplane->modelMatrix = scale(aeroplane->modelMatrix, vec3(aeroplaneScale, aeroplaneScale, aeroplaneScale));
-    aeroplane->modelMatrix = rotate(aeroplane->modelMatrix, 1.5f, vec3(-0.3, 1, 0));
+    aeroplane->modelMatrix = rotate(aeroplane->modelMatrix, 1.0f, vec3(0, 1, 0));
+    aeroplane->modelMatrix = rotate(aeroplane->modelMatrix, 0.035f, vec3(1, 0, 0));
     
     float frogScale = 1;
-    frog->modelMatrix = translate(glm::identity<mat4>(), vec3(2, 0.35, -1.5));
+    frog->modelMatrix = translate(glm::identity<mat4>(), vec3(2, 0.35, 4));
     frog->modelMatrix = scale(frog->modelMatrix, vec3(frogScale, frogScale, frogScale));
-    frog->modelMatrix = rotate(frog->modelMatrix, -0.1f, vec3(1, 0, 0));
+    frog->modelMatrix = rotate(frog->modelMatrix, -1.5f, vec3(0, 1, 0));
+    frog->modelMatrix = rotate(frog->modelMatrix, -0.1f, vec3(1, 0, 0)); // even out the frog's feet
     
     ground->modelMatrix = glm::identity<mat4>();
     
