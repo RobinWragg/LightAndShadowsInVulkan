@@ -1,5 +1,7 @@
 #include "DrawCall.h"
 
+VkDescriptorSetLayout DrawCall::worldMatrixDescSetLayout = VK_NULL_HANDLE;
+
 DrawCall::DrawCall(const vector<vec3> &positions) {
   vector<vec3> normals;
   
@@ -33,13 +35,17 @@ void DrawCall::initCommon(const vector<vec3> &positions, const vector<vec3> &nor
   gfx::createVec3Buffer(positions, &positionBuffer, &positionBufferMemory);
   gfx::createVec3Buffer(normals, &normalBuffer, &normalBufferMemory);
   
-  modelMatrix = glm::identity<mat4>();
+  worldMatrix = glm::identity<mat4>();
+  gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(worldMatrix), &worldMatrixBuffer, &worldMatrixBufferMemory);
+  gfx::createDescriptorSet(worldMatrixBuffer, &worldMatrixDescSet, &worldMatrixDescSetLayout);
   
   printf("Created draw call with %li vertices\n", positions.size());
 }
 
 void DrawCall::addToCmdBuffer(VkCommandBuffer cmdBuffer, VkPipelineLayout layout) {
-  vkCmdPushConstants(cmdBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(modelMatrix), &modelMatrix);
+  
+  gfx::setBufferMemory(worldMatrixBufferMemory, sizeof(worldMatrix), &worldMatrix);
+  vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &worldMatrixDescSet, 0, nullptr);
   
   const int bufferCount = 2;
   VkBuffer buffers[bufferCount] = {

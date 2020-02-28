@@ -776,11 +776,14 @@ namespace gfx {
     layoutInfo.pSetLayouts = descriptorSetLayouts;
     
     VkPushConstantRange pushConstRange = {};
-    pushConstRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    pushConstRange.offset = 0;
-    pushConstRange.size = pushConstantSize;
-    layoutInfo.pushConstantRangeCount = 1;
-    layoutInfo.pPushConstantRanges = &pushConstRange;
+    
+    if (pushConstantSize > 0) {
+      pushConstRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+      pushConstRange.offset = 0;
+      pushConstRange.size = pushConstantSize;
+      layoutInfo.pushConstantRangeCount = 1;
+      layoutInfo.pPushConstantRanges = &pushConstRange;
+    }
     
     VkPipelineLayout pipelineLayout;
     auto result = vkCreatePipelineLayout(device, &layoutInfo, nullptr, &pipelineLayout);

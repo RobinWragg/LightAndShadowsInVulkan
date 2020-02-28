@@ -164,31 +164,31 @@ namespace geometry {
     sphere3 = newSphereDrawCall(64, true);
     
     float sphereScale = 0.7;
-    sphere0->modelMatrix = translate(glm::identity<mat4>(), vec3(-2.5, sphereScale, -3.5));
-    sphere0->modelMatrix = scale(sphere0->modelMatrix, vec3(sphereScale, sphereScale, sphereScale));
+    sphere0->worldMatrix = translate(glm::identity<mat4>(), vec3(-2.5, sphereScale, -3.5));
+    sphere0->worldMatrix = scale(sphere0->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
-    sphere1->modelMatrix = translate(glm::identity<mat4>(), vec3(-0.8333, sphereScale, -3.5));
-    sphere1->modelMatrix = scale(sphere1->modelMatrix, vec3(sphereScale, sphereScale, sphereScale));
+    sphere1->worldMatrix = translate(glm::identity<mat4>(), vec3(-0.8333, sphereScale, -3.5));
+    sphere1->worldMatrix = scale(sphere1->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
-    sphere2->modelMatrix = translate(glm::identity<mat4>(), vec3(0.8333, sphereScale, -3.5));
-    sphere2->modelMatrix = scale(sphere2->modelMatrix, vec3(sphereScale, sphereScale, sphereScale));
+    sphere2->worldMatrix = translate(glm::identity<mat4>(), vec3(0.8333, sphereScale, -3.5));
+    sphere2->worldMatrix = scale(sphere2->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
-    sphere3->modelMatrix = translate(glm::identity<mat4>(), vec3(2.5, sphereScale, -3.5));
-    sphere3->modelMatrix = scale(sphere3->modelMatrix, vec3(sphereScale, sphereScale, sphereScale));
+    sphere3->worldMatrix = translate(glm::identity<mat4>(), vec3(2.5, sphereScale, -3.5));
+    sphere3->worldMatrix = scale(sphere3->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
     float aeroplaneScale = 0.6;
-    aeroplane->modelMatrix = translate(glm::identity<mat4>(), vec3(2, 1.6, 2));
-    aeroplane->modelMatrix = scale(aeroplane->modelMatrix, vec3(aeroplaneScale, aeroplaneScale, aeroplaneScale));
-    aeroplane->modelMatrix = rotate(aeroplane->modelMatrix, 1.0f, vec3(0, 1, 0));
-    aeroplane->modelMatrix = rotate(aeroplane->modelMatrix, 0.035f, vec3(1, 0, 0));
+    aeroplane->worldMatrix = translate(glm::identity<mat4>(), vec3(2, 1.6, 2));
+    aeroplane->worldMatrix = scale(aeroplane->worldMatrix, vec3(aeroplaneScale, aeroplaneScale, aeroplaneScale));
+    aeroplane->worldMatrix = rotate(aeroplane->worldMatrix, 1.0f, vec3(0, 1, 0));
+    aeroplane->worldMatrix = rotate(aeroplane->worldMatrix, 0.035f, vec3(1, 0, 0));
     
     float frogScale = 1;
-    frog->modelMatrix = translate(glm::identity<mat4>(), vec3(2, 0.35, 4));
-    frog->modelMatrix = scale(frog->modelMatrix, vec3(frogScale, frogScale, frogScale));
-    frog->modelMatrix = rotate(frog->modelMatrix, -1.5f, vec3(0, 1, 0));
-    frog->modelMatrix = rotate(frog->modelMatrix, -0.1f, vec3(1, 0, 0)); // even out the frog's feet
+    frog->worldMatrix = translate(glm::identity<mat4>(), vec3(2, 0.35, 4));
+    frog->worldMatrix = scale(frog->worldMatrix, vec3(frogScale, frogScale, frogScale));
+    frog->worldMatrix = rotate(frog->worldMatrix, -1.5f, vec3(0, 1, 0));
+    frog->worldMatrix = rotate(frog->worldMatrix, -0.1f, vec3(1, 0, 0)); // even out the frog's feet
     
-    ground->modelMatrix = glm::identity<mat4>();
+    ground->worldMatrix = glm::identity<mat4>();
   }
   
   void addGeometryToCommandBuffer(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {

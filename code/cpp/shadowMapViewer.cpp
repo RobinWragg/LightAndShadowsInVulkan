@@ -36,7 +36,7 @@ namespace shadowMapViewer {
     
     // Create pipeline
     VkDescriptorSetLayout descSetLayouts[] = {matrixDescriptorSetLayout, (*shadowMaps)[0].samplerDescriptorSetLayout};
-    pipelineLayout = gfx::createPipelineLayout(descSetLayouts, 2, sizeof(mat4));
+    pipelineLayout = gfx::createPipelineLayout(descSetLayouts, 2, 0);
     pipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, 1, "shadowMapViewer.vert.spv", "shadowMapViewer.frag.spv");
     
     gfx::createVec3Buffer(vertices, &vertexBuffer, &vertexBufferMemory);
@@ -65,9 +65,10 @@ namespace shadowMapViewer {
   void render(const gfx::SwapchainFrame *frame) {
     vkCmdBindPipeline(frame->cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     
-    for (int i = 0; i < SHADOWMAP_COUNT; i++) {
-      renderQuad(frame->cmdBuffer, i);
-    }
+    // for (int i = 0; i < SHADOWMAP_COUNT; i++) {
+    //   renderQuad(frame->cmdBuffer, i);
+    // }
+    renderQuad(frame->cmdBuffer, 0);
   }
 }
 

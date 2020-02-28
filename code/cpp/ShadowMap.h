@@ -27,7 +27,6 @@ public:
     depthImageView = gfx::createDepthImageAndView(width, height);
     
     sampler = gfx::createSampler();
-    
     gfx::createDescriptorSet(imageView, sampler, &samplerDescriptorSet, &samplerDescriptorSetLayout);
   }
 };

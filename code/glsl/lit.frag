@@ -6,12 +6,12 @@ layout(location = 2) in vec3 lightPosInWorld;
 
 layout(location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 0) uniform LightMatrices {
+layout(set = 1, binding = 0) uniform LightMatrices {
   mat4 view;
   mat4 proj;
 } lightMatrices;
 
-layout(set = 2, binding = 0) uniform sampler2D shadowMap;
+layout(set = 3, binding = 0) uniform sampler2D shadowMap;
 
 // Returns the degree to which a world position is shadowed.
 // 0 for no shadow, 1 for completely shadowed.

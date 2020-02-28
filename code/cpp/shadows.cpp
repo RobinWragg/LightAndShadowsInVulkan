@@ -73,7 +73,8 @@ namespace shadows {
       framebuffers[i] = gfx::createFramebuffer(renderPass, {shadowMap.imageView, shadowMap.depthImageView}, shadowMap.width, shadowMap.height);
     }
     
-    pipelineLayout = gfx::createPipelineLayout(&matricesDescSetLayout, 1, sizeof(mat4));
+    vector<VkDescriptorSetLayout> descSetLayouts = {matricesDescSetLayout, DrawCall::worldMatrixDescSetLayout};
+    pipelineLayout = gfx::createPipelineLayout(descSetLayouts.data(), (int)descSetLayouts.size(), 0);
     
     const uint32_t vertexAttributeCount = 2;
     VkExtent2D extent;
@@ -139,7 +140,7 @@ namespace shadows {
       vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
       
       auto updatedMatricesDescSet = getMatricesDescSet();
-      vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &updatedMatricesDescSet, 0, nullptr);
+      vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &updatedMatricesDescSet, 0, nullptr);
       
       geometry::addGeometryToCommandBuffer(cmdBuffer, pipelineLayout);
       
