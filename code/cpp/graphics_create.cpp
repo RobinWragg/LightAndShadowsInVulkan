@@ -343,7 +343,7 @@ namespace gfx {
     VkImage image;
     VkDeviceMemory imageMemory;
     
-    createImage(true, width, height, &image, &imageMemory);
+    createImage(VK_FORMAT_D32_SFLOAT, width, height, &image, &imageMemory);
 
     return createImageView(image, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT);
   }
@@ -560,7 +560,7 @@ namespace gfx {
     descriptorPool = createDescriptorPool(32);
   }
   
-  void createImage(bool forDepthTesting, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut) {
+  void createImage(VkFormat format, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut) {
     
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -568,17 +568,16 @@ namespace gfx {
     
     VkMemoryPropertyFlags memoryProperties;
     
+    imageInfo.format = format;
+    
     // Set format, usage, and memory properties.
-    if (forDepthTesting) {
-      imageInfo.format = VK_FORMAT_D32_SFLOAT;
+    if (imageInfo.format == VK_FORMAT_D32_SFLOAT) {
       imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
       
       // This flag appears to be inessential (on macOS at least), but is recommended.
       // Might be good for color images too.
       memoryProperties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
     } else {
-      imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-      
       imageInfo.usage = 0;
       imageInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT; // Enable data transfers to this image
       imageInfo.usage |= VK_IMAGE_USAGE_SAMPLED_BIT; // Enable shader usage via a sampler
@@ -605,7 +604,7 @@ namespace gfx {
   }
   
   void createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut) {
-    createImage(false, width, height, imageOut, memoryOut);
+    createImage(VK_FORMAT_R32G32B32A32_SFLOAT, width, height, imageOut, memoryOut);
   }
   
   VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask) {
@@ -676,7 +675,7 @@ namespace gfx {
       
       attribs[i].binding = i; // (*bindingsOut)[i]
       attribs[i].location = i;
-      attribs[i].format = VK_FORMAT_R32G32B32_SFLOAT;
+      attribs[i].format = VK_FORMAT_R32G32B32_SFLOAT; // vec3
       attribs[i].offset = 0;
     }
     

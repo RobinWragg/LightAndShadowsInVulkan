@@ -46,7 +46,6 @@ float getShadowFactor(vec3 posInWorld) {
       
       const vec2 texCoordWithOffset = centreTexCoord + vec2(x, y) * texelSize;
       
-      // Only the R value is used because the other components are used for debugging.
       const float lightTravelDistance = texture(shadowMap, texCoordWithOffset).r;
       
       if (posToLightPosDistance - lightTravelDistance > epsilon) {

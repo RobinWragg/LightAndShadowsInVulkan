@@ -22,7 +22,7 @@ public:
     width = w;
     height = h;
     
-    gfx::createColorImage(width, height, &image, &imageMemory);
+    gfx::createImage(format, width, height, &image, &imageMemory);
     imageView = gfx::createImageView(image, format, VK_IMAGE_ASPECT_COLOR_BIT);
     depthImageView = gfx::createDepthImageAndView(width, height);
     
