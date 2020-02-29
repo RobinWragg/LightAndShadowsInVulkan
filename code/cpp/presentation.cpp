@@ -43,9 +43,10 @@ namespace presentation {
     vector<VkDescriptorSetLayout> descriptorSetLayouts = {
       DrawCall::worldMatrixDescSetLayout,
       shadows::getMatricesDescSetLayout(),
-      matricesDescSetLayout,
-      shadowMapSamplerDescSetLayout
+      matricesDescSetLayout
     };
+    for (int i = 0; i < MAX_SHADOWMAP_COUNT; i++) descriptorSetLayouts.push_back(shadowMapSamplerDescSetLayout);
+      
     pipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), 0);
     uint32_t vertexAttributeCount = 2;
     litPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, vertexAttributeCount, "lit.vert.spv", "lit.frag.spv");
@@ -92,8 +93,10 @@ namespace presentation {
     
     // Bind
     VkDescriptorSet shadowsDescSet = shadows::getMatricesDescSet();
-    VkDescriptorSet sets[] = {shadowsDescSet, matricesDescSet, (*shadowMaps)[0].samplerDescriptorSet};
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 3, sets, 0, nullptr);
+    vector<VkDescriptorSet> sets = {shadowsDescSet, matricesDescSet};
+    for (int i = 0; i < MAX_SHADOWMAP_COUNT; i++) sets.push_back((*shadowMaps)[i].samplerDescriptorSet);
+    
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, (int)sets.size(), sets.data(), 0, nullptr);
   }
   
   void renderLightSource(VkCommandBuffer cmdBuffer) {

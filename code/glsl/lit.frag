@@ -11,7 +11,12 @@ layout(set = 1, binding = 0) uniform LightMatrices {
   mat4 proj;
 } lightMatrices;
 
-layout(set = 3, binding = 0) uniform sampler2D shadowMap;
+layout(set = 3, binding = 0) uniform sampler2D shadowMap0;
+layout(set = 4, binding = 0) uniform sampler2D shadowMap1;
+layout(set = 5, binding = 0) uniform sampler2D shadowMap2;
+layout(set = 6, binding = 0) uniform sampler2D shadowMap3;
+layout(set = 7, binding = 0) uniform sampler2D shadowMap4;
+layout(set = 8, binding = 0) uniform sampler2D shadowMap5;
 
 // Returns the degree to which a world position is shadowed.
 // 0 for no shadow, 1 for completely shadowed.
@@ -19,7 +24,7 @@ float getShadowFactor(vec3 posInWorld) {
   vec3 viewOffsetTODO = vec3(0, 0, 0);
   vec3 posInLightView = (lightMatrices.view * vec4(posInWorld, 1)).xyz + viewOffsetTODO;
   
-  float texelSize = 1.0 / textureSize(shadowMap, 0).x;
+  float texelSize = 1.0 / textureSize(shadowMap0, 0).x;
   
   const vec4 posInLightProj = lightMatrices.proj * vec4(posInLightView, 1);
   
@@ -44,7 +49,7 @@ float getShadowFactor(vec3 posInWorld) {
       
       const vec2 texCoordWithOffset = centreTexCoord + vec2(x, y) * texelSize;
       
-      const float lightTravelDistance = texture(shadowMap, texCoordWithOffset).r;
+      const float lightTravelDistance = texture(shadowMap0, texCoordWithOffset).r;
       
       if (posToLightPosDistance - lightTravelDistance > epsilon) {
         shadowSampleCount++;

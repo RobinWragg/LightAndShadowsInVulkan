@@ -65,10 +65,10 @@ namespace shadowMapViewer {
   void render(const gfx::SwapchainFrame *frame) {
     vkCmdBindPipeline(frame->cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     
-    // for (int i = 0; i < SHADOWMAP_COUNT; i++) {
-    //   renderQuad(frame->cmdBuffer, i);
-    // }
-    renderQuad(frame->cmdBuffer, 0);
+    for (int i = 0; i < shadowMapCount; i++) {
+      renderQuad(frame->cmdBuffer, i);
+    }
+    // renderQuad(frame->cmdBuffer, 0);
   }
 }
 

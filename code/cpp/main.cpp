@@ -17,6 +17,8 @@
 #include "shadows.h"
 #include "geometry.h"
 
+int shadowMapCount = 1;
+
 double getTime() {
   static uint64_t startCount = SDL_GetPerformanceCounter();
   return (SDL_GetPerformanceCounter() - startCount) / (double)SDL_GetPerformanceFrequency();

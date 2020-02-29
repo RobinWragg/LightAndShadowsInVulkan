@@ -14,9 +14,14 @@ layout(set = 1, binding = 0) uniform Matrices {
   mat4 proj;
 } matrices;
 
+layout(push_constant) uniform ViewOffset {
+  vec2 value;
+} viewOffset;
+
 void main() {
-  vec4 viewOffsetTODO = vec4(0, 0, 0, 0);
-  vertPosInView = matrices.view * drawCall.worldMatrix * vec4(vertPos, 1.0) + viewOffsetTODO;
+  vertPosInView = matrices.view * drawCall.worldMatrix * vec4(vertPos, 1.0);
+  vertPosInView.xy += viewOffset.value;
+  
   gl_Position = matrices.proj * vertPosInView;
 }
 

@@ -74,7 +74,7 @@ namespace shadows {
     }
     
     vector<VkDescriptorSetLayout> descSetLayouts = {matricesDescSetLayout, DrawCall::worldMatrixDescSetLayout};
-    pipelineLayout = gfx::createPipelineLayout(descSetLayouts.data(), (int)descSetLayouts.size(), 0);
+    pipelineLayout = gfx::createPipelineLayout(descSetLayouts.data(), (int)descSetLayouts.size(), sizeof(vec2));
     
     const uint32_t vertexAttributeCount = 2;
     VkExtent2D extent;
@@ -129,11 +129,21 @@ namespace shadows {
     return matricesDescSet;
   }
   
+  vector<vec2> getViewOffsets() {
+    vec2 unit(0, 1);
+    switch (shadowMapCount) {
+      case 1: return {vec2(0, 0)}; break;
+      case 3: return {unit, rotate(unit, float(M_TAU/3)), rotate(unit, float(2*M_TAU/3))}; break;
+      default: SDL_assert_release(false); return {}; break; // Unsupported shadowmap count!
+    };
+  }
+  
   void performRenderPasses(VkCommandBuffer cmdBuffer) {
     // This clear color must be higher than all rendered distances. The INFINITY macro cannot be used as it causes buggy rasterisation behaviour; GLSL doesn't officially support the IEEE infinity constant.
     vec3 clearColor = {1000, 1000, 1000};
+    auto viewOffsets = getViewOffsets();
     
-    for (int i = 0; i < SHADOWMAP_COUNT; i++) {
+    for (int i = 0; i < shadowMapCount; i++) {
       ShadowMap &shadowMap = (*shadowMaps)[i];
       gfx::cmdBeginRenderPass(renderPass, shadowMap.width, shadowMap.height, clearColor, framebuffers[i], cmdBuffer);
       
@@ -141,6 +151,8 @@ namespace shadows {
       
       auto updatedMatricesDescSet = getMatricesDescSet();
       vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &updatedMatricesDescSet, 0, nullptr);
+      
+      vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vec2), &viewOffsets[i]);
       
       geometry::addGeometryToCommandBuffer(cmdBuffer, pipelineLayout);
       
