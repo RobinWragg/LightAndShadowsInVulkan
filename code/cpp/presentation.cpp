@@ -97,7 +97,7 @@ namespace presentation {
   }
   
   static void setUniforms(VkCommandBuffer cmdBuffer, vector<ShadowMap> *shadowMaps) {
-    // Update uniform buffers
+    // Update matrices buffer
     gfx::setBufferMemory(matricesBufferMemory, sizeof(matrices), &matrices);
     
     // Update light view offset buffer

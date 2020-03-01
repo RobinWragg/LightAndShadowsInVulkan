@@ -12,7 +12,12 @@ layout(set = 1, binding = 0) uniform LightMatrices {
 } lightMatrices;
 
 layout(set = 3, binding = 0) uniform LightViewOffsets {
-  vec2 values[6];
+  vec2 value0;
+  vec2 value1;
+  vec2 value2;
+  vec2 value3;
+  vec2 value4;
+  vec2 value5;
 } lightViewOffsets;
 
 layout(push_constant) uniform Config {
@@ -38,11 +43,23 @@ float getShadowMapTexel(int index, vec2 texCoord) {
   return 0;
 }
 
+vec2 getLightViewOffset(int index) {
+  switch (index) {
+    case 0: return lightViewOffsets.value0;
+    case 1: return lightViewOffsets.value1;
+    case 2: return lightViewOffsets.value2;
+    case 3: return lightViewOffsets.value3;
+    case 4: return lightViewOffsets.value4;
+    case 5: return lightViewOffsets.value5;
+  };
+  return lightViewOffsets.value0;
+}
+
 // Returns the degree to which a world position is shadowed.
 // 0 for no shadow, 1 for completely shadowed.
 float getShadowFactorFromMap(vec3 posInWorld, int shadowMapIndex) {
   vec3 posInLightView = (lightMatrices.view * vec4(posInWorld, 1)).xyz;
-  posInLightView.xy += lightViewOffsets.values[shadowMapIndex];
+  posInLightView.xy += getLightViewOffset(shadowMapIndex);
   
   // All shadowmaps have the same dimensions, so we just get the size of shadowmap 0.
   float texelSize = 1.0 / textureSize(shadowMap0, 0).r;

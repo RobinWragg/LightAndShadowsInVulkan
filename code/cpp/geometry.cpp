@@ -10,6 +10,7 @@ namespace geometry {
   DrawCall *sphere1     = nullptr;
   DrawCall *sphere2     = nullptr;
   DrawCall *sphere3     = nullptr;
+  DrawCall *obelisk     = nullptr;
   DrawCall *aeroplane   = nullptr;
   DrawCall *frog        = nullptr;
   
@@ -80,25 +81,24 @@ namespace geometry {
     return new DrawCall(vertices, normals);
   }
   
-  vector<vec3> createGroundVertices() {
-    const float halfWidth = 6;
-    const float height = 0.1;
+  vector<vec3> createCuboidVertices(float width, float height, float yOffset) {
+    const float halfWidth = width / 2;
     
     vector<vec3> vertices = {
-      {-halfWidth, 0, -halfWidth}, {halfWidth, 0, -halfWidth}, {-halfWidth, 0, halfWidth},
-      {-halfWidth, 0, halfWidth}, {halfWidth, 0, -halfWidth}, {halfWidth, 0, halfWidth},
+      {-halfWidth, yOffset+height, -halfWidth}, {halfWidth, yOffset+height, -halfWidth}, {-halfWidth, yOffset+height, halfWidth},
+      {-halfWidth, yOffset+height, halfWidth}, {halfWidth, yOffset+height, -halfWidth}, {halfWidth, yOffset+height, halfWidth},
       
-      {-halfWidth, 0, -halfWidth}, {-halfWidth, -height, -halfWidth}, {halfWidth, 0, -halfWidth},
-      {-halfWidth, -height, -halfWidth}, {halfWidth, -height, -halfWidth}, {halfWidth, 0, -halfWidth},
+      {-halfWidth, yOffset+height, -halfWidth}, {-halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset+height, -halfWidth},
+      {-halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset+height, -halfWidth},
       
-      {-halfWidth, 0, -halfWidth}, {-halfWidth, 0, halfWidth}, {-halfWidth, -height, -halfWidth},
-      {-halfWidth, -height, -halfWidth}, {-halfWidth, 0, halfWidth}, {-halfWidth, -height, halfWidth},
+      {-halfWidth, yOffset+height, -halfWidth}, {-halfWidth, yOffset+height, halfWidth}, {-halfWidth, yOffset, -halfWidth},
+      {-halfWidth, yOffset, -halfWidth}, {-halfWidth, yOffset+height, halfWidth}, {-halfWidth, yOffset, halfWidth},
       
-      {-halfWidth, 0, halfWidth}, {halfWidth, 0, halfWidth}, {-halfWidth, -height, halfWidth},
-      {-halfWidth, -height, halfWidth}, {halfWidth, 0, halfWidth}, {halfWidth, -height, halfWidth},
+      {-halfWidth, yOffset+height, halfWidth}, {halfWidth, yOffset+height, halfWidth}, {-halfWidth, yOffset, halfWidth},
+      {-halfWidth, yOffset, halfWidth}, {halfWidth, yOffset+height, halfWidth}, {halfWidth, yOffset, halfWidth},
       
-      {halfWidth, 0, -halfWidth}, {halfWidth, -height, -halfWidth}, {halfWidth, 0, halfWidth},
-      {halfWidth, -height, -halfWidth}, {halfWidth, -height, halfWidth}, {halfWidth, 0, halfWidth},
+      {halfWidth, yOffset+height, -halfWidth}, {halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset+height, halfWidth},
+      {halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset, halfWidth}, {halfWidth, yOffset+height, halfWidth},
     };
     
     return vertices;
@@ -157,11 +157,12 @@ namespace geometry {
     aeroplane = newDrawCallFromObjFile("aeroplane.obj");
     frog = newDrawCallFromObjFile("frog.obj");
     
-    ground = new DrawCall(createGroundVertices());
+    ground = new DrawCall(createCuboidVertices(12, 0.1, -0.1));
     sphere0 = newSphereDrawCall(2, true);
     sphere1 = newSphereDrawCall(3, true);
     sphere2 = newSphereDrawCall(8, true);
     sphere3 = newSphereDrawCall(64, true);
+    obelisk = new DrawCall(createCuboidVertices(1, 5, 0));
     
     float sphereScale = 0.7;
     sphere0->worldMatrix = translate(glm::identity<mat4>(), vec3(-2.5, sphereScale, -3.5));
@@ -175,6 +176,8 @@ namespace geometry {
     
     sphere3->worldMatrix = translate(glm::identity<mat4>(), vec3(2.5, sphereScale, -3.5));
     sphere3->worldMatrix = scale(sphere3->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
+    
+    obelisk->worldMatrix = translate(glm::identity<mat4>(), vec3(5, 0, 5));
     
     float aeroplaneScale = 0.6;
     aeroplane->worldMatrix = translate(glm::identity<mat4>(), vec3(2, 1.6, 2));
@@ -196,6 +199,7 @@ namespace geometry {
     sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere2->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere3->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
     aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
     frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
     ground->addToCmdBuffer(cmdBuffer, pipelineLayout);
