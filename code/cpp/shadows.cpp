@@ -134,11 +134,22 @@ namespace shadows {
     
     if (shadowMapCount == 1) return {vec2(0, 0)};
     
-    float scale = 0.5;
-    vec2 unit(0, scale);
+    bool ringMode = false;
+    float radius = 0.5;
     
-    for (int i = 0; i < shadowMapCount; i++) {
-      offsets.push_back(rotate(unit, float(i/float(shadowMapCount) * M_TAU)));
+    if (ringMode) {
+      vec2 unit(0, radius);
+      
+      for (int i = 0; i < shadowMapCount; i++) {
+        offsets.push_back(rotate(unit, float(i/float(shadowMapCount) * M_TAU)));
+      }
+    } else {
+      // Spiral mode
+      for (int i = 0; i < shadowMapCount; i++) {
+        float originDistance = float(i+1)/shadowMapCount;
+        offsets.push_back(vec2(0, radius * originDistance));
+        offsets[i] = rotate(offsets[i], float(M_TAU*3.1 * (shadowMapCount-i)/shadowMapCount));
+      }
     }
     
     return offsets;
