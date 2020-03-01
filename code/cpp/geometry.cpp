@@ -5,14 +5,13 @@
 
 namespace geometry {
   
-  DrawCall *ground      = nullptr;
-  DrawCall *sphere0     = nullptr;
-  DrawCall *sphere1     = nullptr;
-  DrawCall *sphere2     = nullptr;
-  DrawCall *sphere3     = nullptr;
-  DrawCall *obelisk     = nullptr;
-  DrawCall *aeroplane   = nullptr;
-  DrawCall *frog        = nullptr;
+  DrawCall *ground    = nullptr;
+  DrawCall *sphere0   = nullptr;
+  DrawCall *sphere1   = nullptr;
+  DrawCall *sphere2   = nullptr;
+  DrawCall *sphere3   = nullptr;
+  DrawCall *aeroplane = nullptr;
+  DrawCall *frog      = nullptr;
   
   DrawCall * newDrawCallFromObjFile(const char *filePath) {
     vector<vec3> vertices;
@@ -162,7 +161,6 @@ namespace geometry {
     sphere1 = newSphereDrawCall(3, true);
     sphere2 = newSphereDrawCall(8, true);
     sphere3 = newSphereDrawCall(64, true);
-    obelisk = new DrawCall(createCuboidVertices(1, 5, 0));
     
     float sphereScale = 0.7;
     sphere0->worldMatrix = translate(glm::identity<mat4>(), vec3(-2.5, sphereScale, -3.5));
@@ -176,8 +174,6 @@ namespace geometry {
     
     sphere3->worldMatrix = translate(glm::identity<mat4>(), vec3(2.5, sphereScale, -3.5));
     sphere3->worldMatrix = scale(sphere3->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
-    
-    obelisk->worldMatrix = translate(glm::identity<mat4>(), vec3(5, 0, 5));
     
     float aeroplaneScale = 0.6;
     aeroplane->worldMatrix = translate(glm::identity<mat4>(), vec3(2, 1.6, 2));
@@ -199,7 +195,6 @@ namespace geometry {
     sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere2->addToCmdBuffer(cmdBuffer, pipelineLayout);
     sphere3->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
     aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
     frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
     ground->addToCmdBuffer(cmdBuffer, pipelineLayout);

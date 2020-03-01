@@ -132,24 +132,14 @@ namespace shadows {
   vector<vec2> getViewOffsets() {
     vector<vec2> offsets;
     
-    vec2 unit(0, 1);
-    switch (shadowMapCount) {
-      case 1: offsets = {vec2(0, 0)}; break;
-      case 3: offsets = {
-        unit, rotate(unit, float(M_TAU/3)), rotate(unit, float(2*M_TAU/3))
-      }; break;
-      case 6: offsets = {
-        unit, rotate(unit, float(M_TAU/3)), rotate(unit, float(2*M_TAU/3))
-      };
-      offsets.push_back(rotate(vec2(offsets[0] * 0.5f), float(M_TAU/6)));
-      offsets.push_back(rotate(vec2(offsets[1] * 0.5f), float(M_TAU/6)));
-      offsets.push_back(rotate(vec2(offsets[2] * 0.5f), float(M_TAU/6)));
-      break;
-      default: SDL_assert_release(false); offsets = {}; break; // Unsupported shadowmap count!
-    };
+    if (shadowMapCount == 1) return {vec2(0, 0)};
     
-    float scale = 0.05;
-    for (auto &offset : offsets) offset *= scale;
+    float scale = 0.5;
+    vec2 unit(0, scale);
+    
+    for (int i = 0; i < shadowMapCount; i++) {
+      offsets.push_back(rotate(unit, float(i/float(shadowMapCount) * M_TAU)));
+    }
     
     return offsets;
   }

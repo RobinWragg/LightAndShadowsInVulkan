@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
   gfx::createCoreHandles(window);
   createSemaphores();
   
-  for (int i = 0; i < 6; i++) shadowMaps.push_back(ShadowMap(SHADOWMAP_RESOLUTION, SHADOWMAP_RESOLUTION));
+  for (int i = 0; i < MAX_SHADOWMAP_COUNT; i++) shadowMaps.push_back(ShadowMap(SHADOWMAP_RESOLUTION, SHADOWMAP_RESOLUTION));
   
   geometry::init();
   shadows::init(&shadowMaps);
@@ -152,8 +152,7 @@ int main(int argc, char* argv[]) {
     }
     
     // temp
-    shadowMapCount = int(getTime()) % 2 == 0 ? 1 : 6;
-    // shadowMapCount = 3;
+    shadowMapCount = (int(getTime()) % MAX_SHADOWMAP_COUNT) + 1;
     
     SDL_Event event;
     input::handleMouseMotion(0, 0);

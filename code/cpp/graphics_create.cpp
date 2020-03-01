@@ -557,7 +557,7 @@ namespace gfx {
       SDL_assert_release(swapchainFrames[i].view != VK_NULL_HANDLE);
     }
     
-    descriptorPool = createDescriptorPool(32);
+    descriptorPool = createDescriptorPool(1024);
   }
   
   void createImage(VkFormat format, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut) {

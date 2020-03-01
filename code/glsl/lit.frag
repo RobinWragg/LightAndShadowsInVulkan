@@ -18,6 +18,16 @@ layout(set = 3, binding = 0) uniform LightViewOffsets {
   vec2 value3;
   vec2 value4;
   vec2 value5;
+  vec2 value6;
+  vec2 value7;
+  vec2 value8;
+  vec2 value9;
+  vec2 value10;
+  vec2 value11;
+  vec2 value12;
+  vec2 value13;
+  vec2 value14;
+  vec2 value15;
 } lightViewOffsets;
 
 layout(push_constant) uniform Config {
@@ -30,6 +40,16 @@ layout(set = 6, binding = 0) uniform sampler2D shadowMap2;
 layout(set = 7, binding = 0) uniform sampler2D shadowMap3;
 layout(set = 8, binding = 0) uniform sampler2D shadowMap4;
 layout(set = 9, binding = 0) uniform sampler2D shadowMap5;
+layout(set = 10, binding = 0) uniform sampler2D shadowMap6;
+layout(set = 11, binding = 0) uniform sampler2D shadowMap7;
+layout(set = 12, binding = 0) uniform sampler2D shadowMap8;
+layout(set = 13, binding = 0) uniform sampler2D shadowMap9;
+layout(set = 14, binding = 0) uniform sampler2D shadowMap10;
+layout(set = 15, binding = 0) uniform sampler2D shadowMap11;
+layout(set = 16, binding = 0) uniform sampler2D shadowMap12;
+layout(set = 17, binding = 0) uniform sampler2D shadowMap13;
+layout(set = 18, binding = 0) uniform sampler2D shadowMap14;
+layout(set = 19, binding = 0) uniform sampler2D shadowMap15;
 
 float getShadowMapTexel(int index, vec2 texCoord) {
   switch (index) {
@@ -39,6 +59,16 @@ float getShadowMapTexel(int index, vec2 texCoord) {
     case 3: return texture(shadowMap3, texCoord).r;
     case 4: return texture(shadowMap4, texCoord).r;
     case 5: return texture(shadowMap5, texCoord).r;
+    case 6: return texture(shadowMap6, texCoord).r;
+    case 7: return texture(shadowMap7, texCoord).r;
+    case 8: return texture(shadowMap8, texCoord).r;
+    case 9: return texture(shadowMap9, texCoord).r;
+    case 10: return texture(shadowMap10, texCoord).r;
+    case 11: return texture(shadowMap11, texCoord).r;
+    case 12: return texture(shadowMap12, texCoord).r;
+    case 13: return texture(shadowMap13, texCoord).r;
+    case 14: return texture(shadowMap14, texCoord).r;
+    case 15: return texture(shadowMap15, texCoord).r;
   };
   return 0;
 }
@@ -51,6 +81,16 @@ vec2 getLightViewOffset(int index) {
     case 3: return lightViewOffsets.value3;
     case 4: return lightViewOffsets.value4;
     case 5: return lightViewOffsets.value5;
+    case 6: return lightViewOffsets.value6;
+    case 7: return lightViewOffsets.value7;
+    case 8: return lightViewOffsets.value8;
+    case 9: return lightViewOffsets.value9;
+    case 10: return lightViewOffsets.value10;
+    case 11: return lightViewOffsets.value11;
+    case 12: return lightViewOffsets.value12;
+    case 13: return lightViewOffsets.value13;
+    case 14: return lightViewOffsets.value14;
+    case 15: return lightViewOffsets.value15;
   };
   return lightViewOffsets.value0;
 }
