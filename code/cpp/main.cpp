@@ -151,6 +151,10 @@ int main(int argc, char* argv[]) {
       previousTime = timeNow;
     }
     
+    // temp
+    shadowMapCount = int(getTime()) % 2 == 0 ? 1 : 6;
+    // shadowMapCount = 3;
+    
     SDL_Event event;
     input::handleMouseMotion(0, 0);
     while (SDL_PollEvent(&event)) {

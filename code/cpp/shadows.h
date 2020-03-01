@@ -7,6 +7,7 @@ namespace shadows {
   void update();
   VkDescriptorSetLayout getMatricesDescSetLayout();
   VkDescriptorSet getMatricesDescSet();
+  vector<vec2> getViewOffsets();
   void performRenderPasses(VkCommandBuffer cmdBuffer);
   vec3 getLightPos();
 }

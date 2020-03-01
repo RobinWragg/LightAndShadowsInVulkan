@@ -130,12 +130,28 @@ namespace shadows {
   }
   
   vector<vec2> getViewOffsets() {
+    vector<vec2> offsets;
+    
     vec2 unit(0, 1);
     switch (shadowMapCount) {
-      case 1: return {vec2(0, 0)}; break;
-      case 3: return {unit, rotate(unit, float(M_TAU/3)), rotate(unit, float(2*M_TAU/3))}; break;
-      default: SDL_assert_release(false); return {}; break; // Unsupported shadowmap count!
+      case 1: offsets = {vec2(0, 0)}; break;
+      case 3: offsets = {
+        unit, rotate(unit, float(M_TAU/3)), rotate(unit, float(2*M_TAU/3))
+      }; break;
+      case 6: offsets = {
+        unit, rotate(unit, float(M_TAU/3)), rotate(unit, float(2*M_TAU/3))
+      };
+      offsets.push_back(rotate(vec2(offsets[0] * 0.5f), float(M_TAU/6)));
+      offsets.push_back(rotate(vec2(offsets[1] * 0.5f), float(M_TAU/6)));
+      offsets.push_back(rotate(vec2(offsets[2] * 0.5f), float(M_TAU/6)));
+      break;
+      default: SDL_assert_release(false); offsets = {}; break; // Unsupported shadowmap count!
     };
+    
+    float scale = 0.05;
+    for (auto &offset : offsets) offset *= scale;
+    
+    return offsets;
   }
   
   void performRenderPasses(VkCommandBuffer cmdBuffer) {
@@ -143,18 +159,22 @@ namespace shadows {
     vec3 clearColor = {1000, 1000, 1000};
     auto viewOffsets = getViewOffsets();
     
-    for (int i = 0; i < shadowMapCount; i++) {
+    // Execute a renderpass for all possible shadowmaps even if they're not used, in order to convert their layouts.
+    for (int i = 0; i < MAX_SHADOWMAP_COUNT; i++) {
       ShadowMap &shadowMap = (*shadowMaps)[i];
       gfx::cmdBeginRenderPass(renderPass, shadowMap.width, shadowMap.height, clearColor, framebuffers[i], cmdBuffer);
       
-      vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-      
-      auto updatedMatricesDescSet = getMatricesDescSet();
-      vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &updatedMatricesDescSet, 0, nullptr);
-      
-      vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vec2), &viewOffsets[i]);
-      
-      geometry::addGeometryToCommandBuffer(cmdBuffer, pipelineLayout);
+      // Only render the shadowmaps that are being used this frame
+      if (i < shadowMapCount) {
+        vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+        
+        auto updatedMatricesDescSet = getMatricesDescSet();
+        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &updatedMatricesDescSet, 0, nullptr);
+        
+        vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, sizeof(vec2), &viewOffsets[i]);
+        
+        geometry::addGeometryToCommandBuffer(cmdBuffer, pipelineLayout);
+      }
       
       vkCmdEndRenderPass(cmdBuffer);
     }

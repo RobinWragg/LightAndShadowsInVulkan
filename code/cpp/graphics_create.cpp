@@ -778,7 +778,7 @@ namespace gfx {
     VkPushConstantRange pushConstRange = {};
     
     if (pushConstantSize > 0) {
-      pushConstRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+      pushConstRange.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
       pushConstRange.offset = 0;
       pushConstRange.size = pushConstantSize;
       layoutInfo.pushConstantRangeCount = 1;

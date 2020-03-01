@@ -28,6 +28,11 @@ namespace presentation {
   VkDescriptorSet       matricesDescSet       = VK_NULL_HANDLE;
   VkDescriptorSetLayout matricesDescSetLayout = VK_NULL_HANDLE;
   
+  VkBuffer              lightViewOffsetsBuffer        = VK_NULL_HANDLE;
+  VkDeviceMemory        lightViewOffsetsBufferMemory  = VK_NULL_HANDLE;
+  VkDescriptorSet       lightViewOffsetsDescSet       = VK_NULL_HANDLE;
+  VkDescriptorSetLayout lightViewOffsetsDescSetLayout = VK_NULL_HANDLE;
+  
   static mat4 createProjectionMatrix(uint32_t width, uint32_t height, float fieldOfView) {
     float aspectRatio = width / (float)height;
     mat4 proj = perspective(fieldOfView, aspectRatio, 0.1f, 100.0f);
@@ -40,14 +45,18 @@ namespace presentation {
     gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(matrices), &matricesBuffer, &matricesBufferMemory);
     gfx::createDescriptorSet(matricesBuffer, &matricesDescSet, &matricesDescSetLayout);
     
+    gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(vec2) * MAX_SHADOWMAP_COUNT, &lightViewOffsetsBuffer, &lightViewOffsetsBufferMemory);
+    gfx::createDescriptorSet(lightViewOffsetsBuffer, &lightViewOffsetsDescSet, &lightViewOffsetsDescSetLayout);
+    
     vector<VkDescriptorSetLayout> descriptorSetLayouts = {
       DrawCall::worldMatrixDescSetLayout,
       shadows::getMatricesDescSetLayout(),
-      matricesDescSetLayout
+      matricesDescSetLayout,
+      lightViewOffsetsDescSetLayout
     };
     for (int i = 0; i < MAX_SHADOWMAP_COUNT; i++) descriptorSetLayouts.push_back(shadowMapSamplerDescSetLayout);
       
-    pipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), 0);
+    pipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(int32_t));
     uint32_t vertexAttributeCount = 2;
     litPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, vertexAttributeCount, "lit.vert.spv", "lit.frag.spv");
     unlitPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, vertexAttributeCount, "unlit.vert.spv", "unlit.frag.spv");
@@ -87,16 +96,22 @@ namespace presentation {
     updateViewMatrix(deltaTime);
   }
   
-  static void bindDescriptorSets(VkCommandBuffer cmdBuffer, vector<ShadowMap> *shadowMaps) {
+  static void setUniforms(VkCommandBuffer cmdBuffer, vector<ShadowMap> *shadowMaps) {
     // Update uniform buffers
     gfx::setBufferMemory(matricesBufferMemory, sizeof(matrices), &matrices);
     
+    // Update light view offset buffer
+    auto lightViewOffsets = shadows::getViewOffsets();
+    gfx::setBufferMemory(lightViewOffsetsBufferMemory, sizeof(lightViewOffsets[0]) * lightViewOffsets.size(), lightViewOffsets.data());
+    
     // Bind
-    VkDescriptorSet shadowsDescSet = shadows::getMatricesDescSet();
-    vector<VkDescriptorSet> sets = {shadowsDescSet, matricesDescSet};
+    VkDescriptorSet lightMatricesDescSet = shadows::getMatricesDescSet();
+    vector<VkDescriptorSet> sets = {lightMatricesDescSet, matricesDescSet, lightViewOffsetsDescSet};
     for (int i = 0; i < MAX_SHADOWMAP_COUNT; i++) sets.push_back((*shadowMaps)[i].samplerDescriptorSet);
     
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, (int)sets.size(), sets.data(), 0, nullptr);
+  
+    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, sizeof(int32_t), &shadowMapCount);
   }
   
   void renderLightSource(VkCommandBuffer cmdBuffer) {
@@ -109,7 +124,7 @@ namespace presentation {
   }
   
   void render(VkCommandBuffer cmdBuffer, vector<ShadowMap> *shadowMaps) {
-    bindDescriptorSets(cmdBuffer, shadowMaps);
+    setUniforms(cmdBuffer, shadowMaps);
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, litPipeline);
     geometry::addGeometryToCommandBuffer(cmdBuffer, pipelineLayout);
     renderLightSource(cmdBuffer);
