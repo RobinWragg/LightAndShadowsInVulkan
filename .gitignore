@@ -3,6 +3,7 @@
 xcuserdata/
 DerivedData/
 code/assets/*.spv
+windows/LightAndShadow/x64/
 .vs/
 *.user
 *.tlog/

@@ -1,6 +1,6 @@
 #pragma once
 
-#define SHADOWMAP_RESOLUTION 2048
+#define SHADOWMAP_RESOLUTION 4096
 #define MAX_SHADOWMAP_COUNT 16
 
 // Disable warnings for conversions from double to float. Doubles aren't used in this project; disabling these warnings just means I don't have to put an "f" after every float literal.
