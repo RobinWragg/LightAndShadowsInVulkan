@@ -20,31 +20,35 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\cpp\DrawCall.cpp" />
-    <ClCompile Include="..\..\..\cpp\graphics.cpp" />
-    <ClCompile Include="..\..\..\cpp\GraphicsFoundation.cpp" />
-    <ClCompile Include="..\..\..\cpp\GraphicsPipeline.cpp" />
+    <ClCompile Include="..\..\..\cpp\geometry.cpp" />
+    <ClCompile Include="..\..\..\cpp\graphics_create.cpp" />
+    <ClCompile Include="..\..\..\cpp\graphics_get.cpp" />
+    <ClCompile Include="..\..\..\cpp\graphics_misc.cpp" />
     <ClCompile Include="..\..\..\cpp\input.cpp" />
-    <ClCompile Include="..\..\..\cpp\main.cpp">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">SDL2-2.0.10\SDL2\include;..\..\libs\glm-0.9.9.6;..\..\libs\tiny_obj_loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SDL2-2.0.10\SDL2\include;..\..\libs\glm-0.9.9.6;..\..\libs\tiny_obj_loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
+    <ClCompile Include="..\..\..\cpp\main.cpp" />
+    <ClCompile Include="..\..\..\cpp\presentation.cpp" />
+    <ClCompile Include="..\..\..\cpp\ShadowMap.cpp" />
+    <ClCompile Include="..\..\..\cpp\shadowMapViewer.cpp" />
+    <ClCompile Include="..\..\..\cpp\shadows.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\cpp\DrawCall.h" />
-    <ClInclude Include="..\..\..\cpp\GraphicsFoundation.h" />
-    <ClInclude Include="..\..\..\cpp\GraphicsPipeline.h" />
+    <ClInclude Include="..\..\..\cpp\geometry.h" />
+    <ClInclude Include="..\..\..\cpp\graphics.h" />
     <ClInclude Include="..\..\..\cpp\input.h" />
+    <ClInclude Include="..\..\..\cpp\linear_algebra.h" />
     <ClInclude Include="..\..\..\cpp\main.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="compile_shaders.bat" />
+    <ClInclude Include="..\..\..\cpp\presentation.h" />
+    <ClInclude Include="..\..\..\cpp\ShadowMap.h" />
+    <ClInclude Include="..\..\..\cpp\shadowMapViewer.h" />
+    <ClInclude Include="..\..\..\cpp\shadows.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{7DCBCA74-6FC4-45FC-93FA-80B352ACB6E1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>LightAndShadow</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -128,13 +132,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\VulkanSDK 1.1.121.2\Include;..\..\..\libs\glm-0.9.9.6;..\..\..\libs\tiny_obj_loader;..\SDL2-2.0.10\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\VulkanSDK 1.1.121.2\Include;..\..\..\libs\glm-0.9.9.6;..\..\..\libs\tiny_obj_loader;..\SDL2-2.0.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\SDL2-2.0.10\SDL2\lib\x64;..\VulkanSDK 1.1.121.2\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\SDL2-2.0.10\lib\x64;..\VulkanSDK 1.1.121.2\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -168,7 +172,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\..\libs\glm-0.9.9.6;..\..\..\libs\tiny_obj_loader;..\SDL2-2.0.10\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\libs\glm-0.9.9.6;..\..\..\libs\tiny_obj_loader;..\SDL2-2.0.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -176,6 +180,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>vulkan-1.lib;SDL2.lib;SDL2main.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

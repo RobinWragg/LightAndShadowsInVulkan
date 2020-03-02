@@ -398,7 +398,7 @@ namespace gfx {
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     attachmentRefsOut->push_back(depthAttachmentRef);
 
-    bzero(descriptionOut, sizeof(VkSubpassDescription));
+    memset(descriptionOut, 0, sizeof(VkSubpassDescription));
     descriptionOut->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     descriptionOut->colorAttachmentCount = 1;
     descriptionOut->pColorAttachments = &(*attachmentRefsOut)[0];
@@ -741,7 +741,7 @@ namespace gfx {
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     
     VkViewport *viewport = new VkViewport;
-    bzero(viewport, sizeof(VkViewport));
+    memset(viewport, 0, sizeof(VkViewport));
     viewport->x = 0;
     viewport->y = 0;
     viewport->width = (float)extent.width;
@@ -752,7 +752,7 @@ namespace gfx {
     info.pViewports = viewport;
     
     VkRect2D *scissor = new VkRect2D;
-    bzero(scissor, sizeof(VkRect2D));
+    memset(scissor, 0, sizeof(VkRect2D));
     scissor->offset.x = 0;
     scissor->offset.y = 0;
     
