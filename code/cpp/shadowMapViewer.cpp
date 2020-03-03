@@ -1,6 +1,7 @@
 #include "shadowMapViewer.h"
 #include "main.h"
 #include "graphics.h"
+#include "settings.h"
 
 namespace shadowMapViewer {
   VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
@@ -65,10 +66,9 @@ namespace shadowMapViewer {
   void render(const gfx::SwapchainFrame *frame) {
     vkCmdBindPipeline(frame->cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     
-    for (int i = 0; i < shadowMapCount; i++) {
+    for (int i = 0; i < settings.subsourceCount; i++) {
       renderQuad(frame->cmdBuffer, i);
     }
-    // renderQuad(frame->cmdBuffer, 0);
   }
 }
 

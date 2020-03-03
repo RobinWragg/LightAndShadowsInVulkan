@@ -1,7 +1,7 @@
 #pragma once
 
-#define SHADOWMAP_RESOLUTION 2048
-#define MAX_SHADOWMAP_COUNT 16
+#define SHADOWMAP_RESOLUTION 256
+#define MAX_SUBSOURCE_COUNT 16
 
 // Disable warnings for conversions from double to float. Doubles aren't used in this project; disabling these warnings just means I don't have to put an "f" after every float literal.
 #pragma warning( disable : 4244 )
@@ -9,8 +9,6 @@
 
 #include <vector>
 using namespace std;
-
-extern int shadowMapCount;
 
 vector<uint8_t> loadBinaryFile(const char *filename);
 double getTime();

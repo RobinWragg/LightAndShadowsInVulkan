@@ -3,12 +3,15 @@
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_vulkan.h"
 #include "graphics.h"
+#include "settings.h"
 
 namespace gui {
   SDL_Window *window = nullptr;
   
+  using namespace ImGui;
+  
   void prepareFont() {
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO &io = GetIO();
     io.Fonts->AddFontFromFileTTF("Roboto-Medium.ttf", 20.0f);
     
     VkCommandBuffer cmdBuffer = gfx::createCommandBuffer();
@@ -32,9 +35,9 @@ namespace gui {
   void init(SDL_Window *window_) {
     window = window_;
     
-    ImGui::CreateContext();
+    CreateContext();
 
-    ImGui::StyleColorsDark();
+    StyleColorsDark();
 
     ImGui_ImplSDL2_InitForVulkan(window);
     
@@ -62,13 +65,39 @@ namespace gui {
   void render(VkCommandBuffer cmdBuffer) {
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplSDL2_NewFrame(window);
-    ImGui::NewFrame();
+    NewFrame();
     
-    bool show = true;
-    ImGui::ShowDemoWindow(&show);
+    // ShowDemoWindow();
     
-    ImGui::Render();
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdBuffer);
+    Begin("Lighting Settings");
+    
+    static bool checkboxState = false;
+    Checkbox("My checkbox", &checkboxState);
+    
+    static int radioValue = 0;
+    RadioButton("2048", &radioValue, 2048);
+    RadioButton("4096", &radioValue, 4096);
+    
+    Text("Subsource Arrangement");
+    if (RadioButton("Spiral", settings.subsourceArrangement == settings.SPIRAL)) {
+      settings.subsourceArrangement = settings.SPIRAL;
+    }
+    if (RadioButton("Ring", settings.subsourceArrangement == settings.RING)) {
+      settings.subsourceArrangement = settings.RING;
+    }
+    
+    SetNextItemWidth(90);
+    InputInt("Subsources", &settings.subsourceCount);
+    if (settings.subsourceCount > MAX_SUBSOURCE_COUNT) settings.subsourceCount = MAX_SUBSOURCE_COUNT;
+    if (settings.subsourceCount < 1) settings.subsourceCount = 1;
+    
+    SetNextItemWidth(150);
+    SliderFloat("Lightsource Radius", &settings.sourceRadius, 0.01, 0.5, "%.2f");
+    
+    End();
+    
+    Render();
+    ImGui_ImplVulkan_RenderDrawData(GetDrawData(), cmdBuffer);
   }
 }
 

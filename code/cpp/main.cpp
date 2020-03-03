@@ -18,8 +18,6 @@
 #include "geometry.h"
 #include "gui.h"
 
-int shadowMapCount = 1;
-
 double getTime() {
   static uint64_t startCount = SDL_GetPerformanceCounter();
   return (SDL_GetPerformanceCounter() - startCount) / (double)SDL_GetPerformanceFrequency();
@@ -132,7 +130,7 @@ int main(int argc, char* argv[]) {
   gfx::createCoreHandles(window);
   createSemaphores();
   
-  for (int i = 0; i < MAX_SHADOWMAP_COUNT; i++) shadowMaps.push_back(ShadowMap(SHADOWMAP_RESOLUTION, SHADOWMAP_RESOLUTION));
+  for (int i = 0; i < MAX_SUBSOURCE_COUNT; i++) shadowMaps.push_back(ShadowMap(SHADOWMAP_RESOLUTION, SHADOWMAP_RESOLUTION));
   
   geometry::init();
   shadows::init(&shadowMaps);

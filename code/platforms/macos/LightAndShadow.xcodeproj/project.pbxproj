@@ -16,6 +16,32 @@
 		00359D34238EB5D70076E82F /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D33238EB5D70076E82F /* AppKit.framework */; };
 		00359D36238EB65A0076E82F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D35238EB65A0076E82F /* QuartzCore.framework */; };
 		00470909238218AA0018D488 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; };
+		00687E50240F0FF7003B0EF2 /* shadowMapViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E39240F0FF7003B0EF2 /* shadowMapViewer.cpp */; };
+		00687E51240F0FF8003B0EF2 /* shadowMapViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E39240F0FF7003B0EF2 /* shadowMapViewer.cpp */; };
+		00687E52240F0FF8003B0EF2 /* shadows.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E3A240F0FF7003B0EF2 /* shadows.cpp */; };
+		00687E53240F0FF8003B0EF2 /* shadows.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E3A240F0FF7003B0EF2 /* shadows.cpp */; };
+		00687E54240F0FF8003B0EF2 /* graphics_get.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E3C240F0FF7003B0EF2 /* graphics_get.cpp */; };
+		00687E55240F0FF8003B0EF2 /* graphics_get.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E3C240F0FF7003B0EF2 /* graphics_get.cpp */; };
+		00687E56240F0FF8003B0EF2 /* geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E3D240F0FF7003B0EF2 /* geometry.cpp */; };
+		00687E57240F0FF8003B0EF2 /* geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E3D240F0FF7003B0EF2 /* geometry.cpp */; };
+		00687E58240F0FF8003B0EF2 /* graphics_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E3E240F0FF7003B0EF2 /* graphics_misc.cpp */; };
+		00687E59240F0FF8003B0EF2 /* graphics_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E3E240F0FF7003B0EF2 /* graphics_misc.cpp */; };
+		00687E5A240F0FF8003B0EF2 /* input.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E3F240F0FF7003B0EF2 /* input.cpp */; };
+		00687E5B240F0FF8003B0EF2 /* input.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E3F240F0FF7003B0EF2 /* input.cpp */; };
+		00687E5C240F0FF8003B0EF2 /* graphics_create.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E42240F0FF7003B0EF2 /* graphics_create.cpp */; };
+		00687E5D240F0FF8003B0EF2 /* graphics_create.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E42240F0FF7003B0EF2 /* graphics_create.cpp */; };
+		00687E5E240F0FF8003B0EF2 /* presentation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E43240F0FF7003B0EF2 /* presentation.cpp */; };
+		00687E5F240F0FF8003B0EF2 /* presentation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E43240F0FF7003B0EF2 /* presentation.cpp */; };
+		00687E60240F0FF8003B0EF2 /* ShadowMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E44240F0FF7003B0EF2 /* ShadowMap.cpp */; };
+		00687E61240F0FF8003B0EF2 /* ShadowMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E44240F0FF7003B0EF2 /* ShadowMap.cpp */; };
+		00687E62240F0FF8003B0EF2 /* gui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E45240F0FF7003B0EF2 /* gui.cpp */; };
+		00687E63240F0FF8003B0EF2 /* gui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E45240F0FF7003B0EF2 /* gui.cpp */; };
+		00687E64240F0FF8003B0EF2 /* DrawCall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E4C240F0FF7003B0EF2 /* DrawCall.cpp */; };
+		00687E65240F0FF8003B0EF2 /* DrawCall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E4C240F0FF7003B0EF2 /* DrawCall.cpp */; };
+		00687E66240F0FF8003B0EF2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E4D240F0FF7003B0EF2 /* main.cpp */; };
+		00687E67240F0FF8003B0EF2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E4D240F0FF7003B0EF2 /* main.cpp */; };
+		00687E68240F0FF8003B0EF2 /* settings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E4E240F0FF7003B0EF2 /* settings.cpp */; };
+		00687E69240F0FF8003B0EF2 /* settings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00687E4E240F0FF7003B0EF2 /* settings.cpp */; };
 		008D37EA238F16AB00336F14 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D35238EB65A0076E82F /* QuartzCore.framework */; };
 		008D37EB238F16AB00336F14 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D33238EB5D70076E82F /* AppKit.framework */; };
 		008D37EC238F16AB00336F14 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00359D31238EB58D0076E82F /* Foundation.framework */; };
@@ -33,30 +59,6 @@
 		00C1FBCF238EBB860007F048 /* vulkan.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; };
 		00C1FBD4238EBC8F0007F048 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 00470908238218AA0018D488 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		00C1FBD5238EBC9F0007F048 /* vulkan.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 0036EB352382A71D008538A6 /* vulkan.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		00DC2883240EA4E40076B13D /* shadowMapViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC286E240EA4E40076B13D /* shadowMapViewer.cpp */; };
-		00DC2884240EA4E40076B13D /* shadowMapViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC286E240EA4E40076B13D /* shadowMapViewer.cpp */; };
-		00DC2885240EA4E40076B13D /* shadows.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC286F240EA4E40076B13D /* shadows.cpp */; };
-		00DC2886240EA4E40076B13D /* shadows.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC286F240EA4E40076B13D /* shadows.cpp */; };
-		00DC2887240EA4E40076B13D /* graphics_get.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2871240EA4E40076B13D /* graphics_get.cpp */; };
-		00DC2888240EA4E40076B13D /* graphics_get.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2871240EA4E40076B13D /* graphics_get.cpp */; };
-		00DC2889240EA4E40076B13D /* geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2872240EA4E40076B13D /* geometry.cpp */; };
-		00DC288A240EA4E40076B13D /* geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2872240EA4E40076B13D /* geometry.cpp */; };
-		00DC288B240EA4E40076B13D /* graphics_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2873240EA4E40076B13D /* graphics_misc.cpp */; };
-		00DC288C240EA4E40076B13D /* graphics_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2873240EA4E40076B13D /* graphics_misc.cpp */; };
-		00DC288D240EA4E40076B13D /* input.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2874240EA4E40076B13D /* input.cpp */; };
-		00DC288E240EA4E40076B13D /* input.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2874240EA4E40076B13D /* input.cpp */; };
-		00DC288F240EA4E40076B13D /* graphics_create.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2876240EA4E40076B13D /* graphics_create.cpp */; };
-		00DC2890240EA4E40076B13D /* graphics_create.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2876240EA4E40076B13D /* graphics_create.cpp */; };
-		00DC2891240EA4E40076B13D /* presentation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2877240EA4E40076B13D /* presentation.cpp */; };
-		00DC2892240EA4E40076B13D /* presentation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2877240EA4E40076B13D /* presentation.cpp */; };
-		00DC2893240EA4E40076B13D /* ShadowMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2878240EA4E40076B13D /* ShadowMap.cpp */; };
-		00DC2894240EA4E40076B13D /* ShadowMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2878240EA4E40076B13D /* ShadowMap.cpp */; };
-		00DC2895240EA4E40076B13D /* gui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2879240EA4E40076B13D /* gui.cpp */; };
-		00DC2896240EA4E40076B13D /* gui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2879240EA4E40076B13D /* gui.cpp */; };
-		00DC2897240EA4E40076B13D /* DrawCall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2880240EA4E40076B13D /* DrawCall.cpp */; };
-		00DC2898240EA4E40076B13D /* DrawCall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2880240EA4E40076B13D /* DrawCall.cpp */; };
-		00DC2899240EA4E40076B13D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2881240EA4E40076B13D /* main.cpp */; };
-		00DC289A240EA4E40076B13D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC2881240EA4E40076B13D /* main.cpp */; };
 		00DC28C6240EA5ED0076B13D /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC28BA240EA5ED0076B13D /* imgui_widgets.cpp */; };
 		00DC28C7240EA5ED0076B13D /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC28BA240EA5ED0076B13D /* imgui_widgets.cpp */; };
 		00DC28C8240EA5ED0076B13D /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00DC28BD240EA5ED0076B13D /* imgui.cpp */; };
@@ -114,31 +116,33 @@
 		00359D35238EB65A0076E82F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		0036EB352382A71D008538A6 /* vulkan.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = vulkan.framework; sourceTree = SOURCE_ROOT; };
 		00470908238218AA0018D488 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL2.framework; sourceTree = SOURCE_ROOT; };
+		00687E37240F0FF7003B0EF2 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
+		00687E38240F0FF7003B0EF2 /* ShadowMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadowMap.h; sourceTree = "<group>"; };
+		00687E39240F0FF7003B0EF2 /* shadowMapViewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shadowMapViewer.cpp; sourceTree = "<group>"; };
+		00687E3A240F0FF7003B0EF2 /* shadows.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shadows.cpp; sourceTree = "<group>"; };
+		00687E3B240F0FF7003B0EF2 /* input.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = input.h; sourceTree = "<group>"; };
+		00687E3C240F0FF7003B0EF2 /* graphics_get.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics_get.cpp; sourceTree = "<group>"; };
+		00687E3D240F0FF7003B0EF2 /* geometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = geometry.cpp; sourceTree = "<group>"; };
+		00687E3E240F0FF7003B0EF2 /* graphics_misc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics_misc.cpp; sourceTree = "<group>"; };
+		00687E3F240F0FF7003B0EF2 /* input.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = input.cpp; sourceTree = "<group>"; };
+		00687E40240F0FF7003B0EF2 /* settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = settings.h; sourceTree = "<group>"; };
+		00687E41240F0FF7003B0EF2 /* gui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui.h; sourceTree = "<group>"; };
+		00687E42240F0FF7003B0EF2 /* graphics_create.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics_create.cpp; sourceTree = "<group>"; };
+		00687E43240F0FF7003B0EF2 /* presentation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = presentation.cpp; sourceTree = "<group>"; };
+		00687E44240F0FF7003B0EF2 /* ShadowMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShadowMap.cpp; sourceTree = "<group>"; };
+		00687E45240F0FF7003B0EF2 /* gui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui.cpp; sourceTree = "<group>"; };
+		00687E46240F0FF7003B0EF2 /* shadows.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shadows.h; sourceTree = "<group>"; };
+		00687E47240F0FF7003B0EF2 /* presentation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = presentation.h; sourceTree = "<group>"; };
+		00687E48240F0FF7003B0EF2 /* linear_algebra.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = linear_algebra.h; sourceTree = "<group>"; };
+		00687E49240F0FF7003B0EF2 /* DrawCall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DrawCall.h; sourceTree = "<group>"; };
+		00687E4A240F0FF7003B0EF2 /* graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = graphics.h; sourceTree = "<group>"; };
+		00687E4B240F0FF7003B0EF2 /* shadowMapViewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shadowMapViewer.h; sourceTree = "<group>"; };
+		00687E4C240F0FF7003B0EF2 /* DrawCall.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DrawCall.cpp; sourceTree = "<group>"; };
+		00687E4D240F0FF7003B0EF2 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		00687E4E240F0FF7003B0EF2 /* settings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = settings.cpp; sourceTree = "<group>"; };
+		00687E4F240F0FF7003B0EF2 /* geometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = geometry.h; sourceTree = "<group>"; };
 		008D37CB238F129F00336F14 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MoltenVK.framework; sourceTree = SOURCE_ROOT; };
 		008D37FD238F16AB00336F14 /* Release.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Release.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		00DC286C240EA4E40076B13D /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
-		00DC286D240EA4E40076B13D /* ShadowMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadowMap.h; sourceTree = "<group>"; };
-		00DC286E240EA4E40076B13D /* shadowMapViewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shadowMapViewer.cpp; sourceTree = "<group>"; };
-		00DC286F240EA4E40076B13D /* shadows.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shadows.cpp; sourceTree = "<group>"; };
-		00DC2870240EA4E40076B13D /* input.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = input.h; sourceTree = "<group>"; };
-		00DC2871240EA4E40076B13D /* graphics_get.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics_get.cpp; sourceTree = "<group>"; };
-		00DC2872240EA4E40076B13D /* geometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = geometry.cpp; sourceTree = "<group>"; };
-		00DC2873240EA4E40076B13D /* graphics_misc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics_misc.cpp; sourceTree = "<group>"; };
-		00DC2874240EA4E40076B13D /* input.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = input.cpp; sourceTree = "<group>"; };
-		00DC2875240EA4E40076B13D /* gui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gui.h; sourceTree = "<group>"; };
-		00DC2876240EA4E40076B13D /* graphics_create.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graphics_create.cpp; sourceTree = "<group>"; };
-		00DC2877240EA4E40076B13D /* presentation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = presentation.cpp; sourceTree = "<group>"; };
-		00DC2878240EA4E40076B13D /* ShadowMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShadowMap.cpp; sourceTree = "<group>"; };
-		00DC2879240EA4E40076B13D /* gui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gui.cpp; sourceTree = "<group>"; };
-		00DC287A240EA4E40076B13D /* shadows.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shadows.h; sourceTree = "<group>"; };
-		00DC287B240EA4E40076B13D /* presentation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = presentation.h; sourceTree = "<group>"; };
-		00DC287C240EA4E40076B13D /* linear_algebra.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = linear_algebra.h; sourceTree = "<group>"; };
-		00DC287D240EA4E40076B13D /* DrawCall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DrawCall.h; sourceTree = "<group>"; };
-		00DC287E240EA4E40076B13D /* graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = graphics.h; sourceTree = "<group>"; };
-		00DC287F240EA4E40076B13D /* shadowMapViewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shadowMapViewer.h; sourceTree = "<group>"; };
-		00DC2880240EA4E40076B13D /* DrawCall.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DrawCall.cpp; sourceTree = "<group>"; };
-		00DC2881240EA4E40076B13D /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		00DC2882240EA4E40076B13D /* geometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = geometry.h; sourceTree = "<group>"; };
 		00DC28B7240EA5ED0076B13D /* imgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
 		00DC28B8240EA5ED0076B13D /* imstb_textedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imstb_textedit.h; sourceTree = "<group>"; };
 		00DC28B9240EA5ED0076B13D /* imconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imconfig.h; sourceTree = "<group>"; };
@@ -199,8 +203,8 @@
 		001D32AE238217CF001A68C7 = {
 			isa = PBXGroup;
 			children = (
+				00687E36240F0FF7003B0EF2 /* cpp */,
 				00DC28B6240EA5ED0076B13D /* imgui */,
-				00DC286B240EA4E40076B13D /* cpp */,
 				00F10F3A23848EA900C328BF /* assets */,
 				001D32B9238217CF001A68C7 /* LightAndShadow */,
 				001D32B8238217CF001A68C7 /* Products */,
@@ -243,32 +247,34 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		00DC286B240EA4E40076B13D /* cpp */ = {
+		00687E36240F0FF7003B0EF2 /* cpp */ = {
 			isa = PBXGroup;
 			children = (
-				00DC286C240EA4E40076B13D /* main.h */,
-				00DC286D240EA4E40076B13D /* ShadowMap.h */,
-				00DC286E240EA4E40076B13D /* shadowMapViewer.cpp */,
-				00DC286F240EA4E40076B13D /* shadows.cpp */,
-				00DC2870240EA4E40076B13D /* input.h */,
-				00DC2871240EA4E40076B13D /* graphics_get.cpp */,
-				00DC2872240EA4E40076B13D /* geometry.cpp */,
-				00DC2873240EA4E40076B13D /* graphics_misc.cpp */,
-				00DC2874240EA4E40076B13D /* input.cpp */,
-				00DC2875240EA4E40076B13D /* gui.h */,
-				00DC2876240EA4E40076B13D /* graphics_create.cpp */,
-				00DC2877240EA4E40076B13D /* presentation.cpp */,
-				00DC2878240EA4E40076B13D /* ShadowMap.cpp */,
-				00DC2879240EA4E40076B13D /* gui.cpp */,
-				00DC287A240EA4E40076B13D /* shadows.h */,
-				00DC287B240EA4E40076B13D /* presentation.h */,
-				00DC287C240EA4E40076B13D /* linear_algebra.h */,
-				00DC287D240EA4E40076B13D /* DrawCall.h */,
-				00DC287E240EA4E40076B13D /* graphics.h */,
-				00DC287F240EA4E40076B13D /* shadowMapViewer.h */,
-				00DC2880240EA4E40076B13D /* DrawCall.cpp */,
-				00DC2881240EA4E40076B13D /* main.cpp */,
-				00DC2882240EA4E40076B13D /* geometry.h */,
+				00687E37240F0FF7003B0EF2 /* main.h */,
+				00687E38240F0FF7003B0EF2 /* ShadowMap.h */,
+				00687E39240F0FF7003B0EF2 /* shadowMapViewer.cpp */,
+				00687E3A240F0FF7003B0EF2 /* shadows.cpp */,
+				00687E3B240F0FF7003B0EF2 /* input.h */,
+				00687E3C240F0FF7003B0EF2 /* graphics_get.cpp */,
+				00687E3D240F0FF7003B0EF2 /* geometry.cpp */,
+				00687E3E240F0FF7003B0EF2 /* graphics_misc.cpp */,
+				00687E3F240F0FF7003B0EF2 /* input.cpp */,
+				00687E40240F0FF7003B0EF2 /* settings.h */,
+				00687E41240F0FF7003B0EF2 /* gui.h */,
+				00687E42240F0FF7003B0EF2 /* graphics_create.cpp */,
+				00687E43240F0FF7003B0EF2 /* presentation.cpp */,
+				00687E44240F0FF7003B0EF2 /* ShadowMap.cpp */,
+				00687E45240F0FF7003B0EF2 /* gui.cpp */,
+				00687E46240F0FF7003B0EF2 /* shadows.h */,
+				00687E47240F0FF7003B0EF2 /* presentation.h */,
+				00687E48240F0FF7003B0EF2 /* linear_algebra.h */,
+				00687E49240F0FF7003B0EF2 /* DrawCall.h */,
+				00687E4A240F0FF7003B0EF2 /* graphics.h */,
+				00687E4B240F0FF7003B0EF2 /* shadowMapViewer.h */,
+				00687E4C240F0FF7003B0EF2 /* DrawCall.cpp */,
+				00687E4D240F0FF7003B0EF2 /* main.cpp */,
+				00687E4E240F0FF7003B0EF2 /* settings.cpp */,
+				00687E4F240F0FF7003B0EF2 /* geometry.h */,
 			);
 			name = cpp;
 			path = ../../cpp;
@@ -434,24 +440,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00DC2883240EA4E40076B13D /* shadowMapViewer.cpp in Sources */,
-				00DC2891240EA4E40076B13D /* presentation.cpp in Sources */,
-				00DC2889240EA4E40076B13D /* geometry.cpp in Sources */,
 				00DC28D2240EA5ED0076B13D /* imgui_draw.cpp in Sources */,
-				00DC288D240EA4E40076B13D /* input.cpp in Sources */,
-				00DC2897240EA4E40076B13D /* DrawCall.cpp in Sources */,
+				00687E60240F0FF8003B0EF2 /* ShadowMap.cpp in Sources */,
+				00687E66240F0FF8003B0EF2 /* main.cpp in Sources */,
 				00DC28C8240EA5ED0076B13D /* imgui.cpp in Sources */,
-				00DC2887240EA4E40076B13D /* graphics_get.cpp in Sources */,
+				00687E5A240F0FF8003B0EF2 /* input.cpp in Sources */,
 				00DC28D0240EA5ED0076B13D /* imgui_impl_sdl.cpp in Sources */,
-				00DC2885240EA4E40076B13D /* shadows.cpp in Sources */,
-				00DC2893240EA4E40076B13D /* ShadowMap.cpp in Sources */,
+				00687E58240F0FF8003B0EF2 /* graphics_misc.cpp in Sources */,
+				00687E5E240F0FF8003B0EF2 /* presentation.cpp in Sources */,
+				00687E64240F0FF8003B0EF2 /* DrawCall.cpp in Sources */,
+				00687E56240F0FF8003B0EF2 /* geometry.cpp in Sources */,
+				00687E50240F0FF7003B0EF2 /* shadowMapViewer.cpp in Sources */,
+				00687E68240F0FF8003B0EF2 /* settings.cpp in Sources */,
 				00DC28C6240EA5ED0076B13D /* imgui_widgets.cpp in Sources */,
-				00DC288B240EA4E40076B13D /* graphics_misc.cpp in Sources */,
-				00DC2895240EA4E40076B13D /* gui.cpp in Sources */,
+				00687E5C240F0FF8003B0EF2 /* graphics_create.cpp in Sources */,
+				00687E52240F0FF8003B0EF2 /* shadows.cpp in Sources */,
 				00DC28CA240EA5ED0076B13D /* imgui_impl_vulkan.cpp in Sources */,
-				00DC2899240EA4E40076B13D /* main.cpp in Sources */,
+				00687E62240F0FF8003B0EF2 /* gui.cpp in Sources */,
 				00DC28CE240EA5ED0076B13D /* imgui_demo.cpp in Sources */,
-				00DC288F240EA4E40076B13D /* graphics_create.cpp in Sources */,
+				00687E54240F0FF8003B0EF2 /* graphics_get.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -459,24 +466,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00DC2884240EA4E40076B13D /* shadowMapViewer.cpp in Sources */,
-				00DC2892240EA4E40076B13D /* presentation.cpp in Sources */,
-				00DC288A240EA4E40076B13D /* geometry.cpp in Sources */,
 				00DC28D3240EA5ED0076B13D /* imgui_draw.cpp in Sources */,
-				00DC288E240EA4E40076B13D /* input.cpp in Sources */,
-				00DC2898240EA4E40076B13D /* DrawCall.cpp in Sources */,
+				00687E61240F0FF8003B0EF2 /* ShadowMap.cpp in Sources */,
+				00687E67240F0FF8003B0EF2 /* main.cpp in Sources */,
 				00DC28C9240EA5ED0076B13D /* imgui.cpp in Sources */,
-				00DC2888240EA4E40076B13D /* graphics_get.cpp in Sources */,
+				00687E5B240F0FF8003B0EF2 /* input.cpp in Sources */,
 				00DC28D1240EA5ED0076B13D /* imgui_impl_sdl.cpp in Sources */,
-				00DC2886240EA4E40076B13D /* shadows.cpp in Sources */,
-				00DC2894240EA4E40076B13D /* ShadowMap.cpp in Sources */,
+				00687E59240F0FF8003B0EF2 /* graphics_misc.cpp in Sources */,
+				00687E5F240F0FF8003B0EF2 /* presentation.cpp in Sources */,
+				00687E65240F0FF8003B0EF2 /* DrawCall.cpp in Sources */,
+				00687E57240F0FF8003B0EF2 /* geometry.cpp in Sources */,
+				00687E51240F0FF8003B0EF2 /* shadowMapViewer.cpp in Sources */,
+				00687E69240F0FF8003B0EF2 /* settings.cpp in Sources */,
 				00DC28C7240EA5ED0076B13D /* imgui_widgets.cpp in Sources */,
-				00DC288C240EA4E40076B13D /* graphics_misc.cpp in Sources */,
-				00DC2896240EA4E40076B13D /* gui.cpp in Sources */,
+				00687E5D240F0FF8003B0EF2 /* graphics_create.cpp in Sources */,
+				00687E53240F0FF8003B0EF2 /* shadows.cpp in Sources */,
 				00DC28CB240EA5ED0076B13D /* imgui_impl_vulkan.cpp in Sources */,
-				00DC289A240EA4E40076B13D /* main.cpp in Sources */,
+				00687E63240F0FF8003B0EF2 /* gui.cpp in Sources */,
 				00DC28CF240EA5ED0076B13D /* imgui_demo.cpp in Sources */,
-				00DC2890240EA4E40076B13D /* graphics_create.cpp in Sources */,
+				00687E55240F0FF8003B0EF2 /* graphics_get.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,5 +1,6 @@
 #include "shadows.h"
 #include "geometry.h"
+#include "settings.h"
 
 namespace shadows {
   VkRenderPass renderPass;
@@ -132,23 +133,24 @@ namespace shadows {
   vector<vec2> getViewOffsets() {
     vector<vec2> offsets;
     
-    if (shadowMapCount == 1) return {vec2(0, 0)};
+    int offsetCount = settings.subsourceCount;
     
-    bool ringMode = false;
-    float radius = 0.5;
+    if (offsetCount == 1) return {vec2(0, 0)};
+    
+    bool ringMode = settings.subsourceArrangement == settings.RING;
     
     if (ringMode) {
-      vec2 unit(0, radius);
+      vec2 unit(0, settings.sourceRadius);
       
-      for (int i = 0; i < shadowMapCount; i++) {
-        offsets.push_back(rotate(unit, float(i/float(shadowMapCount) * M_TAU)));
+      for (int i = 0; i < offsetCount; i++) {
+        offsets.push_back(rotate(unit, float(i/float(offsetCount) * M_TAU)));
       }
     } else {
       // Spiral mode
-      for (int i = 0; i < shadowMapCount; i++) {
-        float originDistance = float(i+1)/shadowMapCount;
-        offsets.push_back(vec2(0, radius * originDistance));
-        offsets[i] = rotate(offsets[i], float(M_TAU*3.1 * (shadowMapCount-i)/shadowMapCount));
+      for (int i = 0; i < offsetCount; i++) {
+        float originDistance = float(i+1)/offsetCount;
+        offsets.push_back(vec2(0, settings.sourceRadius * originDistance));
+        offsets[i] = rotate(offsets[i], float(M_TAU*3.1 * (offsetCount-i)/offsetCount));
       }
     }
     
@@ -161,12 +163,12 @@ namespace shadows {
     auto viewOffsets = getViewOffsets();
     
     // Execute a renderpass for all possible shadowmaps even if they're not used, in order to convert their layouts.
-    for (int i = 0; i < MAX_SHADOWMAP_COUNT; i++) {
+    for (int i = 0; i < MAX_SUBSOURCE_COUNT; i++) {
       ShadowMap &shadowMap = (*shadowMaps)[i];
       gfx::cmdBeginRenderPass(renderPass, shadowMap.width, shadowMap.height, clearColor, framebuffers[i], cmdBuffer);
       
       // Only render the shadowmaps that are being used this frame
-      if (i < shadowMapCount) {
+      if (i < settings.subsourceCount) {
         vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
         
         auto updatedMatricesDescSet = getMatricesDescSet();
