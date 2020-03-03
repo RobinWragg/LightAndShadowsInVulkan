@@ -3,6 +3,7 @@
 xcuserdata/
 DerivedData/
 code/assets/*.spv
+code/platforms/windows/LightAndShadow/x64/
 .vs/
 *.user
 *.tlog/
@@ -10,3 +11,5 @@ code/assets/*.spv
 *.pdb
 *.idb
 *.ilk
+*.iobj
+*.ipdb
