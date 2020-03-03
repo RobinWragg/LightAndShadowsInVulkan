@@ -3,7 +3,7 @@
 	[
 		{
 			"path": ".",
-      "folder_exclude_patterns": ["*.framework", "*.noindex", "DerivedData", "VulkanSDK*", "libs"],
+      "folder_exclude_patterns": ["*.framework", "*.noindex", "DerivedData", "VulkanSDK*"],
       "file_exclude_patterns": ["*.spv", "glslc"]
 		}
 	],

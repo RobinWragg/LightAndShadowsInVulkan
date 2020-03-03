@@ -16,6 +16,7 @@
 #include "presentation.h"
 #include "shadows.h"
 #include "geometry.h"
+#include "gui.h"
 
 int shadowMapCount = 1;
 
@@ -79,6 +80,7 @@ void renderNextFrame(float deltaTime) {
   gfx::cmdBeginRenderPass(gfx::renderPass, extent.width, extent.height, clearColor, frame->framebuffer, frame->cmdBuffer);
   presentation::render(frame->cmdBuffer, &shadowMaps);
   shadowMapViewer::render(frame);
+  gui::render(frame->cmdBuffer);
   vkCmdEndRenderPass(frame->cmdBuffer);
   
   auto result = vkEndCommandBuffer(frame->cmdBuffer);
@@ -136,6 +138,7 @@ int main(int argc, char* argv[]) {
   shadows::init(&shadowMaps);
   presentation::init(shadowMaps[0].samplerDescriptorSetLayout);
   shadowMapViewer::init(&shadowMaps);
+  gui::init(window);
   
   bool running = true;
   
@@ -151,27 +154,25 @@ int main(int argc, char* argv[]) {
       previousTime = timeNow;
     }
     
-    // temp
-    shadowMapCount = (int(getTime()) % MAX_SHADOWMAP_COUNT) + 1;
-    
     SDL_Event event;
     input::handleMouseMotion(0, 0);
     while (SDL_PollEvent(&event)) {
+      gui::processSdlEvent(&event);
       switch (event.type) {
-        case SDL_KEYDOWN: {
-          if (!event.key.repeat) {
-            input::handleKeyPress(event.key.keysym.sym);
-          }
-        } break;
-        case SDL_KEYUP: {
-          input::handleKeyRelease(event.key.keysym.sym);
-        } break;
-        case SDL_MOUSEMOTION: {
-          input::handleMouseMotion(event.motion.xrel, event.motion.yrel);
-        } break;
-        case SDL_MOUSEBUTTONDOWN: {
-          input::handleMouseClick(window);
-        } break;
+        // case SDL_KEYDOWN: {
+        //   if (!event.key.repeat) {
+        //     input::handleKeyPress(event.key.keysym.sym);
+        //   }
+        // } break;
+        // case SDL_KEYUP: {
+        //   input::handleKeyRelease(event.key.keysym.sym);
+        // } break;
+        // case SDL_MOUSEMOTION: {
+        //   input::handleMouseMotion(event.motion.xrel, event.motion.yrel);
+        // } break;
+        // case SDL_MOUSEBUTTONDOWN: {
+        //   input::handleMouseClick(window);
+        // } break;
         case SDL_QUIT: running = false; break;
       }
     }
