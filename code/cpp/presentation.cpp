@@ -63,7 +63,7 @@ namespace presentation {
     unlitPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, vertexAttributeCount, "unlit.vert.spv", "unlit.frag.spv");
     
     VkExtent2D extent = gfx::getSurfaceExtent();
-    matrices.proj = createProjectionMatrix(extent.width, extent.height, 0.8);
+    matrices.proj = createProjectionMatrix(extent.width, extent.height, 0.5);
     
     cameraPos.x = 3.388;
     cameraPos.y = 2;
@@ -75,26 +75,42 @@ namespace presentation {
     lightSource = geometry::newSphereDrawCall(16, true);
   }
   
-  static void updateViewMatrix(float deltaTime) {
-    cameraAngle += input::getViewAngleInput();
+  static void updateViewMatrix(float deltaTime, bool firstPersonMode) {
     
-    // Get player input for walking and take into account the direction the player is facing
-    vec2 lateralMovement = input::getMovementVector() * (deltaTime * 2);
-    lateralMovement = rotate(lateralMovement, -cameraAngle.x);
-    
-    cameraPos.x += lateralMovement.x;
-    cameraPos.z -= lateralMovement.y;
-    
-    matrices.view = glm::identity<mat4>();
-    
-    // view transformation
-    matrices.view = rotate(matrices.view, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
-    matrices.view = rotate(matrices.view, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
-    matrices.view = translate(matrices.view, -cameraPos);
+    if (firstPersonMode) {
+      cameraAngle += input::getViewAngleInput();
+      
+      // Get player input for walking and take into account the direction the player is facing
+      vec2 lateralMovement = input::getMovementVector() * (deltaTime * 2);
+      lateralMovement = rotate(lateralMovement, -cameraAngle.x);
+      
+      cameraPos.x += lateralMovement.x;
+      cameraPos.z -= lateralMovement.y;
+      
+      matrices.view = glm::identity<mat4>();
+      
+      // view transformation
+      matrices.view = rotate(matrices.view, cameraAngle.y, vec3(1.0f, 0.0f, 0.0f));
+      matrices.view = rotate(matrices.view, cameraAngle.x, vec3(0.0f, 1.0f, 0.0f));
+      matrices.view = translate(matrices.view, -cameraPos);
+    } else {
+      // Camera positioning settings
+      const float lateralDistanceFromOrigin = 20;
+      const float lateralAngle = 2.5 + getTime()*0.1;
+      
+      float height = 8;
+      
+      // Set cameraPos
+      cameraPos.x = sinf(lateralAngle) * lateralDistanceFromOrigin;
+      cameraPos.y = height;
+      cameraPos.z = cosf(lateralAngle) * lateralDistanceFromOrigin;
+      
+      matrices.view = lookAt(cameraPos, vec3(0, 1, 0), vec3(0, 1, 0));
+    }
   }
   
   void update(float deltaTime) {
-    updateViewMatrix(deltaTime);
+    updateViewMatrix(deltaTime, false);
   }
   
   static void setUniforms(VkCommandBuffer cmdBuffer, vector<ShadowMap> *shadowMaps) {
@@ -119,7 +135,7 @@ namespace presentation {
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, unlitPipeline);
     
     lightSource->worldMatrix = translate(glm::identity<mat4>(), shadows::getLightPos());
-    lightSource->worldMatrix = scale(lightSource->worldMatrix, vec3(0.1, 0.1, 0.1));
+    lightSource->worldMatrix = scale(lightSource->worldMatrix, vec3(0.2, 0.2, 0.2));
     
     lightSource->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }

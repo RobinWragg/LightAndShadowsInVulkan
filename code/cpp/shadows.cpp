@@ -89,34 +89,11 @@ namespace shadows {
   }
   
   void update() {
-    // Camera/light positioning settings
-    const float lateralDistanceFromOrigin = 9;
-    const float minHeight = 4;
-    const float maxHeight = 10;
-    const float heightChangeSpeed = 0.4;
-    const float lateralAngle = 2.5 + getTime()*0.5;
+    lightPos = vec3(0, 5.5, 1);
     
-    float currentHeight = minHeight + (sinf(getTime() * heightChangeSpeed) + 1) * 0.5 * (maxHeight - minHeight);
+    matrices.view = lookAt(lightPos, vec3(0, 0, 0), vec3(0, 1, 0));
     
-    // Set lightPos
-    lightPos.x = sinf(lateralAngle) * lateralDistanceFromOrigin;
-    lightPos.y = currentHeight;
-    lightPos.z = cosf(lateralAngle) * lateralDistanceFromOrigin;
-        
-    // Set lightAngle; point the camera at the origin of the scene
-    lightAngle.x = -lateralAngle;
-    
-    // sin(theta) = opposite / hypotenuse
-    // Therefore: theta = asin(opposite / hypotenuse)
-    // float hypotenuse = hypot(lateralDistanceFromOrigin, lightPos.y);
-    lightAngle.y = asinf(lightPos.y / length(lightPos));
-    
-    // Set the view matrix according to lightPos and lightAngle
-    matrices.view = rotate(glm::identity<mat4>(), lightAngle.y, vec3(1.0f, 0.0f, 0.0f));
-    matrices.view = rotate(matrices.view, lightAngle.x, vec3(0.0f, 1.0f, 0.0f));
-    matrices.view = translate(matrices.view, -lightPos);
-    
-    float fieldOfView = 20.0f / length(lightPos);
+    float fieldOfView = 2.5;
     float aspectRatio = (*shadowMaps)[0].width / (float)(*shadowMaps)[0].height;
     matrices.proj = perspective(fieldOfView, aspectRatio, 0.1f, 100.0f);
     

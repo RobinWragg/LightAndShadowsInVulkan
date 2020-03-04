@@ -156,7 +156,7 @@ namespace geometry {
     aeroplane = newDrawCallFromObjFile("aeroplane.obj");
     frog = newDrawCallFromObjFile("frog.obj");
     
-    ground = new DrawCall(createCuboidVertices(12, 0.1, -0.1));
+    ground = new DrawCall(createCuboidVertices(12, 0.5, -0.5));
     sphere0 = newSphereDrawCall(2, true);
     sphere1 = newSphereDrawCall(3, true);
     sphere2 = newSphereDrawCall(8, true);

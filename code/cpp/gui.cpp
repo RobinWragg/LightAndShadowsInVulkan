@@ -12,7 +12,7 @@ namespace gui {
   
   void prepareFont() {
     ImGuiIO &io = GetIO();
-    io.Fonts->AddFontFromFileTTF("Roboto-Medium.ttf", 20.0f);
+    io.Fonts->AddFontFromFileTTF("Roboto-Medium.ttf", 16.0f);
     
     VkCommandBuffer cmdBuffer = gfx::createCommandBuffer();
     
