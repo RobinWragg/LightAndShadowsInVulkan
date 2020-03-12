@@ -6009,6 +6009,53 @@ void ImGui::PlotLines(const char* label, float (*values_getter)(void* data, int 
     PlotEx(ImGuiPlotType_Lines, label, values_getter, data, values_count, values_offset, overlay_text, scale_min, scale_max, graph_size);
 }
 
+void ImGui::PlotPoints(const char* label, const ImVec2* values, int values_count, int values_offset, const char* overlay_text, float scale_min, float scale_max, ImVec2 frame_size, int stride)
+{   
+    ImGuiWindow* window = GetCurrentWindow();
+    if (window->SkipItems)
+        return;
+
+    ImGuiContext& g = *GImGui;
+    const ImGuiStyle& style = g.Style;
+
+    const ImVec2 label_size = CalcTextSize(label, NULL, true);
+    if (frame_size.x == 0.0f)
+        frame_size.x = CalcItemWidth();
+    if (frame_size.y == 0.0f)
+        frame_size.y = label_size.y + (style.FramePadding.y * 2);
+
+    const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + frame_size);
+    const ImRect inner_bb(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding);
+    const ImRect total_bb(frame_bb.Min, frame_bb.Max + ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0));
+    ItemSize(total_bb, style.FramePadding.y);
+    if (!ItemAdd(total_bb, 0, &frame_bb))
+        return;
+
+    RenderFrame(frame_bb.Min, frame_bb.Max, GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
+    
+    const ImU32 col_base = GetColorU32(ImGuiCol_PlotHistogram);
+    
+    for (int i = 0; i < values_count; i++) {
+        auto value = values[i];
+        auto half_range = inner_bb.Max - inner_bb.Min;
+        half_range.x *= 0.5;
+        half_range.y *= 0.5;
+        value += ImVec2(1, 1);
+        value *= half_range;
+        value += inner_bb.Min;
+        ImVec2 padding(2, 2);
+        window->DrawList->AddRectFilled(value - padding, value + padding, col_base);
+    }
+
+    // Text overlay
+    if (overlay_text)
+        RenderTextClipped(ImVec2(frame_bb.Min.x, frame_bb.Min.y + style.FramePadding.y), frame_bb.Max, overlay_text, NULL, NULL, ImVec2(0.5f,0.0f));
+
+    if (label_size.x > 0.0f)
+        RenderText(ImVec2(frame_bb.Max.x + style.ItemInnerSpacing.x, inner_bb.Min.y), label);
+
+}
+
 void ImGui::PlotHistogram(const char* label, const float* values, int values_count, int values_offset, const char* overlay_text, float scale_min, float scale_max, ImVec2 graph_size, int stride)
 {
     ImGuiPlotArrayGetterData data(values, stride);

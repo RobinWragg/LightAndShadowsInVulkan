@@ -567,7 +567,8 @@ enum ImGuiAxis
 enum ImGuiPlotType
 {
     ImGuiPlotType_Lines,
-    ImGuiPlotType_Histogram
+    ImGuiPlotType_Histogram,
+    ImGuiPlotType_Points
 };
 
 enum ImGuiInputSource

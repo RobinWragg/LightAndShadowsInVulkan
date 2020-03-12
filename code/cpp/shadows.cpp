@@ -127,7 +127,7 @@ namespace shadows {
       for (int i = 0; i < offsetCount; i++) {
         float originDistance = float(i+1)/offsetCount;
         offsets.push_back(vec2(0, settings.sourceRadius * originDistance));
-        offsets[i] = rotate(offsets[i], float(M_TAU*3.1 * (offsetCount-i)/offsetCount));
+        offsets[i] = rotate(offsets[i], float(M_TAU*1.6 * (offsetCount-i)/offsetCount));
       }
     }
     

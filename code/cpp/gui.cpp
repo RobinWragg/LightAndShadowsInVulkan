@@ -4,6 +4,7 @@
 #include "imgui_impl_vulkan.h"
 #include "graphics.h"
 #include "settings.h"
+#include "shadows.h"
 
 namespace gui {
   SDL_Window *window = nullptr;
@@ -67,7 +68,7 @@ namespace gui {
     ImGui_ImplSDL2_NewFrame(window);
     NewFrame();
     
-    // ShowDemoWindow();
+    ShowDemoWindow();
     
     Begin("Lighting Settings");
     
@@ -101,6 +102,15 @@ namespace gui {
     if (settings.shadowAntiAliasSize > MAX_SHADOW_ANTI_ALIAS_SIZE) settings.shadowAntiAliasSize = MAX_SHADOW_ANTI_ALIAS_SIZE;
     if (settings.shadowAntiAliasSize < 0) settings.shadowAntiAliasSize = 0;
     if (settings.shadowAntiAliasSize != 0 && settings.shadowAntiAliasSize % 2 == 0) settings.shadowAntiAliasSize -= 1;
+    
+    vector<ImVec2> imVecs;
+    for (auto &offset : shadows::getViewOffsets()) {
+        float radius = settings.sourceRadius;
+        imVecs.push_back(ImVec2(offset.x / radius, offset.y / radius));
+    }
+    
+    SetNextItemWidth(90);
+    PlotPoints("Subsource Layout Preview", imVecs.data(), imVecs.size(), 0, NULL, FLT_MAX, FLT_MAX, ImVec2(100, 100));
     
     End();
     
