@@ -46,7 +46,7 @@ namespace presentation {
     gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(matrices), &matricesBuffer, &matricesBufferMemory);
     gfx::createDescriptorSet(matricesBuffer, &matricesDescSet, &matricesDescSetLayout);
     
-    gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(vec2) * MAX_SUBSOURCE_COUNT, &lightViewOffsetsBuffer, &lightViewOffsetsBufferMemory);
+    gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(vec2) * MAX_LIGHT_SUBSOURCE_COUNT, &lightViewOffsetsBuffer, &lightViewOffsetsBufferMemory);
     gfx::createDescriptorSet(lightViewOffsetsBuffer, &lightViewOffsetsDescSet, &lightViewOffsetsDescSetLayout);
     
     vector<VkDescriptorSetLayout> descriptorSetLayouts = {
@@ -55,9 +55,9 @@ namespace presentation {
       matricesDescSetLayout,
       lightViewOffsetsDescSetLayout
     };
-    for (int i = 0; i < MAX_SUBSOURCE_COUNT; i++) descriptorSetLayouts.push_back(shadowMapSamplerDescSetLayout);
+    for (int i = 0; i < MAX_LIGHT_SUBSOURCE_COUNT; i++) descriptorSetLayouts.push_back(shadowMapSamplerDescSetLayout);
       
-    pipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(int32_t));
+    pipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(int32_t) * 2);
     uint32_t vertexAttributeCount = 2;
     litPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, vertexAttributeCount, "lit.vert.spv", "lit.frag.spv");
     unlitPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, vertexAttributeCount, "unlit.vert.spv", "unlit.frag.spv");
@@ -124,11 +124,15 @@ namespace presentation {
     // Bind
     VkDescriptorSet lightMatricesDescSet = shadows::getMatricesDescSet();
     vector<VkDescriptorSet> sets = {lightMatricesDescSet, matricesDescSet, lightViewOffsetsDescSet};
-    for (int i = 0; i < MAX_SUBSOURCE_COUNT; i++) sets.push_back((*shadowMaps)[i].samplerDescriptorSet);
+    for (int i = 0; i < MAX_LIGHT_SUBSOURCE_COUNT; i++) sets.push_back((*shadowMaps)[i].samplerDescriptorSet);
     
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, (int)sets.size(), sets.data(), 0, nullptr);
     
-    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, sizeof(int32_t), &settings.subsourceCount);
+    vector<int32_t> pushConstants = {
+      settings.subsourceCount,
+      settings.shadowAntiAliasSize
+    };
+    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, sizeof(pushConstants[0]) * (int)pushConstants.size(), pushConstants.data());
   }
   
   void renderLightSource(VkCommandBuffer cmdBuffer) {

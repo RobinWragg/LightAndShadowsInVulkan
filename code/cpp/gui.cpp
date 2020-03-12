@@ -88,11 +88,19 @@ namespace gui {
     
     SetNextItemWidth(90);
     InputInt("Subsources", &settings.subsourceCount);
-    if (settings.subsourceCount > MAX_SUBSOURCE_COUNT) settings.subsourceCount = MAX_SUBSOURCE_COUNT;
+    if (settings.subsourceCount > MAX_LIGHT_SUBSOURCE_COUNT) settings.subsourceCount = MAX_LIGHT_SUBSOURCE_COUNT;
     if (settings.subsourceCount < 1) settings.subsourceCount = 1;
     
     SetNextItemWidth(150);
-    SliderFloat("Lightsource Radius", &settings.sourceRadius, 0.01, 0.5, "%.2f");
+    SliderFloat("Lightsource Radius", &settings.sourceRadius, 0.01, 1.0, "%.2f");
+    
+    SetNextItemWidth(90);
+    InputInt("Shadow Anti-Alias Kernal Size", &settings.shadowAntiAliasSize, 2);
+    
+    // Enforce valid values: odd numbers and 0.
+    if (settings.shadowAntiAliasSize > MAX_SHADOW_ANTI_ALIAS_SIZE) settings.shadowAntiAliasSize = MAX_SHADOW_ANTI_ALIAS_SIZE;
+    if (settings.shadowAntiAliasSize < 0) settings.shadowAntiAliasSize = 0;
+    if (settings.shadowAntiAliasSize != 0 && settings.shadowAntiAliasSize % 2 == 0) settings.shadowAntiAliasSize -= 1;
     
     End();
     

@@ -32,6 +32,7 @@ layout(set = 3, binding = 0) uniform LightViewOffsets {
 
 layout(push_constant) uniform Config {
   int shadowMapCount;
+  int shadowAntiAliasSize;
 } config;
 
 layout(set = 4, binding = 0) uniform sampler2D shadowMap0;
@@ -120,9 +121,9 @@ float getShadowFactorFromMap(vec3 posInWorld, int shadowMapIndex) {
   int totalSampleCount = 0;
   int shadowSampleCount = 0;
   
-  // Use a 5x5 sample kernel.
-  for (int x = -0; x <= 0; x++) {
-    for (int y = -0; y <= 0; y++) {
+  // Take samples from a square from a kernel.
+  for (int x = -config.shadowAntiAliasSize; x <= config.shadowAntiAliasSize; x++) {
+    for (int y = -config.shadowAntiAliasSize; y <= config.shadowAntiAliasSize; y++) {
       totalSampleCount++;
       
       const vec2 texCoordWithOffset = centreTexCoord + vec2(x, y) * texelSize;

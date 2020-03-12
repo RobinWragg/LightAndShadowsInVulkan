@@ -140,7 +140,7 @@ namespace shadows {
     auto viewOffsets = getViewOffsets();
     
     // Execute a renderpass for all possible shadowmaps even if they're not used, in order to convert their layouts.
-    for (int i = 0; i < MAX_SUBSOURCE_COUNT; i++) {
+    for (int i = 0; i < MAX_LIGHT_SUBSOURCE_COUNT; i++) {
       ShadowMap &shadowMap = (*shadowMaps)[i];
       gfx::cmdBeginRenderPass(renderPass, shadowMap.width, shadowMap.height, clearColor, framebuffers[i], cmdBuffer);
       
