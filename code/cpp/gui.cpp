@@ -95,7 +95,7 @@ namespace gui {
     SliderFloat("Lightsource Radius", &settings.sourceRadius, 0.01, 1.0, "%.2f");
     
     SetNextItemWidth(90);
-    InputInt("Shadow Anti-Alias Kernal Size", &settings.shadowAntiAliasSize, 2);
+    InputInt("Shadow Anti-Alias Kernel Size", &settings.shadowAntiAliasSize, 2);
     
     // Enforce valid values: odd numbers and 0.
     if (settings.shadowAntiAliasSize > MAX_SHADOW_ANTI_ALIAS_SIZE) settings.shadowAntiAliasSize = MAX_SHADOW_ANTI_ALIAS_SIZE;
