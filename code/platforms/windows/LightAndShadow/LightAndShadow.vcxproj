@@ -24,24 +24,42 @@
     <ClCompile Include="..\..\..\cpp\graphics_create.cpp" />
     <ClCompile Include="..\..\..\cpp\graphics_get.cpp" />
     <ClCompile Include="..\..\..\cpp\graphics_misc.cpp" />
+    <ClCompile Include="..\..\..\cpp\gui.cpp" />
     <ClCompile Include="..\..\..\cpp\input.cpp" />
     <ClCompile Include="..\..\..\cpp\main.cpp" />
     <ClCompile Include="..\..\..\cpp\presentation.cpp" />
+    <ClCompile Include="..\..\..\cpp\settings.cpp" />
     <ClCompile Include="..\..\..\cpp\ShadowMap.cpp" />
     <ClCompile Include="..\..\..\cpp\shadowMapViewer.cpp" />
     <ClCompile Include="..\..\..\cpp\shadows.cpp" />
+    <ClCompile Include="..\..\..\libs\imgui\imgui.cpp" />
+    <ClCompile Include="..\..\..\libs\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\..\..\libs\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\..\..\libs\imgui\imgui_impl_sdl.cpp" />
+    <ClCompile Include="..\..\..\libs\imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\..\..\libs\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\cpp\DrawCall.h" />
     <ClInclude Include="..\..\..\cpp\geometry.h" />
     <ClInclude Include="..\..\..\cpp\graphics.h" />
+    <ClInclude Include="..\..\..\cpp\gui.h" />
     <ClInclude Include="..\..\..\cpp\input.h" />
     <ClInclude Include="..\..\..\cpp\linear_algebra.h" />
     <ClInclude Include="..\..\..\cpp\main.h" />
     <ClInclude Include="..\..\..\cpp\presentation.h" />
+    <ClInclude Include="..\..\..\cpp\settings.h" />
     <ClInclude Include="..\..\..\cpp\ShadowMap.h" />
     <ClInclude Include="..\..\..\cpp\shadowMapViewer.h" />
     <ClInclude Include="..\..\..\cpp\shadows.h" />
+    <ClInclude Include="..\..\..\libs\imgui\imconfig.h" />
+    <ClInclude Include="..\..\..\libs\imgui\imgui.h" />
+    <ClInclude Include="..\..\..\libs\imgui\imgui_impl_sdl.h" />
+    <ClInclude Include="..\..\..\libs\imgui\imgui_impl_vulkan.h" />
+    <ClInclude Include="..\..\..\libs\imgui\imgui_internal.h" />
+    <ClInclude Include="..\..\..\libs\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\..\..\libs\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\..\..\libs\imgui\imstb_truetype.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -132,7 +150,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\VulkanSDK 1.1.121.2\Include;..\..\..\libs\glm-0.9.9.6;..\..\..\libs\tiny_obj_loader;..\SDL2-2.0.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\libs\imgui;..\VulkanSDK 1.1.121.2\Include;..\..\..\libs\glm-0.9.9.6;..\..\..\libs\tiny_obj_loader;..\SDL2-2.0.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -172,7 +190,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\VulkanSDK 1.1.121.2\Include;..\..\..\libs\glm-0.9.9.6;..\..\..\libs\tiny_obj_loader;..\SDL2-2.0.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\libs\imgui;..\VulkanSDK 1.1.121.2\Include;..\..\..\libs\glm-0.9.9.6;..\..\..\libs\tiny_obj_loader;..\SDL2-2.0.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
