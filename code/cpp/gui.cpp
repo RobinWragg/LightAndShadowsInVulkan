@@ -68,7 +68,7 @@ namespace gui {
     ImGui_ImplSDL2_NewFrame(window);
     NewFrame();
     
-    ShowDemoWindow();
+    // ShowDemoWindow();
     
     Begin("Lighting Settings");
     
@@ -110,7 +110,7 @@ namespace gui {
     }
     
     SetNextItemWidth(90);
-    PlotPoints("Subsource Layout Preview", imVecs.data(), imVecs.size(), 0, NULL, FLT_MAX, FLT_MAX, ImVec2(100, 100));
+    PlotPoints("Subsource Layout Preview", imVecs.data(), (int)imVecs.size(), 0, NULL, FLT_MAX, FLT_MAX, ImVec2(100, 100));
     
     End();
     
