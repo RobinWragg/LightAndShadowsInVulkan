@@ -10,6 +10,7 @@ namespace geometry {
   DrawCall *sphere1   = nullptr;
   DrawCall *sphere2   = nullptr;
   DrawCall *sphere3   = nullptr;
+  DrawCall *obelisk   = nullptr;
   DrawCall *aeroplane = nullptr;
   DrawCall *frog      = nullptr;
   
@@ -84,9 +85,15 @@ namespace geometry {
     const float halfWidth = width / 2;
     
     vector<vec3> vertices = {
+      // Top
       {-halfWidth, yOffset+height, -halfWidth}, {halfWidth, yOffset+height, -halfWidth}, {-halfWidth, yOffset+height, halfWidth},
       {-halfWidth, yOffset+height, halfWidth}, {halfWidth, yOffset+height, -halfWidth}, {halfWidth, yOffset+height, halfWidth},
       
+      // Bottom
+      {-halfWidth, yOffset, -halfWidth}, {-halfWidth, yOffset, halfWidth}, {halfWidth, yOffset, -halfWidth},
+      {-halfWidth, yOffset, halfWidth}, {halfWidth, yOffset, halfWidth}, {halfWidth, yOffset, -halfWidth},
+      
+      // Sides
       {-halfWidth, yOffset+height, -halfWidth}, {-halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset+height, -halfWidth},
       {-halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset+height, -halfWidth},
       
@@ -157,6 +164,7 @@ namespace geometry {
     frog = newDrawCallFromObjFile("frog.obj");
     
     ground = new DrawCall(createCuboidVertices(12, 0.5, -0.5));
+    obelisk = new DrawCall(createCuboidVertices(0.5, 2, 0));
     sphere0 = newSphereDrawCall(2, true);
     sphere1 = newSphereDrawCall(3, true);
     sphere2 = newSphereDrawCall(8, true);
@@ -188,6 +196,9 @@ namespace geometry {
     frog->worldMatrix = rotate(frog->worldMatrix, -0.1f, vec3(1, 0, 0)); // even out the frog's feet
     
     ground->worldMatrix = glm::identity<mat4>();
+    
+    obelisk->worldMatrix = translate(glm::identity<mat4>(), vec3(-3, 0, -1));
+    obelisk->worldMatrix = rotate(obelisk->worldMatrix, 0.5f, vec3(0, 1, 0));
   }
   
   void addGeometryToCommandBuffer(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
@@ -198,6 +209,7 @@ namespace geometry {
     aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
     frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
     ground->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
 }
 
