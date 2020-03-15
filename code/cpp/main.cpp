@@ -78,7 +78,7 @@ void renderNextFrame(float deltaTime) {
   vec3 clearColor = {0.5, 0.7, 1};
   gfx::cmdBeginRenderPass(gfx::renderPass, extent.width, extent.height, clearColor, frame->framebuffer, frame->cmdBuffer);
   presentation::render(frame->cmdBuffer, &shadowMaps);
-  shadowMapViewer::render(frame);
+  // shadowMapViewer::render(frame);
   gui::render(frame->cmdBuffer);
   vkCmdEndRenderPass(frame->cmdBuffer);
   
