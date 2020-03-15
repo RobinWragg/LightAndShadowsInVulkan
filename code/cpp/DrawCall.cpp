@@ -39,7 +39,7 @@ void DrawCall::initCommon(const vector<vec3> &positions, const vector<vec3> &nor
   gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(worldMatrix), &worldMatrixBuffer, &worldMatrixBufferMemory);
   gfx::createDescriptorSet(worldMatrixBuffer, &worldMatrixDescSet, &worldMatrixDescSetLayout);
   
-  printf("Created draw call with %li vertices\n", positions.size());
+  printf("Created draw call with %i vertices\n", (int)positions.size());
 }
 
 void DrawCall::addToCmdBuffer(VkCommandBuffer cmdBuffer, VkPipelineLayout layout) {
