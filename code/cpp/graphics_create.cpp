@@ -855,7 +855,7 @@ namespace gfx {
     VkPipelineMultisampleStateCreateInfo multisamplingInfo = {};
     multisamplingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisamplingInfo.sampleShadingEnable = VK_FALSE;
-    multisamplingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    multisamplingInfo.rasterizationSamples = VK_SAMPLE_COUNT_4_BIT;
     pipelineInfo.pMultisampleState = &multisamplingInfo;
     
     pipelineInfo.pColorBlendState = &colorBlending;
