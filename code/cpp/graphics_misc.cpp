@@ -161,15 +161,21 @@ namespace gfx {
     info.renderPass = renderPass;
     info.framebuffer = framebuffer;
     
-    static vector<VkClearValue> clearValues(2);
+    static vector<VkClearValue> clearValues(3);
     
     clearValues[0].color.float32[0] = clearColor.x;
     clearValues[0].color.float32[1] = clearColor.y;
     clearValues[0].color.float32[2] = clearColor.z;
     clearValues[0].color.float32[3] = 1;
     
-    clearValues[1].depthStencil.depth = 1;
-    clearValues[1].depthStencil.stencil = 0;
+    // TODO: Is this unnecessary?
+    clearValues[1].color.float32[0] = clearColor.x;
+    clearValues[1].color.float32[1] = clearColor.y;
+    clearValues[1].color.float32[2] = clearColor.z;
+    clearValues[1].color.float32[3] = 1;
+    
+    clearValues[2].depthStencil.depth = 1;
+    clearValues[2].depthStencil.stencil = 0;
     
     info.clearValueCount = (int)clearValues.size();
     info.pClearValues = clearValues.data();

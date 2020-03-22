@@ -14,7 +14,8 @@ namespace gfx {
   const int swapchainSize = 2;
   
   struct SwapchainFrame {
-    VkImageView view = VK_NULL_HANDLE;
+    VkImageView msaaView = VK_NULL_HANDLE;
+    VkImageView resolvedView = VK_NULL_HANDLE;
     VkFramebuffer framebuffer = VK_NULL_HANDLE;
     VkCommandBuffer cmdBuffer = VK_NULL_HANDLE;
     uint32_t index;
@@ -41,16 +42,16 @@ namespace gfx {
   void createVec3Buffer(const vector<vec3> &vec3s, VkBuffer *bufferOut, VkDeviceMemory *memoryOut);
   VkFramebuffer createFramebuffer(VkRenderPass renderPass, vector<VkImageView> attachments, uint32_t width, uint32_t height);
   void createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
-  void createImage(VkFormat format, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut);
+  void createImage(VkFormat format, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut, VkSampleCountFlagBits sampleCountFlag = VK_SAMPLE_COUNT_1_BIT);
   VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask);
-  VkImageView createDepthImageAndView(uint32 width, uint32_t height);
+  VkImageView createDepthImageAndView(uint32 width, uint32_t height, VkSampleCountFlagBits sampleCountFlag = VK_SAMPLE_COUNT_1_BIT);
   VkSampler createSampler();
   VkCommandBuffer createCommandBuffer();
   VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts[], uint32_t descriptorSetLayoutCount, uint32_t pushConstantSize);
-  VkPipeline createPipeline(VkPipelineLayout layout, VkExtent2D extent, VkRenderPass renderPass, VkCullModeFlags cullMode, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath);
+  VkPipeline createPipeline(VkPipelineLayout layout, VkExtent2D extent, VkRenderPass renderPass, VkCullModeFlags cullMode, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath, VkSampleCountFlagBits sampleCountFlag = VK_SAMPLE_COUNT_1_BIT);
   void createDescriptorSet(VkBuffer buffer, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut);
   void createDescriptorSet(VkImageView imageView, VkSampler sampler, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut);
-  VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout);
+  VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout, VkSampleCountFlagBits sampleCountFlag = VK_SAMPLE_COUNT_1_BIT);
   VkSubpassDependency createSubpassDependency();
     
   // getters (graphics_get.cpp)

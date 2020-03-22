@@ -49,6 +49,7 @@ namespace gui {
     initInfo.QueueFamily = gfx::queueFamilyIndex;
     initInfo.Queue = gfx::queue;
     initInfo.PipelineCache = VK_NULL_HANDLE;
+    initInfo.MSAASamples = MSAA_SETTING;
     initInfo.DescriptorPool = gfx::descriptorPool;
     initInfo.Allocator = nullptr;
     initInfo.MinImageCount = gfx::swapchainSize;

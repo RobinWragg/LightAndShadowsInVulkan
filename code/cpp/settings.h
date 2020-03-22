@@ -3,6 +3,7 @@
 #define SHADOWMAP_RESOLUTION 4096
 #define MAX_LIGHT_SUBSOURCE_COUNT 16
 #define MAX_SHADOW_ANTI_ALIAS_SIZE 9
+#define MSAA_SETTING VK_SAMPLE_COUNT_4_BIT
 
 struct Settings {
   int subsourceCount = 1;

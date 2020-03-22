@@ -1,4 +1,5 @@
 #include "graphics.h"
+#include "settings.h"
 
 namespace gfx {
   
@@ -292,8 +293,15 @@ namespace gfx {
     for (int i = 0; i < images.size(); i++) {
       swapchainFrames[i].index = i;
       
-      swapchainFrames[i].view = createImageView(images[i], surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-      swapchainFrames[i].framebuffer = createFramebuffer(renderPass, {swapchainFrames[i].view, depthImageView}, extent.width, extent.height);
+      VkImage msaaImage;
+      VkDeviceMemory msaaImageMemory;
+      createImage(surfaceFormat, extent.width, extent.height, &msaaImage, &msaaImageMemory, MSAA_SETTING);
+      
+      swapchainFrames[i].msaaView = createImageView(msaaImage, surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+      
+      swapchainFrames[i].resolvedView = createImageView(images[i], surfaceFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+      
+      swapchainFrames[i].framebuffer = createFramebuffer(renderPass, {swapchainFrames[i].msaaView, swapchainFrames[i].resolvedView, depthImageView}, extent.width, extent.height);
       swapchainFrames[i].cmdBuffer = createCommandBuffer();
     }
   }
@@ -337,13 +345,13 @@ namespace gfx {
     createSwapchainFrames();
   }
   
-  VkImageView createDepthImageAndView(uint32 width, uint32_t height) {
+  VkImageView createDepthImageAndView(uint32 width, uint32_t height, VkSampleCountFlagBits sampleCountFlag) {
     SDL_assert_release(commandPool != VK_NULL_HANDLE);
     
     VkImage image;
     VkDeviceMemory imageMemory;
     
-    createImage(VK_FORMAT_D32_SFLOAT, width, height, &image, &imageMemory);
+    createImage(VK_FORMAT_D32_SFLOAT, width, height, &image, &imageMemory, sampleCountFlag);
 
     return createImageView(image, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT);
   }
@@ -362,11 +370,11 @@ namespace gfx {
     return dependency;
   }
   
-  VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout) {
+  VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout, VkSampleCountFlagBits sampleCountFlag) {
     VkAttachmentDescription description = {};
 
     description.format = format;
-    description.samples = VK_SAMPLE_COUNT_1_BIT;
+    description.samples = sampleCountFlag;
     description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     description.storeOp = storeOp;
     description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -382,19 +390,31 @@ namespace gfx {
     // Hacky: attachmentRefsOut is passed out of this function on the stack to prevent its references in VkSubpassDescription from being deallocated before they're used. attachmentRefsOut doesn't need to be directly used by the caller of this function.
     
     attachmentsOut->resize(0);
+    
+    // MSAA color attachment
+    attachmentsOut->push_back(createAttachmentDescription(surfaceFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, MSAA_SETTING));
+    
+    // Resolved, single-sample-per-pixel color attachment
     attachmentsOut->push_back(createAttachmentDescription(surfaceFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR));
-    attachmentsOut->push_back(createAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL));
+    
+    // Depth attachment
+    attachmentsOut->push_back(createAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, MSAA_SETTING));
     
     // attachment references
     attachmentRefsOut->resize(0);
     
-    VkAttachmentReference colorAttachmentRef = {};
-    colorAttachmentRef.attachment = 0; // attachments[0]
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    attachmentRefsOut->push_back(colorAttachmentRef);
+    VkAttachmentReference msaaColorAttachmentRef = {};
+    msaaColorAttachmentRef.attachment = 0; // attachments[0]
+    msaaColorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachmentRefsOut->push_back(msaaColorAttachmentRef);
+    
+    VkAttachmentReference resolvedColorAttachmentRef = {};
+    resolvedColorAttachmentRef.attachment = 1; // attachments[1]
+    resolvedColorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachmentRefsOut->push_back(resolvedColorAttachmentRef);
     
     VkAttachmentReference depthAttachmentRef = {};
-    depthAttachmentRef.attachment = 1; // attachments[1]
+    depthAttachmentRef.attachment = 2; // attachments[2]
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     attachmentRefsOut->push_back(depthAttachmentRef);
 
@@ -402,7 +422,8 @@ namespace gfx {
     descriptionOut->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     descriptionOut->colorAttachmentCount = 1;
     descriptionOut->pColorAttachments = &(*attachmentRefsOut)[0];
-    descriptionOut->pDepthStencilAttachment = &(*attachmentRefsOut)[1];
+    descriptionOut->pResolveAttachments = &(*attachmentRefsOut)[1];
+    descriptionOut->pDepthStencilAttachment = &(*attachmentRefsOut)[2];
     
     *dependencyOut = createSubpassDependency();
   }
@@ -547,20 +568,21 @@ namespace gfx {
     createCommandPool();
     
     auto extent = getSurfaceExtent();
-    depthImageView = createDepthImageAndView(extent.width, extent.height);
+    depthImageView = createDepthImageAndView(extent.width, extent.height, MSAA_SETTING);
     
     renderPass = createRenderPass();
     
     createSwapchain();
     
     for (int i = 0; i < swapchainSize; i++) {
-      SDL_assert_release(swapchainFrames[i].view != VK_NULL_HANDLE);
+      SDL_assert_release(swapchainFrames[i].msaaView != VK_NULL_HANDLE);
+      SDL_assert_release(swapchainFrames[i].resolvedView != VK_NULL_HANDLE);
     }
     
     descriptorPool = createDescriptorPool(1024);
   }
   
-  void createImage(VkFormat format, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut) {
+  void createImage(VkFormat format, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut, VkSampleCountFlagBits sampleCountFlag) {
     
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -594,7 +616,7 @@ namespace gfx {
     imageInfo.arrayLayers = 1;
     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.samples = sampleCountFlag;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     
     auto result = vkCreateImage(device, &imageInfo, nullptr, imageOut);
@@ -814,7 +836,7 @@ namespace gfx {
     return stageInfo;
   }
   
-  VkPipeline createPipeline(VkPipelineLayout layout, VkExtent2D extent, VkRenderPass renderPass, VkCullModeFlags cullMode, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath) {
+  VkPipeline createPipeline(VkPipelineLayout layout, VkExtent2D extent, VkRenderPass renderPass, VkCullModeFlags cullMode, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath, VkSampleCountFlagBits sampleCountFlag) {
     VkPipelineColorBlendStateCreateInfo colorBlending = {};
     colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     
@@ -855,7 +877,7 @@ namespace gfx {
     VkPipelineMultisampleStateCreateInfo multisamplingInfo = {};
     multisamplingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisamplingInfo.sampleShadingEnable = VK_FALSE;
-    multisamplingInfo.rasterizationSamples = VK_SAMPLE_COUNT_4_BIT;
+    multisamplingInfo.rasterizationSamples = sampleCountFlag;
     pipelineInfo.pMultisampleState = &multisamplingInfo;
     
     pipelineInfo.pColorBlendState = &colorBlending;

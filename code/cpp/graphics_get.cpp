@@ -17,7 +17,7 @@ namespace gfx {
       // macOS without validation
       "MoltenVK"
     #else
-      // Windows with no validation
+      // Windows without validation
       // (no layers necessary)
     #endif
   };
