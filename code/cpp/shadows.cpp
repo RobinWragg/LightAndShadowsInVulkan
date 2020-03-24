@@ -25,7 +25,7 @@ namespace shadows {
   
   void createRenderPass() {
     VkAttachmentDescription colorAttachment = gfx::createAttachmentDescription((*shadowMaps)[0].format, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    VkAttachmentDescription depthAttachment = gfx::createAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    VkAttachmentDescription depthAttachment = gfx::createAttachmentDescription(gfx::depthImageFormat, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     
     VkAttachmentReference colorAttachmentRef = {};
     colorAttachmentRef.attachment = 0;

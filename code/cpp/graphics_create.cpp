@@ -351,9 +351,9 @@ namespace gfx {
     VkImage image;
     VkDeviceMemory imageMemory;
     
-    createImage(VK_FORMAT_D32_SFLOAT, width, height, &image, &imageMemory, sampleCountFlag);
+    createImage(depthImageFormat, width, height, &image, &imageMemory, sampleCountFlag);
 
-    return createImageView(image, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT);
+    return createImageView(image, depthImageFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
   }
   
   VkSubpassDependency createSubpassDependency() {
@@ -398,7 +398,7 @@ namespace gfx {
     attachmentsOut->push_back(createAttachmentDescription(surfaceFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR));
     
     // Depth attachment
-    attachmentsOut->push_back(createAttachmentDescription(VK_FORMAT_D32_SFLOAT, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, MSAA_SETTING));
+    attachmentsOut->push_back(createAttachmentDescription(depthImageFormat, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, MSAA_SETTING));
     
     // attachment references
     attachmentRefsOut->resize(0);
@@ -593,7 +593,7 @@ namespace gfx {
     imageInfo.format = format;
     
     // Set format, usage, and memory properties.
-    if (imageInfo.format == VK_FORMAT_D32_SFLOAT) {
+    if (imageInfo.format == depthImageFormat) {
       imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
       
       // This flag appears to be inessential (on macOS at least), but is recommended.
