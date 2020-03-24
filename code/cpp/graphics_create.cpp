@@ -557,7 +557,7 @@ namespace gfx {
     SDL_assert_release(result == SDL_TRUE);
     SDL_assert_release(surface != VK_NULL_HANDLE);
     
-    physDevice = getPhysicalDevice(window);
+    physDevice = getPhysicalDevice();
     SDL_assert_release(physDevice != VK_NULL_HANDLE);
     
     createDeviceAndQueue();

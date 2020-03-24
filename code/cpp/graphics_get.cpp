@@ -37,7 +37,7 @@ namespace gfx {
     vkEnumerateInstanceLayerProperties(&layerCount, layerProperties->data());
   }
   
-  VkPhysicalDevice getPhysicalDevice(SDL_Window *window) {
+  VkPhysicalDevice getPhysicalDevice() {
     
     if (physDevice != VK_NULL_HANDLE) return physDevice;
     
@@ -65,25 +65,16 @@ namespace gfx {
         vkEnumerateDeviceExtensionProperties(
           availableDevice, nullptr, &count, availableExtensions.data());
         
-        bool deviceHasRequiredExtensions = true;
+        bool deviceSupportsSwapchain = false;
         
-        for (auto &requiredExt : requiredDeviceExtensions) {
-          bool foundExtension = false;
-          
-          for (auto &availableExt : availableExtensions) {
-            if (strcmp(requiredExt, availableExt.extensionName) == 0) {
-              foundExtension = true;
-              break;
-            }
-          }
-          
-          if (!foundExtension) {
-            deviceHasRequiredExtensions = false;
+        for (auto &availableExt : availableExtensions) {
+          if (strcmp(VK_KHR_SWAPCHAIN_EXTENSION_NAME, availableExt.extensionName) == 0) {
+            deviceSupportsSwapchain = true;
             break;
           }
         }
         
-        if (!deviceHasRequiredExtensions) continue;
+        if (!deviceSupportsSwapchain) continue;
       }
       
       // Check for required format and colour space
@@ -107,11 +98,25 @@ namespace gfx {
       suitableDevices.push_back(availableDevice);
     }
     
-    SDL_assert_release(suitableDevices.size() == 1);
+    SDL_assert_release(suitableDevices.size() >= 1);
+    
+    int chosenSuitableDeviceIndex = 0;
+    
+    // Prefer a discrete GPU
+    for (int i = 0; i < suitableDevices.size(); i++) {
+      VkPhysicalDeviceProperties properties;
+      vkGetPhysicalDeviceProperties(suitableDevices[i], &properties);
+      
+      if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+        chosenSuitableDeviceIndex = i;
+        break;
+      }
+    }
+    
     VkPhysicalDeviceProperties properties;
-    vkGetPhysicalDeviceProperties(suitableDevices[0], &properties);
+    vkGetPhysicalDeviceProperties(suitableDevices[chosenSuitableDeviceIndex], &properties);
     printf("\nChosen device: %s\n", properties.deviceName);
-    return suitableDevices[0];
+    return suitableDevices[chosenSuitableDeviceIndex];
   }
   
   uint32_t getMemoryType(uint32_t memTypeBits, VkMemoryPropertyFlags properties) {

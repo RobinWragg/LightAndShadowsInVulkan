@@ -59,7 +59,7 @@ namespace gfx {
   vector<const char*> getRequiredLayers();
   void                getAvailableInstanceLayers(vector<VkLayerProperties> *layerProperties);
   VkExtent2D          getSurfaceExtent();
-  VkPhysicalDevice    getPhysicalDevice(SDL_Window *window);
+  VkPhysicalDevice    getPhysicalDevice();
   uint32_t            getMemoryType(uint32_t memTypeBits, VkMemoryPropertyFlags properties);
   vector<VkImage>     getSwapchainImages();
   SwapchainFrame*     getNextFrame(VkSemaphore imageAvailableSemaphore);
