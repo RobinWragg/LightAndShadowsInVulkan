@@ -626,7 +626,7 @@ namespace gfx {
   }
   
   void createColorImage(uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut) {
-    createImage(VK_FORMAT_R32G32B32A32_SFLOAT, width, height, imageOut, memoryOut);
+    createImage(surfaceFormat, width, height, imageOut, memoryOut);
   }
   
   VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectMask) {

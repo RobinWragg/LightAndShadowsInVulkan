@@ -17,7 +17,7 @@ public:
   VkDescriptorSet samplerDescriptorSet;
   
   ShadowMap(uint32_t w, uint32_t h) {
-    format = VK_FORMAT_R32_SFLOAT;
+    format = VK_FORMAT_R16_SFLOAT;
     
     width = w;
     height = h;
