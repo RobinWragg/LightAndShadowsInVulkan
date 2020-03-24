@@ -52,7 +52,7 @@ namespace gfx {
   VkPipeline createPipeline(VkPipelineLayout layout, VkExtent2D extent, VkRenderPass renderPass, VkCullModeFlags cullMode, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath, VkSampleCountFlagBits sampleCountFlag = VK_SAMPLE_COUNT_1_BIT);
   void createDescriptorSet(VkBuffer buffer, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut);
   void createDescriptorSet(VkImageView imageView, VkSampler sampler, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut);
-  VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout, VkSampleCountFlagBits sampleCountFlag = VK_SAMPLE_COUNT_1_BIT);
+  VkAttachmentDescription createAttachmentDescription(VkFormat format, bool clear, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout, VkSampleCountFlagBits sampleCountFlag = VK_SAMPLE_COUNT_1_BIT);
   VkSubpassDependency createSubpassDependency();
     
   // getters (graphics_get.cpp)

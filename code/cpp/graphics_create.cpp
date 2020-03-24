@@ -370,12 +370,12 @@ namespace gfx {
     return dependency;
   }
   
-  VkAttachmentDescription createAttachmentDescription(VkFormat format, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout, VkSampleCountFlagBits sampleCountFlag) {
+  VkAttachmentDescription createAttachmentDescription(VkFormat format, bool clear, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout, VkSampleCountFlagBits sampleCountFlag) {
     VkAttachmentDescription description = {};
 
     description.format = format;
     description.samples = sampleCountFlag;
-    description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    description.loadOp = clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     description.storeOp = storeOp;
     description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -392,13 +392,13 @@ namespace gfx {
     attachmentsOut->resize(0);
     
     // MSAA color attachment
-    attachmentsOut->push_back(createAttachmentDescription(surfaceFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, MSAA_SETTING));
+    attachmentsOut->push_back(createAttachmentDescription(surfaceFormat, true, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, MSAA_SETTING));
     
     // Resolved, single-sample-per-pixel color attachment
-    attachmentsOut->push_back(createAttachmentDescription(surfaceFormat, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR));
+    attachmentsOut->push_back(createAttachmentDescription(surfaceFormat, false, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR));
     
     // Depth attachment
-    attachmentsOut->push_back(createAttachmentDescription(depthImageFormat, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, MSAA_SETTING));
+    attachmentsOut->push_back(createAttachmentDescription(depthImageFormat, true, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, MSAA_SETTING));
     
     // attachment references
     attachmentRefsOut->resize(0);
