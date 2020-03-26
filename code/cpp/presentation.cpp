@@ -6,11 +6,19 @@
 #include "geometry.h"
 #include "settings.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 namespace presentation {
   
-  VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-  VkPipeline       litPipeline    = VK_NULL_HANDLE;
-  VkPipeline       unlitPipeline  = VK_NULL_HANDLE;
+  VkPipelineLayout basicPipelineLayout    = VK_NULL_HANDLE;
+  VkPipelineLayout texturedPipelineLayout = VK_NULL_HANDLE;
+  VkPipeline       litPipeline            = VK_NULL_HANDLE;
+  VkPipeline       litTexturedPipeline    = VK_NULL_HANDLE;
+  VkPipeline       unlitPipeline          = VK_NULL_HANDLE;
+  
+  VkDescriptorSetLayout samplerDescSetLayout;
+  VkDescriptorSet samplerDescSet;
   
   vector<VkDescriptorSet> descriptorSets;
   
@@ -57,10 +65,48 @@ namespace presentation {
     };
     for (int i = 0; i < MAX_LIGHT_SUBSOURCE_COUNT; i++) descriptorSetLayouts.push_back(shadowMapSamplerDescSetLayout);
       
-    pipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(int32_t) * 2);
-    uint32_t vertexAttributeCount = 2;
-    litPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, vertexAttributeCount, "lit.vert.spv", "lit.frag.spv", MSAA_SETTING);
-    unlitPipeline = gfx::createPipeline(pipelineLayout, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, vertexAttributeCount, "unlit.vert.spv", "unlit.frag.spv", MSAA_SETTING);
+    basicPipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(int32_t) * 2);
+    vector<VkFormat> vertAttribFormats = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT};
+    litPipeline = gfx::createPipeline(basicPipelineLayout, vertAttribFormats, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, "lit.vert.spv", "lit.frag.spv", MSAA_SETTING);
+    unlitPipeline = gfx::createPipeline(basicPipelineLayout, vertAttribFormats, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, "unlit.vert.spv", "unlit.frag.spv", MSAA_SETTING);
+    
+    {
+      vector<VkDescriptorSetLayout> descriptorSetLayouts = {
+        DrawCall::worldMatrixDescSetLayout,
+        shadows::getMatricesDescSetLayout(),
+        matricesDescSetLayout,
+        lightViewOffsetsDescSetLayout
+      };
+      
+      for (int i = 0; i < MAX_LIGHT_SUBSOURCE_COUNT; i++) descriptorSetLayouts.push_back(shadowMapSamplerDescSetLayout);
+      
+      // Create image sampler
+      VkImage image;
+      VkDeviceMemory imageMemory;
+      VkImageView imageView;
+      VkSampler sampler;
+      {
+        VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+        int width, height, componentsPerPixel;
+        uint8_t *data = stbi_load("test.jpg", &width, &height, &componentsPerPixel, 4);
+        
+        gfx::createImage(format, width, height, &image, &imageMemory);
+        
+        gfx::setImageMemoryRGBA(image, imageMemory, width, height, data);
+        
+        imageView = gfx::createImageView(image, format, VK_IMAGE_ASPECT_COLOR_BIT);
+        
+        sampler = gfx::createSampler();
+        gfx::createDescriptorSet(imageView, sampler, &samplerDescSet, &samplerDescSetLayout);
+        stbi_image_free(data);
+      }
+      
+      descriptorSetLayouts.push_back(samplerDescSetLayout);
+      
+      texturedPipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(int32_t) * 2);
+      vector<VkFormat> vertAttribFormats = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT}; // TODO: jmp
+      litTexturedPipeline = gfx::createPipeline(texturedPipelineLayout, vertAttribFormats, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, "litTextured.vert.spv", "litTextured.frag.spv", MSAA_SETTING);
+    }
     
     VkExtent2D extent = gfx::getSurfaceExtent();
     matrices.proj = createProjectionMatrix(extent.width, extent.height, 0.5);
@@ -126,13 +172,13 @@ namespace presentation {
     vector<VkDescriptorSet> sets = {lightMatricesDescSet, matricesDescSet, lightViewOffsetsDescSet};
     for (int i = 0; i < MAX_LIGHT_SUBSOURCE_COUNT; i++) sets.push_back((*shadowMaps)[i].samplerDescriptorSet);
     
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, (int)sets.size(), sets.data(), 0, nullptr);
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, basicPipelineLayout, 1, (int)sets.size(), sets.data(), 0, nullptr);
     
     vector<int32_t> pushConstants = {
       settings.subsourceCount,
       settings.shadowAntiAliasSize
     };
-    vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, sizeof(pushConstants[0]) * (int)pushConstants.size(), pushConstants.data());
+    vkCmdPushConstants(cmdBuffer, basicPipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, sizeof(pushConstants[0]) * (int)pushConstants.size(), pushConstants.data());
   }
   
   void renderLightSource(VkCommandBuffer cmdBuffer) {
@@ -141,13 +187,20 @@ namespace presentation {
     lightSource->worldMatrix = translate(glm::identity<mat4>(), shadows::getLightPos());
     lightSource->worldMatrix = scale(lightSource->worldMatrix, vec3(0.2, 0.2, 0.2));
     
-    lightSource->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    lightSource->addToCmdBuffer(cmdBuffer, basicPipelineLayout);
   }
   
   void render(VkCommandBuffer cmdBuffer, vector<ShadowMap> *shadowMaps) {
     setUniforms(cmdBuffer, shadowMaps);
+    
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, litPipeline);
-    geometry::addGeometryToCommandBuffer(cmdBuffer, pipelineLayout);
+    geometry::recordCommands(cmdBuffer, basicPipelineLayout, false);
+    
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, texturedPipelineLayout, 18, 1, &samplerDescSet, 0, nullptr);
+    
+    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, litTexturedPipeline);
+    geometry::recordCommands(cmdBuffer, texturedPipelineLayout, true);
+    
     renderLightSource(cmdBuffer);
   }
 }

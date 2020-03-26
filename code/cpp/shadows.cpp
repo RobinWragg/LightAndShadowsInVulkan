@@ -77,11 +77,11 @@ namespace shadows {
     vector<VkDescriptorSetLayout> descSetLayouts = {matricesDescSetLayout, DrawCall::worldMatrixDescSetLayout};
     pipelineLayout = gfx::createPipelineLayout(descSetLayouts.data(), (int)descSetLayouts.size(), sizeof(vec2));
     
-    const uint32_t vertexAttributeCount = 2;
+    vector<VkFormat> vertAttribFormats = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT};
     VkExtent2D extent;
     extent.width = (*shadowMaps)[0].width;
     extent.height = (*shadowMaps)[0].height;
-    pipeline = gfx::createPipeline(pipelineLayout, extent, renderPass, VK_CULL_MODE_FRONT_BIT, vertexAttributeCount, "shadowMap.vert.spv", "shadowMap.frag.spv");
+    pipeline = gfx::createPipeline(pipelineLayout, vertAttribFormats, extent, renderPass, VK_CULL_MODE_FRONT_BIT, "shadowMap.vert.spv", "shadowMap.frag.spv");
   }
   
   VkDescriptorSetLayout getMatricesDescSetLayout() {
@@ -153,7 +153,7 @@ namespace shadows {
         
         vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, sizeof(vec2), &viewOffsets[i]);
         
-        geometry::addGeometryToCommandBuffer(cmdBuffer, pipelineLayout);
+        geometry::recordCommands(cmdBuffer, pipelineLayout, false);
       }
       
       vkCmdEndRenderPass(cmdBuffer);

@@ -3,6 +3,7 @@
 layout(location = 0) in vec3 vertPosInWorld;
 layout(location = 1) in vec3 interpVertNormalInWorld;
 layout(location = 2) in vec3 lightPosInWorld;
+layout(location = 3) in vec2 texCoord;
 
 layout(location = 0) out vec4 outColor;
 
@@ -26,6 +27,8 @@ layout(set = 3, binding = 0) uniform LightViewOffsets {
   vec2 value11;
   vec2 value12;
   vec2 value13;
+  vec2 value14;
+  vec2 value15;
 } lightViewOffsets;
 
 layout(push_constant) uniform Config {
@@ -47,6 +50,8 @@ layout(set = 14, binding = 0) uniform sampler2D shadowMap10;
 layout(set = 15, binding = 0) uniform sampler2D shadowMap11;
 layout(set = 16, binding = 0) uniform sampler2D shadowMap12;
 layout(set = 17, binding = 0) uniform sampler2D shadowMap13;
+
+layout(set = 18, binding = 0) uniform sampler2D generalTexture;
 
 float getShadowMapTexel(int index, vec2 texCoord) {
   switch (index) {
@@ -149,7 +154,7 @@ void main() {
   
   float lightNormalDot = dot(vertNormalInWorld, normalize(vertToLightVector));
   
-  vec3 preShadowColor = vec3(1, 1, 1) * lightNormalDot;
+  vec3 preShadowColor = texture(generalTexture, texCoord).rgb * lightNormalDot;
   outColor = vec4(preShadowColor, 1);
   
   if (lightNormalDot > 0) {

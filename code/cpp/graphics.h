@@ -49,7 +49,9 @@ namespace gfx {
   VkSampler createSampler();
   VkCommandBuffer createCommandBuffer();
   VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts[], uint32_t descriptorSetLayoutCount, uint32_t pushConstantSize);
-  VkPipeline createPipeline(VkPipelineLayout layout, VkExtent2D extent, VkRenderPass renderPass, VkCullModeFlags cullMode, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath, VkSampleCountFlagBits sampleCountFlag = VK_SAMPLE_COUNT_1_BIT);
+  VkPipelineVertexInputStateCreateInfo allocVertexInputInfo(const vector<VkFormat> &attribFormats);
+  void freeVertexInputInfo(VkPipelineVertexInputStateCreateInfo info);
+  VkPipeline createPipeline(VkPipelineLayout layout, const vector<VkFormat> &vertexAttribFormats, VkExtent2D extent, VkRenderPass renderPass, VkCullModeFlags cullMode, const char *vertexShaderPath, const char *fragmentShaderPath, VkSampleCountFlagBits sampleCountFlag = VK_SAMPLE_COUNT_1_BIT);  
   void createDescriptorSet(VkBuffer buffer, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut);
   void createDescriptorSet(VkImageView imageView, VkSampler sampler, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut);
   VkAttachmentDescription createAttachmentDescription(VkFormat format, bool clear, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout, VkSampleCountFlagBits sampleCountFlag = VK_SAMPLE_COUNT_1_BIT);
@@ -66,7 +68,7 @@ namespace gfx {
   
   // miscellaneous (graphics_misc.cpp)
   void setBufferMemory(VkDeviceMemory memory, uint64_t dataSize, const void *data);
-  void setImageMemoryRGBA(VkImage, VkDeviceMemory memory, uint32_t width, uint32_t height, const float *data);
+  void setImageMemoryRGBA(VkImage image, VkDeviceMemory memory, uint32_t width, uint32_t height, const uint8_t *data);
   void beginCommandBuffer(VkCommandBuffer cmdBuffer);
   void submitCommandBuffer(VkCommandBuffer cmdBuffer, VkSemaphore optionalWaitSemaphore = VK_NULL_HANDLE, VkPipelineStageFlags optionalWaitStage = 0, VkSemaphore optionalSignalSemaphore = VK_NULL_HANDLE, VkFence optionalFence = VK_NULL_HANDLE);
   void presentFrame(const SwapchainFrame *frame, VkSemaphore waitSemaphore);

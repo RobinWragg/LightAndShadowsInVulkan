@@ -159,11 +159,26 @@ namespace geometry {
     } else return new DrawCall(verts);
   }
   
+  void createGround() {
+    auto positions = createCuboidVertices(12, 0.5, -0.5);
+    
+    vector<vec2> texCoords = {
+      {0, 0}, {1, 0}, {0, 1},
+      {0, 1}, {1, 0}, {1, 1},
+    };
+    
+    while (texCoords.size() < positions.size()) {
+      texCoords.push_back(vec2(0, 0));
+    }
+    
+    ground = new DrawCall(positions, {}, texCoords);
+  }
+  
   void init() {
     aeroplane = newDrawCallFromObjFile("aeroplane.obj");
     frog = newDrawCallFromObjFile("frog.obj");
     
-    ground = new DrawCall(createCuboidVertices(12, 0.5, -0.5));
+    createGround();
     obelisk = new DrawCall(createCuboidVertices(0.5, 2, 0));
     sphere0 = newSphereDrawCall(2, true);
     sphere1 = newSphereDrawCall(3, true);
@@ -201,15 +216,18 @@ namespace geometry {
     obelisk->worldMatrix = rotate(obelisk->worldMatrix, 0.5f, vec3(0, 1, 0));
   }
   
-  void addGeometryToCommandBuffer(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
-    sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    sphere2->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    sphere3->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    ground->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
+  void recordCommands(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout, bool texturedGeometry) {
+    if (texturedGeometry) {
+      ground->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    } else {
+      sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
+      sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
+      sphere2->addToCmdBuffer(cmdBuffer, pipelineLayout);
+      sphere3->addToCmdBuffer(cmdBuffer, pipelineLayout);
+      aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
+      frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
+      obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    }
   }
 }
 

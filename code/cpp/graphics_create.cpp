@@ -484,7 +484,7 @@ namespace gfx {
     layoutBinding.descriptorType = descriptorType;
     layoutBinding.binding = 0;
     layoutBinding.descriptorCount = 1;
-    layoutBinding.stageFlags = VK_SHADER_STAGE_ALL;
+    layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -680,24 +680,31 @@ namespace gfx {
     return sampler;
   }
   
-  static VkPipelineVertexInputStateCreateInfo allocVertexInputInfo(uint32_t attributeCount) {
+  VkPipelineVertexInputStateCreateInfo allocVertexInputInfo(const vector<VkFormat> &attribFormats) {
     VkPipelineVertexInputStateCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     
-    info.vertexBindingDescriptionCount = attributeCount; // One binding per attribute.
-    info.vertexAttributeDescriptionCount = attributeCount;
+    info.vertexBindingDescriptionCount = (uint32_t)attribFormats.size(); // I use only one binding per attribute.
+    info.vertexAttributeDescriptionCount = (uint32_t)attribFormats.size();
     
-    auto bindings = new VkVertexInputBindingDescription[attributeCount];
-    auto attribs = new VkVertexInputAttributeDescription[attributeCount];
+    auto bindings = new VkVertexInputBindingDescription[attribFormats.size()];
+    auto attribs = new VkVertexInputAttributeDescription[attribFormats.size()];
     
-    for (int i = 0; i < attributeCount; i++) {
+    for (int i = 0; i < attribFormats.size(); i++) {
+      
       bindings[i].binding = i;
-      bindings[i].stride = sizeof(vec3);
       bindings[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
       
-      attribs[i].binding = i; // (*bindingsOut)[i]
+      // Set bindings[i].stride
+      switch (attribFormats[i]) {
+        case VK_FORMAT_R32G32B32_SFLOAT: bindings[i].stride = sizeof(vec3); break;
+        case VK_FORMAT_R32G32_SFLOAT: bindings[i].stride = sizeof(vec2); break;
+        default: SDL_assert_release(false); break; // Unsupported format!
+      };
+      
+      attribs[i].binding = i; // bindings[i]
       attribs[i].location = i;
-      attribs[i].format = VK_FORMAT_R32G32B32_SFLOAT; // vec3
+      attribs[i].format = attribFormats[i];
       attribs[i].offset = 0;
     }
     
@@ -707,7 +714,7 @@ namespace gfx {
     return info;
   }
   
-  static void freeVertexInputInfo(VkPipelineVertexInputStateCreateInfo info) {
+  void freeVertexInputInfo(VkPipelineVertexInputStateCreateInfo info) {
     delete [] info.pVertexBindingDescriptions;
     delete [] info.pVertexAttributeDescriptions;
   }
@@ -836,7 +843,7 @@ namespace gfx {
     return stageInfo;
   }
   
-  VkPipeline createPipeline(VkPipelineLayout layout, VkExtent2D extent, VkRenderPass renderPass, VkCullModeFlags cullMode, uint32_t vertexAttributeCount, const char *vertexShaderPath, const char *fragmentShaderPath, VkSampleCountFlagBits sampleCountFlag) {
+  VkPipeline createPipeline(VkPipelineLayout layout, const vector<VkFormat> &vertexAttribFormats, VkExtent2D extent, VkRenderPass renderPass, VkCullModeFlags cullMode, const char *vertexShaderPath, const char *fragmentShaderPath, VkSampleCountFlagBits sampleCountFlag) {
     VkPipelineColorBlendStateCreateInfo colorBlending = {};
     colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     
@@ -856,7 +863,7 @@ namespace gfx {
     pipelineInfo.stageCount = (int)shaderStages.size();
     pipelineInfo.pStages = shaderStages.data();
     
-    auto vertexInputInfo = allocVertexInputInfo(vertexAttributeCount);
+    auto vertexInputInfo = allocVertexInputInfo(vertexAttribFormats);
     pipelineInfo.pVertexInputState = &vertexInputInfo;
     
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};

@@ -118,9 +118,9 @@ namespace gfx {
     vkUnmapMemory(device, memory);
   }
   
-  void setImageMemoryRGBA(VkImage image, VkDeviceMemory memory, uint32_t width, uint32_t height, const float *data) {
+  void setImageMemoryRGBA(VkImage image, VkDeviceMemory memory, uint32_t width, uint32_t height, const uint8_t *data) {
     
-    uint64_t dataSizePerPixel = sizeof(float) * 4; // R+G+B+A
+    uint64_t dataSizePerPixel = sizeof(uint8_t) * 4; // R+G+B+A
     uint64_t dataSizeTotal = dataSizePerPixel * width * height;
     
     // Create and fill a staging buffer with the image data
