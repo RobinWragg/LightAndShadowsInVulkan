@@ -8,8 +8,6 @@ namespace geometry {
   DrawCall *ground    = nullptr;
   DrawCall *sphere0   = nullptr;
   DrawCall *sphere1   = nullptr;
-  DrawCall *sphere2   = nullptr;
-  DrawCall *sphere3   = nullptr;
   DrawCall *obelisk   = nullptr;
   DrawCall *aeroplane = nullptr;
   DrawCall *frog      = nullptr;
@@ -180,24 +178,16 @@ namespace geometry {
     
     createGround();
     obelisk = new DrawCall(createCuboidVertices(1, 2, 0));
-    sphere0 = newSphereDrawCall(2, true);
-    sphere1 = newSphereDrawCall(3, true);
-    sphere2 = newSphereDrawCall(8, true);
-    sphere3 = newSphereDrawCall(64, true);
+    sphere0 = newSphereDrawCall(8, false);
+    sphere1 = newSphereDrawCall(64, true);
     
     float sphereScale = 0.7;
-    sphere0->worldMatrix = translate(glm::identity<mat4>(), vec3(-2.5, sphereScale, -3.5));
+    sphere0->worldMatrix = translate(glm::identity<mat4>(), vec3(0, sphereScale, -4));
     sphere0->worldMatrix = scale(sphere0->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
-    sphere1->worldMatrix = translate(glm::identity<mat4>(), vec3(-0.8333, sphereScale, -3.5));
+    sphere1->worldMatrix = translate(glm::identity<mat4>(), vec3(-4, sphereScale, -3.5));
     sphere1->worldMatrix = scale(sphere1->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
-    
-    sphere2->worldMatrix = translate(glm::identity<mat4>(), vec3(0.8333, sphereScale, -3.5));
-    sphere2->worldMatrix = scale(sphere2->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
-    
-    sphere3->worldMatrix = translate(glm::identity<mat4>(), vec3(2.5, sphereScale, -3.5));
-    sphere3->worldMatrix = scale(sphere3->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
-    
+        
     float aeroplaneScale = 0.6;
     aeroplane->worldMatrix = translate(glm::identity<mat4>(), vec3(3, 1.6, 2));
     aeroplane->worldMatrix = scale(aeroplane->worldMatrix, vec3(aeroplaneScale, aeroplaneScale, aeroplaneScale));
@@ -212,8 +202,8 @@ namespace geometry {
     
     ground->worldMatrix = glm::identity<mat4>();
     
-    obelisk->worldMatrix = translate(glm::identity<mat4>(), vec3(-4, 0, -1));
-    obelisk->worldMatrix = rotate(obelisk->worldMatrix, 0.5f, vec3(0, 1, 0));
+    obelisk->worldMatrix = translate(glm::identity<mat4>(), vec3(-1, 0, -2));
+    obelisk->worldMatrix = rotate(obelisk->worldMatrix, 0.2f, vec3(0, 1, 0));
   }
   
   void recordCommands(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout, bool texturedGeometry) {
@@ -222,8 +212,6 @@ namespace geometry {
     } else {
       sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
       sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
-      sphere2->addToCmdBuffer(cmdBuffer, pipelineLayout);
-      sphere3->addToCmdBuffer(cmdBuffer, pipelineLayout);
       aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
       frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
       obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
