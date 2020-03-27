@@ -73,9 +73,7 @@ namespace gui {
     
     Begin("Lighting Settings");
     
-    static int radioValue = 0;
-    RadioButton("2048", &radioValue, 2048);
-    RadioButton("4096", &radioValue, 4096);
+    Checkbox("Animate Lightsource", &settings.animateLightPos);
     
     Text("Subsource Arrangement");
     if (RadioButton("Spiral", settings.subsourceArrangement == settings.SPIRAL)) {

@@ -179,7 +179,7 @@ namespace geometry {
     frog = newDrawCallFromObjFile("frog.obj");
     
     createGround();
-    obelisk = new DrawCall(createCuboidVertices(0.5, 2, 0));
+    obelisk = new DrawCall(createCuboidVertices(1, 2, 0));
     sphere0 = newSphereDrawCall(2, true);
     sphere1 = newSphereDrawCall(3, true);
     sphere2 = newSphereDrawCall(8, true);
@@ -199,9 +199,9 @@ namespace geometry {
     sphere3->worldMatrix = scale(sphere3->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
     float aeroplaneScale = 0.6;
-    aeroplane->worldMatrix = translate(glm::identity<mat4>(), vec3(2, 1.6, 2));
+    aeroplane->worldMatrix = translate(glm::identity<mat4>(), vec3(3, 1.6, 2));
     aeroplane->worldMatrix = scale(aeroplane->worldMatrix, vec3(aeroplaneScale, aeroplaneScale, aeroplaneScale));
-    aeroplane->worldMatrix = rotate(aeroplane->worldMatrix, 1.0f, vec3(0, 1, 0));
+    aeroplane->worldMatrix = rotate(aeroplane->worldMatrix, 0.2f, vec3(0, 1, 0));
     aeroplane->worldMatrix = rotate(aeroplane->worldMatrix, 0.035f, vec3(1, 0, 0));
     
     float frogScale = 1;
@@ -212,7 +212,7 @@ namespace geometry {
     
     ground->worldMatrix = glm::identity<mat4>();
     
-    obelisk->worldMatrix = translate(glm::identity<mat4>(), vec3(-3, 0, -1));
+    obelisk->worldMatrix = translate(glm::identity<mat4>(), vec3(-4, 0, -1));
     obelisk->worldMatrix = rotate(obelisk->worldMatrix, 0.5f, vec3(0, 1, 0));
   }
   
