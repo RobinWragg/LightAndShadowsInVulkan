@@ -17,8 +17,11 @@ namespace presentation {
   VkPipeline       litTexturedPipeline    = VK_NULL_HANDLE;
   VkPipeline       unlitPipeline          = VK_NULL_HANDLE;
   
-  VkDescriptorSetLayout samplerDescSetLayout;
-  VkDescriptorSet samplerDescSet;
+  VkDescriptorSetLayout floorSamplerDescSetLayout;
+  VkDescriptorSet floorSamplerDescSet;
+  
+  VkDescriptorSetLayout floorNormalSamplerDescSetLayout;
+  VkDescriptorSet floorNormalSamplerDescSet;
   
   vector<VkDescriptorSet> descriptorSets;
   
@@ -48,6 +51,28 @@ namespace presentation {
     
     // Flip the Y axis because Vulkan shaders expect positive Y to point downwards
     return scale(proj, vec3(1, -1, 1));
+  }
+  
+  void loadImage(const char *filePath, bool normalMap, VkImage *imageOut, VkDeviceMemory *memoryOut, VkImageView *viewOut) {
+    VkFormat format = normalMap ? VK_FORMAT_R8G8B8A8_SNORM : VK_FORMAT_R8G8B8A8_UNORM;
+    
+    int width, height, componentsPerPixel;
+    uint8_t *data = stbi_load(filePath, &width, &height, &componentsPerPixel, 4);
+    
+    if (normalMap) {
+      for (uint32_t i = 0; i < width*height*4; i += 4) {
+        data[i] = data[i] - 127;
+        data[i+1] = data[i+2] / 2;
+        data[i+2] = data[i+1] - 127;
+      }
+    }
+    
+    gfx::createImage(format, width, height, imageOut, memoryOut);
+    
+    gfx::setImageMemoryRGBA(*imageOut, *memoryOut, width, height, data);
+    
+    *viewOut = gfx::createImageView(*imageOut, format, VK_IMAGE_ASPECT_COLOR_BIT);
+    stbi_image_free(data);
   }
 
   void init(VkDescriptorSetLayout shadowMapSamplerDescSetLayout) {
@@ -81,27 +106,26 @@ namespace presentation {
       for (int i = 0; i < MAX_LIGHT_SUBSOURCE_COUNT; i++) descriptorSetLayouts.push_back(shadowMapSamplerDescSetLayout);
       
       // Create image sampler
-      VkImage image;
-      VkDeviceMemory imageMemory;
-      VkImageView imageView;
-      VkSampler sampler;
       {
-        VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
-        int width, height, componentsPerPixel;
-        uint8_t *data = stbi_load("test.jpg", &width, &height, &componentsPerPixel, 4);
-        
-        gfx::createImage(format, width, height, &image, &imageMemory);
-        
-        gfx::setImageMemoryRGBA(image, imageMemory, width, height, data);
-        
-        imageView = gfx::createImageView(image, format, VK_IMAGE_ASPECT_COLOR_BIT);
-        
-        sampler = gfx::createSampler();
-        gfx::createDescriptorSet(imageView, sampler, &samplerDescSet, &samplerDescSetLayout);
-        stbi_image_free(data);
+        VkImage image;
+        VkDeviceMemory imageMemory;
+        VkImageView imageView;
+        loadImage("floorboards.jpg", false, &image, &imageMemory, &imageView);
+        VkSampler sampler = gfx::createSampler();
+        gfx::createDescriptorSet(imageView, sampler, &floorSamplerDescSet, &floorSamplerDescSetLayout);
+        descriptorSetLayouts.push_back(floorSamplerDescSetLayout);
       }
       
-      descriptorSetLayouts.push_back(samplerDescSetLayout);
+      {
+        VkImage image;
+        VkDeviceMemory imageMemory;
+        VkImageView imageView;
+        loadImage("floorboards_normals.jpg", true, &image, &imageMemory, &imageView);
+        VkSampler sampler = gfx::createSampler();
+        gfx::createDescriptorSet(imageView, sampler, &floorNormalSamplerDescSet, &floorNormalSamplerDescSetLayout);
+        descriptorSetLayouts.push_back(floorNormalSamplerDescSetLayout);
+      }
+      
       
       texturedPipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(int32_t) * 2);
       vector<VkFormat> vertAttribFormats = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT}; // TODO: jmp
@@ -196,7 +220,8 @@ namespace presentation {
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, litPipeline);
     geometry::recordCommands(cmdBuffer, basicPipelineLayout, false);
     
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, texturedPipelineLayout, 18, 1, &samplerDescSet, 0, nullptr);
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, texturedPipelineLayout, 18, 1, &floorSamplerDescSet, 0, nullptr);
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, texturedPipelineLayout, 19, 1, &floorNormalSamplerDescSet, 0, nullptr);
     
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, litTexturedPipeline);
     geometry::recordCommands(cmdBuffer, texturedPipelineLayout, true);

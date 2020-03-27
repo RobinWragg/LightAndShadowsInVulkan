@@ -1,11 +1,14 @@
 #version 450
 
 layout(location = 0) in vec3 vertPosInWorld;
-layout(location = 1) in vec3 interpVertNormalInWorld;
 layout(location = 2) in vec3 lightPosInWorld;
 layout(location = 3) in vec2 texCoord;
 
 layout(location = 0) out vec4 outColor;
+
+layout(set = 0, binding = 0) uniform DrawCall {
+  mat4 worldMatrix;
+} drawCall;
 
 layout(set = 1, binding = 0) uniform LightMatrices {
   mat4 view;
@@ -51,7 +54,8 @@ layout(set = 15, binding = 0) uniform sampler2D shadowMap11;
 layout(set = 16, binding = 0) uniform sampler2D shadowMap12;
 layout(set = 17, binding = 0) uniform sampler2D shadowMap13;
 
-layout(set = 18, binding = 0) uniform sampler2D generalTexture;
+layout(set = 18, binding = 0) uniform sampler2D colorTexture;
+layout(set = 19, binding = 0) uniform sampler2D normalsTexture;
 
 float getShadowMapTexel(int index, vec2 texCoord) {
   switch (index) {
@@ -147,14 +151,18 @@ float getTotalShadowFactor(vec3 posInWorld) {
 }
 
 void main() {
-  // Interpolation can cause normals to be non-unit length, so we re-normalise them here
-  vec3 vertNormalInWorld = normalize(interpVertNormalInWorld);
-  
   const vec3 vertToLightVector = lightPosInWorld - vertPosInWorld;
   
-  float lightNormalDot = dot(vertNormalInWorld, normalize(vertToLightVector));
+  vec3 normal = texture(normalsTexture, texCoord).rgb;
   
-  vec3 preShadowColor = texture(generalTexture, texCoord).rgb * lightNormalDot;
+  // Transform the normal to world space
+  mat3 normalMatrix = mat3(drawCall.worldMatrix);
+  normalMatrix = transpose(inverse(normalMatrix));
+  vec3 worldNormal = normalMatrix * normal;
+  
+  float lightNormalDot = dot(worldNormal, normalize(vertToLightVector));
+  
+  vec3 preShadowColor = texture(colorTexture, texCoord).rgb * lightNormalDot;
   outColor = vec4(preShadowColor, 1);
   
   if (lightNormalDot > 0) {
