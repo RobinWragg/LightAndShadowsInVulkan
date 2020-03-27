@@ -35,6 +35,13 @@ namespace presentation {
     mat4 proj;
   } matrices;
   
+  struct PushConstants {
+    int32_t subsourceCount;
+    int32_t shadowAntiAliasSize;
+    uint32_t renderTexturesBool;
+    uint32_t renderNormalMapsBool;
+  } pushConstants;
+  
   VkBuffer              matricesBuffer        = VK_NULL_HANDLE;
   VkDeviceMemory        matricesBufferMemory  = VK_NULL_HANDLE;
   VkDescriptorSet       matricesDescSet       = VK_NULL_HANDLE;
@@ -88,9 +95,11 @@ namespace presentation {
       matricesDescSetLayout,
       lightViewOffsetsDescSetLayout
     };
-    for (int i = 0; i < MAX_LIGHT_SUBSOURCE_COUNT; i++) descriptorSetLayouts.push_back(shadowMapSamplerDescSetLayout);
-      
-    basicPipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(int32_t) * 2);
+    for (int i = 0; i < MAX_LIGHT_SUBSOURCE_COUNT; i++) {
+      descriptorSetLayouts.push_back(shadowMapSamplerDescSetLayout);
+    }
+    
+    basicPipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(PushConstants));
     vector<VkFormat> vertAttribFormats = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT};
     litPipeline = gfx::createPipeline(basicPipelineLayout, vertAttribFormats, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, "lit.vert.spv", "lit.frag.spv", MSAA_SETTING);
     unlitPipeline = gfx::createPipeline(basicPipelineLayout, vertAttribFormats, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, "unlit.vert.spv", "unlit.frag.spv", MSAA_SETTING);
@@ -127,8 +136,8 @@ namespace presentation {
       }
       
       
-      texturedPipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(int32_t) * 2);
-      vector<VkFormat> vertAttribFormats = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT}; // TODO: jmp
+      texturedPipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(PushConstants));
+      vector<VkFormat> vertAttribFormats = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT};
       litTexturedPipeline = gfx::createPipeline(texturedPipelineLayout, vertAttribFormats, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, "litTextured.vert.spv", "litTextured.frag.spv", MSAA_SETTING);
     }
     
@@ -198,11 +207,12 @@ namespace presentation {
     
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, basicPipelineLayout, 1, (int)sets.size(), sets.data(), 0, nullptr);
     
-    vector<int32_t> pushConstants = {
-      settings.subsourceCount,
-      settings.shadowAntiAliasSize
-    };
-    vkCmdPushConstants(cmdBuffer, basicPipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, sizeof(pushConstants[0]) * (int)pushConstants.size(), pushConstants.data());
+    PushConstants pushConstants;
+    pushConstants.subsourceCount       = settings.subsourceCount;
+    pushConstants.shadowAntiAliasSize  = settings.shadowAntiAliasSize;
+    pushConstants.renderTexturesBool   = settings.renderTextures;
+    pushConstants.renderNormalMapsBool = settings.renderNormalMaps;
+    vkCmdPushConstants(cmdBuffer, basicPipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, sizeof(pushConstants), &pushConstants);
   }
   
   void renderLightSource(VkCommandBuffer cmdBuffer) {
@@ -223,7 +233,10 @@ namespace presentation {
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, texturedPipelineLayout, 18, 1, &floorSamplerDescSet, 0, nullptr);
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, texturedPipelineLayout, 19, 1, &floorNormalSamplerDescSet, 0, nullptr);
     
-    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, litTexturedPipeline);
+    if (settings.renderTextures || settings.renderNormalMaps) {
+      vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, litTexturedPipeline);
+    }
+    
     geometry::recordCommands(cmdBuffer, texturedPipelineLayout, true);
     
     renderLightSource(cmdBuffer);

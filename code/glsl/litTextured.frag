@@ -1,6 +1,7 @@
 #version 450
 
 layout(location = 0) in vec3 vertPosInWorld;
+layout(location = 1) in vec3 vertNormal;
 layout(location = 2) in vec3 lightPosInWorld;
 layout(location = 3) in vec2 texCoord;
 
@@ -37,6 +38,8 @@ layout(set = 3, binding = 0) uniform LightViewOffsets {
 layout(push_constant) uniform Config {
   int shadowMapCount;
   int shadowAntiAliasSize;
+  bool renderTexture;
+  bool renderNormalMap;
 } config;
 
 layout(set = 4, binding = 0) uniform sampler2D shadowMap0;
@@ -55,7 +58,7 @@ layout(set = 16, binding = 0) uniform sampler2D shadowMap12;
 layout(set = 17, binding = 0) uniform sampler2D shadowMap13;
 
 layout(set = 18, binding = 0) uniform sampler2D colorTexture;
-layout(set = 19, binding = 0) uniform sampler2D normalsTexture;
+layout(set = 19, binding = 0) uniform sampler2D normalMap;
 
 float getShadowMapTexel(int index, vec2 texCoord) {
   switch (index) {
@@ -153,7 +156,7 @@ float getTotalShadowFactor(vec3 posInWorld) {
 void main() {
   const vec3 vertToLightVector = lightPosInWorld - vertPosInWorld;
   
-  vec3 normal = texture(normalsTexture, texCoord).rgb;
+  vec3 normal = config.renderNormalMap ? texture(normalMap, texCoord).xyz : vertNormal;
   
   // Transform the normal to world space
   mat3 normalMatrix = mat3(drawCall.worldMatrix);
@@ -162,8 +165,9 @@ void main() {
   
   float lightNormalDot = dot(worldNormal, normalize(vertToLightVector));
   
-  vec3 preShadowColor = texture(colorTexture, texCoord).rgb * lightNormalDot;
-  outColor = vec4(preShadowColor, 1);
+  vec3 baseColor = config.renderTexture ? texture(colorTexture, texCoord).rgb : vec3(1);
+  
+  outColor = vec4(baseColor * lightNormalDot, 1);
   
   if (lightNormalDot > 0) {
     // Attenuate the fragment color if it is in shadow

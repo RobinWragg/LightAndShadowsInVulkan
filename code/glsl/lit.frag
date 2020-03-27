@@ -31,6 +31,8 @@ layout(set = 3, binding = 0) uniform LightViewOffsets {
 layout(push_constant) uniform Config {
   int shadowMapCount;
   int shadowAntiAliasSize;
+  bool renderTexture; // Not used in this shader
+  bool renderNormalMap; // Not used in this shader
 } config;
 
 layout(set = 4, binding = 0) uniform sampler2D shadowMap0;

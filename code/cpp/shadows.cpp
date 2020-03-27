@@ -89,7 +89,7 @@ namespace shadows {
   }
   
   void update() {
-    lightPos = vec3(0, 5.5, 1);
+    lightPos = vec3(0, 5.5, 0.00001 /* non-zero to work around a bug in glm::lookAt() */);
     
     matrices.view = lookAt(lightPos, vec3(0, 0, 0), vec3(0, 1, 0));
     

@@ -73,9 +73,6 @@ namespace gui {
     
     Begin("Lighting Settings");
     
-    static bool checkboxState = false;
-    Checkbox("My checkbox", &checkboxState);
-    
     static int radioValue = 0;
     RadioButton("2048", &radioValue, 2048);
     RadioButton("4096", &radioValue, 4096);
@@ -112,6 +109,9 @@ namespace gui {
     
     SetNextItemWidth(90);
     PlotPoints("Subsource Layout Preview", imVecs.data(), (int)imVecs.size(), 0, NULL, FLT_MAX, FLT_MAX, ImVec2(100, 100));
+    
+    Checkbox("Render textures", &settings.renderTextures);
+    Checkbox("Render normalmaps", &settings.renderNormalMaps);
     
     End();
     
