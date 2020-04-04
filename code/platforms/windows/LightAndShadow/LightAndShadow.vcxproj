@@ -150,7 +150,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\..\libs\imgui;..\VulkanSDK 1.1.121.2\Include;..\..\..\libs\glm-0.9.9.6;..\..\..\libs\tiny_obj_loader;..\SDL2-2.0.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\libs\stb_image;..\..\..\libs\imgui;..\VulkanSDK 1.1.121.2\Include;..\..\..\libs\glm-0.9.9.6;..\..\..\libs\tiny_obj_loader;..\SDL2-2.0.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -190,7 +190,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\..\libs\imgui;..\VulkanSDK 1.1.121.2\Include;..\..\..\libs\glm-0.9.9.6;..\..\..\libs\tiny_obj_loader;..\SDL2-2.0.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\libs\stb_image;..\..\..\libs\imgui;..\VulkanSDK 1.1.121.2\Include;..\..\..\libs\glm-0.9.9.6;..\..\..\libs\tiny_obj_loader;..\SDL2-2.0.10\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>

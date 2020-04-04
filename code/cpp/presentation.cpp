@@ -65,6 +65,7 @@ namespace presentation {
     
     int width, height, componentsPerPixel;
     uint8_t *data = stbi_load(filePath, &width, &height, &componentsPerPixel, 4);
+	SDL_assert_release(data != nullptr);
     
     if (normalMap) {
       for (uint32_t i = 0; i < width*height*4; i += 4) {
