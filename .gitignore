@@ -3,7 +3,6 @@
 *.sublime-workspace
 xcuserdata/
 DerivedData/
-code/assets/*.spv
 code/platforms/windows/LightAndShadow/x64/
 .vs/
 *.user

@@ -182,7 +182,7 @@ namespace geometry {
     sphere1 = newSphereDrawCall(64, true);
     
     float sphereScale = 0.7;
-    sphere0->worldMatrix = translate(glm::identity<mat4>(), vec3(0, sphereScale, -4));
+    sphere0->worldMatrix = translate(glm::identity<mat4>(), vec3(2, sphereScale, -4));
     sphere0->worldMatrix = scale(sphere0->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
     sphere1->worldMatrix = translate(glm::identity<mat4>(), vec3(-4, sphereScale, -3.5));
