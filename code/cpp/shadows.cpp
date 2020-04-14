@@ -18,10 +18,9 @@ namespace shadows {
     mat4 proj;
   } matrices;
   
-  VkBuffer              matricesBuffer        = VK_NULL_HANDLE;
-  VkDeviceMemory        matricesBufferMemory  = VK_NULL_HANDLE;
-  VkDescriptorSet       matricesDescSet       = VK_NULL_HANDLE;
-  VkDescriptorSetLayout matricesDescSetLayout = VK_NULL_HANDLE;
+  VkBuffer        matricesBuffer       = VK_NULL_HANDLE;
+  VkDeviceMemory  matricesBufferMemory = VK_NULL_HANDLE;
+  VkDescriptorSet matricesDescSet      = VK_NULL_HANDLE;
   
   void createRenderPass() {
     VkAttachmentDescription colorAttachment = gfx::createAttachmentDescription((*shadowMaps)[0].format, true, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -63,7 +62,7 @@ namespace shadows {
     shadowMaps = shadowMaps_;
     
     gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(matrices), &matricesBuffer, &matricesBufferMemory);
-    gfx::createDescriptorSet(matricesBuffer, &matricesDescSet, &matricesDescSetLayout);
+    matricesDescSet = gfx::createDescSet(matricesBuffer);
     
     createRenderPass();
     
@@ -74,7 +73,7 @@ namespace shadows {
       framebuffers[i] = gfx::createFramebuffer(renderPass, {shadowMap.imageView, shadowMap.depthImageView}, shadowMap.width, shadowMap.height);
     }
     
-    vector<VkDescriptorSetLayout> descSetLayouts = {matricesDescSetLayout, DrawCall::worldMatrixDescSetLayout};
+    vector<VkDescriptorSetLayout> descSetLayouts = {gfx::bufferDescLayout, gfx::bufferDescLayout};
     pipelineLayout = gfx::createPipelineLayout(descSetLayouts.data(), (int)descSetLayouts.size(), sizeof(vec2));
     
     vector<VkFormat> vertAttribFormats = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT};
@@ -82,10 +81,6 @@ namespace shadows {
     extent.width = (*shadowMaps)[0].width;
     extent.height = (*shadowMaps)[0].height;
     pipeline = gfx::createPipeline(pipelineLayout, vertAttribFormats, extent, renderPass, VK_CULL_MODE_FRONT_BIT, "shadowMap.vert.spv", "shadowMap.frag.spv");
-  }
-  
-  VkDescriptorSetLayout getMatricesDescSetLayout() {
-    return matricesDescSetLayout;
   }
   
   void update() {

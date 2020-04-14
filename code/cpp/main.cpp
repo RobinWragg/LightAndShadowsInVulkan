@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
   
   geometry::init();
   shadows::init(&shadowMaps);
-  presentation::init(shadowMaps[0].samplerDescriptorSetLayout);
+  presentation::init();
   shadowMapViewer::init(&shadowMaps);
   gui::init(window);
   

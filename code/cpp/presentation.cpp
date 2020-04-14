@@ -17,13 +17,8 @@ namespace presentation {
   VkPipeline       litTexturedPipeline    = VK_NULL_HANDLE;
   VkPipeline       unlitPipeline          = VK_NULL_HANDLE;
   
-  VkDescriptorSetLayout floorSamplerDescSetLayout;
-  VkDescriptorSet floorSamplerDescSet;
-  
-  VkDescriptorSetLayout floorNormalSamplerDescSetLayout;
+  VkDescriptorSet floorSamplerDescSet;  
   VkDescriptorSet floorNormalSamplerDescSet;
-  
-  vector<VkDescriptorSet> descriptorSets;
   
   vec3 cameraPos;
   vec2 cameraAngle;
@@ -49,7 +44,6 @@ namespace presentation {
   VkBuffer              lightViewOffsetsBuffer        = VK_NULL_HANDLE;
   VkDeviceMemory        lightViewOffsetsBufferMemory  = VK_NULL_HANDLE;
   VkDescriptorSet       lightViewOffsetsDescSet       = VK_NULL_HANDLE;
-  VkDescriptorSetLayout lightViewOffsetsDescSetLayout = VK_NULL_HANDLE;
   
   static mat4 createProjectionMatrix(uint32_t width, uint32_t height, float fieldOfView) {
     float aspectRatio = width / (float)height;
@@ -82,20 +76,22 @@ namespace presentation {
     stbi_image_free(data);
   }
 
-  void init(VkDescriptorSetLayout shadowMapSamplerDescSetLayout) {
+  void init() {
     gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(matrices), &matricesBuffer, &matricesBufferMemory);
     matricesDescSet = gfx::createDescSet(matricesBuffer);
     gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(vec2) * MAX_LIGHT_SUBSOURCE_COUNT, &lightViewOffsetsBuffer, &lightViewOffsetsBufferMemory);
-    gfx::createDescriptorSet(lightViewOffsetsBuffer, &lightViewOffsetsDescSet, &lightViewOffsetsDescSetLayout);
+    lightViewOffsetsDescSet = gfx::createDescSet(lightViewOffsetsBuffer);
     
     vector<VkDescriptorSetLayout> descriptorSetLayouts = {
-      DrawCall::worldMatrixDescSetLayout,
-      shadows::getMatricesDescSetLayout(),
-      gfx::bufferDescLayout,
-      lightViewOffsetsDescSetLayout
+      gfx::bufferDescLayout, // drawcall world matrix
+      gfx::bufferDescLayout, // shadow matrices
+      gfx::bufferDescLayout, // camera matrices
+      gfx::bufferDescLayout, // light view offsets
     };
+    
+    // Add layouts for shadowmaps
     for (int i = 0; i < MAX_LIGHT_SUBSOURCE_COUNT; i++) {
-      descriptorSetLayouts.push_back(shadowMapSamplerDescSetLayout);
+      descriptorSetLayouts.push_back(gfx::samplerDescLayout);
     }
     
     basicPipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(PushConstants));
@@ -105,13 +101,16 @@ namespace presentation {
     
     {
       vector<VkDescriptorSetLayout> descriptorSetLayouts = {
-        DrawCall::worldMatrixDescSetLayout,
-        shadows::getMatricesDescSetLayout(),
-        gfx::bufferDescLayout,
-        lightViewOffsetsDescSetLayout
+        gfx::bufferDescLayout, // drawcall world matrix
+        gfx::bufferDescLayout, // shadow matrices
+        gfx::bufferDescLayout, // camera matrices
+        gfx::bufferDescLayout, // light view offsets
       };
       
-      for (int i = 0; i < MAX_LIGHT_SUBSOURCE_COUNT; i++) descriptorSetLayouts.push_back(shadowMapSamplerDescSetLayout);
+      // Add layouts for shadowmaps
+      for (int i = 0; i < MAX_LIGHT_SUBSOURCE_COUNT; i++) {
+        descriptorSetLayouts.push_back(gfx::samplerDescLayout);
+      }
       
       // Create image sampler
       {
@@ -120,8 +119,8 @@ namespace presentation {
         VkImageView imageView;
         loadImage("floorboards.jpg", false, &image, &imageMemory, &imageView);
         VkSampler sampler = gfx::createSampler();
-        gfx::createDescriptorSet(imageView, sampler, &floorSamplerDescSet, &floorSamplerDescSetLayout);
-        descriptorSetLayouts.push_back(floorSamplerDescSetLayout);
+        floorSamplerDescSet = gfx::createDescSet(imageView, sampler);
+        descriptorSetLayouts.push_back(gfx::samplerDescLayout);
       }
       
       {
@@ -130,10 +129,9 @@ namespace presentation {
         VkImageView imageView;
         loadImage("floorboards_normals.jpg", true, &image, &imageMemory, &imageView);
         VkSampler sampler = gfx::createSampler();
-        gfx::createDescriptorSet(imageView, sampler, &floorNormalSamplerDescSet, &floorNormalSamplerDescSetLayout);
-        descriptorSetLayouts.push_back(floorNormalSamplerDescSetLayout);
+        floorNormalSamplerDescSet = gfx::createDescSet(imageView, sampler);
+        descriptorSetLayouts.push_back(gfx::samplerDescLayout);
       }
-      
       
       texturedPipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(PushConstants));
       vector<VkFormat> vertAttribFormats = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT};

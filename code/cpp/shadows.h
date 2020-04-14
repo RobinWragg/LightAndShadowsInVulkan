@@ -5,7 +5,6 @@
 namespace shadows {
   void init(vector<ShadowMap> *shadowMaps);
   void update();
-  VkDescriptorSetLayout getMatricesDescSetLayout();
   VkDescriptorSet getMatricesDescSet();
   vector<vec2> getViewOffsets();
   void performRenderPasses(VkCommandBuffer cmdBuffer);

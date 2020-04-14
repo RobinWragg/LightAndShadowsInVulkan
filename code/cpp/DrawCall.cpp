@@ -1,7 +1,5 @@
 #include "DrawCall.h"
 
-VkDescriptorSetLayout DrawCall::worldMatrixDescSetLayout = VK_NULL_HANDLE;
-
 DrawCall::DrawCall(const vector<vec3> &positions) {
   vector<vec3> normals = createNormalsFromPositions(positions);
   initCommon(positions, normals);
@@ -33,7 +31,7 @@ void DrawCall::initCommon(const vector<vec3> &positions, const vector<vec3> &nor
   
   worldMatrix = glm::identity<mat4>();
   gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(worldMatrix), &worldMatrixBuffer, &worldMatrixBufferMemory);
-  gfx::createDescriptorSet(worldMatrixBuffer, &worldMatrixDescSet, &worldMatrixDescSetLayout);
+  worldMatrixDescSet = gfx:: createDescSet(worldMatrixBuffer);
   
   printf("Created draw call with %i vertices\n", (int)positions.size());
 }

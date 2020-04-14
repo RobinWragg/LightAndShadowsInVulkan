@@ -455,7 +455,7 @@ namespace gfx {
     return renderPass;
   }
   
-  static VkDescriptorPool createDescriptorPool(uint32_t descriptorSetCount) {
+  static VkDescriptorPool createDescPool(uint32_t descriptorSetCount) {
     
     VkDescriptorPoolSize bufferPoolSize = {};
     bufferPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -540,52 +540,6 @@ namespace gfx {
     return descSet;
   }
   
-  static void createDescriptorSet(VkDescriptorType descriptorType, const VkDescriptorBufferInfo *optionalBufferInfo, const VkDescriptorImageInfo *optionalImageInfo, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut) {
-    
-    *layoutOut = createDescSetLayout(descriptorType);
-    
-    VkDescriptorSetAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = layoutOut;
-    
-    auto result = vkAllocateDescriptorSets(device, &allocInfo, descSetOut);
-    SDL_assert_release(result == VK_SUCCESS);
-    
-    VkWriteDescriptorSet writeDescriptorSet = {};
-    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writeDescriptorSet.dstSet = *descSetOut;
-    writeDescriptorSet.dstBinding = 0;
-    writeDescriptorSet.dstArrayElement = 0;
-    writeDescriptorSet.descriptorType = descriptorType;
-    writeDescriptorSet.descriptorCount = 1;
-    
-    if (descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
-      writeDescriptorSet.pBufferInfo = optionalBufferInfo;
-    } else if (descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
-      writeDescriptorSet.pImageInfo = optionalImageInfo;
-    } else SDL_assert_release(false); // Unsupported descriptor type.
-    
-    vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
-  }
-  
-  void createDescriptorSet(VkBuffer buffer, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut) {
-    VkDescriptorBufferInfo bufferInfo = {};
-    bufferInfo.buffer = buffer;
-    bufferInfo.offset = 0;
-    bufferInfo.range = VK_WHOLE_SIZE;
-    createDescriptorSet(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, &bufferInfo, nullptr, descSetOut, layoutOut);
-  }
-  
-  void createDescriptorSet(VkImageView imageView, VkSampler sampler, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut) {
-    VkDescriptorImageInfo imageInfo = {};
-    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    imageInfo.imageView = imageView;
-    imageInfo.sampler = sampler;
-    createDescriptorSet(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, nullptr, &imageInfo, descSetOut, layoutOut);
-  }
-  
   VkDescriptorSet createDescSet(VkBuffer buffer) {
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.buffer = buffer;
@@ -637,7 +591,7 @@ namespace gfx {
       SDL_assert_release(swapchainFrames[i].resolvedView != VK_NULL_HANDLE);
     }
     
-    descriptorPool = createDescriptorPool(1024);
+    descriptorPool = createDescPool(1024);
     bufferDescLayout = createDescSetLayout(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     samplerDescLayout = createDescSetLayout(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
   }

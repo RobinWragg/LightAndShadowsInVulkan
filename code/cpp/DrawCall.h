@@ -10,10 +10,9 @@ public:
   uint32_t vertexCount;
   
   mat4 worldMatrix;
-  VkBuffer                     worldMatrixBuffer        = VK_NULL_HANDLE;
-  VkDeviceMemory               worldMatrixBufferMemory  = VK_NULL_HANDLE;
-  VkDescriptorSet              worldMatrixDescSet       = VK_NULL_HANDLE;
-  static VkDescriptorSetLayout worldMatrixDescSetLayout;
+  VkBuffer        worldMatrixBuffer       = VK_NULL_HANDLE;
+  VkDeviceMemory  worldMatrixBufferMemory = VK_NULL_HANDLE;
+  VkDescriptorSet worldMatrixDescSet      = VK_NULL_HANDLE;
   
   DrawCall() {}
   

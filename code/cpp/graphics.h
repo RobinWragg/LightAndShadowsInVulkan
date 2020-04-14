@@ -54,8 +54,6 @@ namespace gfx {
   VkPipelineVertexInputStateCreateInfo allocVertexInputInfo(const vector<VkFormat> &attribFormats);
   void freeVertexInputInfo(VkPipelineVertexInputStateCreateInfo info);
   VkPipeline createPipeline(VkPipelineLayout layout, const vector<VkFormat> &vertexAttribFormats, VkExtent2D extent, VkRenderPass renderPass, VkCullModeFlags cullMode, const char *vertexShaderPath, const char *fragmentShaderPath, VkSampleCountFlagBits sampleCountFlag = VK_SAMPLE_COUNT_1_BIT);  
-  void createDescriptorSet(VkBuffer buffer, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut);
-  void createDescriptorSet(VkImageView imageView, VkSampler sampler, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut);
   VkDescriptorSet createDescSet(VkBuffer buffer);
   VkDescriptorSet createDescSet(VkImageView imageView, VkSampler sampler);
   VkAttachmentDescription createAttachmentDescription(VkFormat format, bool clear, VkAttachmentStoreOp storeOp, VkImageLayout finalLayout, VkSampleCountFlagBits sampleCountFlag = VK_SAMPLE_COUNT_1_BIT);

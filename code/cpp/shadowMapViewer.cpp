@@ -10,7 +10,6 @@ namespace shadowMapViewer {
   VkBuffer vertexBuffer;
   VkDeviceMemory vertexBufferMemory;
   
-  VkDescriptorSetLayout matrixDescriptorSetLayout;
   vector<VkBuffer> matrixBuffers;
   vector<VkDeviceMemory> matrixBufferMemories;
   vector<VkDescriptorSet> matrixDescriptorSets;
@@ -32,11 +31,11 @@ namespace shadowMapViewer {
     
     for (int i = 0; i < shadowMaps->size(); i++) {
       gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(mat4), &matrixBuffers[i], &matrixBufferMemories[i]);
-      gfx::createDescriptorSet(matrixBuffers[i], &matrixDescriptorSets[i], &matrixDescriptorSetLayout);
+      matrixDescriptorSets[i] = gfx::createDescSet(matrixBuffers[i]);
     }
     
     // Create pipeline
-    VkDescriptorSetLayout descSetLayouts[] = {matrixDescriptorSetLayout, (*shadowMaps)[0].samplerDescriptorSetLayout};
+    VkDescriptorSetLayout descSetLayouts[] = {gfx::bufferDescLayout, gfx::samplerDescLayout};
     pipelineLayout = gfx::createPipelineLayout(descSetLayouts, 2, 0);
     vector<VkFormat> vertAttribFormats = {VK_FORMAT_R32G32B32_SFLOAT};
     pipeline = gfx::createPipeline(pipelineLayout, vertAttribFormats, gfx::getSurfaceExtent(), gfx::renderPass, VK_CULL_MODE_BACK_BIT, "shadowMapViewer.vert.spv", "shadowMapViewer.frag.spv", MSAA_SETTING);

@@ -13,7 +13,6 @@ public:
   VkImageView depthImageView;
   
   VkSampler sampler;
-  VkDescriptorSetLayout samplerDescriptorSetLayout;
   VkDescriptorSet samplerDescriptorSet;
   
   ShadowMap(uint32_t w, uint32_t h) {
@@ -27,7 +26,7 @@ public:
     depthImageView = gfx::createDepthImageAndView(width, height);
     
     sampler = gfx::createSampler();
-    gfx::createDescriptorSet(imageView, sampler, &samplerDescriptorSet, &samplerDescriptorSetLayout);
+    samplerDescriptorSet = gfx::createDescSet(imageView, sampler);
   }
 };
 
