@@ -3,17 +3,19 @@
 
 namespace gfx {
   
-  VkInstance               instance         = VK_NULL_HANDLE;
-  VkDebugUtilsMessengerEXT debugMsgr        = VK_NULL_HANDLE;
-  VkSurfaceKHR             surface          = VK_NULL_HANDLE;
-  VkPhysicalDevice         physDevice       = VK_NULL_HANDLE;
-  VkDevice                 device           = VK_NULL_HANDLE;
-  VkDescriptorPool         descriptorPool   = VK_NULL_HANDLE;
-  VkRenderPass             renderPass       = VK_NULL_HANDLE;
-  VkQueue                  queue            = VK_NULL_HANDLE;
-  int                      queueFamilyIndex = -1;
-  VkCommandPool            commandPool      = VK_NULL_HANDLE;
-  VkImageView              depthImageView   = VK_NULL_HANDLE;
+  VkInstance               instance          = VK_NULL_HANDLE;
+  VkDebugUtilsMessengerEXT debugMsgr         = VK_NULL_HANDLE;
+  VkSurfaceKHR             surface           = VK_NULL_HANDLE;
+  VkPhysicalDevice         physDevice        = VK_NULL_HANDLE;
+  VkDevice                 device            = VK_NULL_HANDLE;
+  VkDescriptorPool         descriptorPool    = VK_NULL_HANDLE;
+  VkDescriptorSetLayout    bufferDescLayout  = VK_NULL_HANDLE;
+  VkDescriptorSetLayout    samplerDescLayout = VK_NULL_HANDLE;
+  VkRenderPass             renderPass        = VK_NULL_HANDLE;
+  VkQueue                  queue             = VK_NULL_HANDLE;
+  int                      queueFamilyIndex  = -1;
+  VkCommandPool            commandPool       = VK_NULL_HANDLE;
+  VkImageView              depthImageView    = VK_NULL_HANDLE;
   
   VkSwapchainKHR swapchain = VK_NULL_HANDLE;
   SwapchainFrame swapchainFrames[swapchainSize];
@@ -498,6 +500,46 @@ namespace gfx {
     return layout;
   }
   
+  static VkDescriptorSet createDescSet(VkDescriptorPool pool, const VkDescriptorBufferInfo *optionalBufferInfo, const VkDescriptorImageInfo *optionalImageInfo) {
+    
+    VkDescriptorSetAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = pool;
+    allocInfo.descriptorSetCount = 1;
+    
+    VkDescriptorType descType;
+    
+    if (optionalBufferInfo) {
+      descType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+      allocInfo.pSetLayouts = &bufferDescLayout;
+    } else if (optionalImageInfo) {
+      descType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+      allocInfo.pSetLayouts = &samplerDescLayout;
+    } else SDL_assert_release(false);
+    
+    VkDescriptorSet descSet;
+    auto result = vkAllocateDescriptorSets(device, &allocInfo, &descSet);
+    SDL_assert_release(result == VK_SUCCESS);
+    
+    VkWriteDescriptorSet writeDescriptorSet = {};
+    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSet.dstSet = descSet;
+    writeDescriptorSet.dstBinding = 0;
+    writeDescriptorSet.dstArrayElement = 0;
+    writeDescriptorSet.descriptorType = descType;
+    writeDescriptorSet.descriptorCount = 1;
+    
+    if (descType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+      writeDescriptorSet.pBufferInfo = optionalBufferInfo;
+    } else if (descType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+      writeDescriptorSet.pImageInfo = optionalImageInfo;
+    } else SDL_assert_release(false); // Unsupported descriptor type.
+    
+    vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
+    
+    return descSet;
+  }
+  
   static void createDescriptorSet(VkDescriptorType descriptorType, const VkDescriptorBufferInfo *optionalBufferInfo, const VkDescriptorImageInfo *optionalImageInfo, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut) {
     
     *layoutOut = createDescSetLayout(descriptorType);
@@ -544,6 +586,22 @@ namespace gfx {
     createDescriptorSet(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, nullptr, &imageInfo, descSetOut, layoutOut);
   }
   
+  VkDescriptorSet createDescSet(VkBuffer buffer) {
+    VkDescriptorBufferInfo bufferInfo = {};
+    bufferInfo.buffer = buffer;
+    bufferInfo.offset = 0;
+    bufferInfo.range = VK_WHOLE_SIZE;
+    return createDescSet(descriptorPool, &bufferInfo, nullptr);
+  }
+  
+  VkDescriptorSet createDescSet(VkImageView imageView, VkSampler sampler) {
+    VkDescriptorImageInfo imageInfo = {};
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo.imageView = imageView;
+    imageInfo.sampler = sampler;
+    return createDescSet(descriptorPool, nullptr, &imageInfo);
+  }
+  
   void createCoreHandles(SDL_Window *window) {
     instance = createInstance(window);
     SDL_assert_release(instance != VK_NULL_HANDLE);
@@ -580,6 +638,8 @@ namespace gfx {
     }
     
     descriptorPool = createDescriptorPool(1024);
+    bufferDescLayout = createDescSetLayout(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    samplerDescLayout = createDescSetLayout(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
   }
   
   void createImage(VkFormat format, uint32_t width, uint32_t height, VkImage *imageOut, VkDeviceMemory *memoryOut, VkSampleCountFlagBits sampleCountFlag) {

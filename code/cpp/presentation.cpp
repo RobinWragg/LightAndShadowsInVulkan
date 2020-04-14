@@ -45,7 +45,6 @@ namespace presentation {
   VkBuffer              matricesBuffer        = VK_NULL_HANDLE;
   VkDeviceMemory        matricesBufferMemory  = VK_NULL_HANDLE;
   VkDescriptorSet       matricesDescSet       = VK_NULL_HANDLE;
-  VkDescriptorSetLayout matricesDescSetLayout = VK_NULL_HANDLE;
   
   VkBuffer              lightViewOffsetsBuffer        = VK_NULL_HANDLE;
   VkDeviceMemory        lightViewOffsetsBufferMemory  = VK_NULL_HANDLE;
@@ -85,15 +84,14 @@ namespace presentation {
 
   void init(VkDescriptorSetLayout shadowMapSamplerDescSetLayout) {
     gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(matrices), &matricesBuffer, &matricesBufferMemory);
-    gfx::createDescriptorSet(matricesBuffer, &matricesDescSet, &matricesDescSetLayout);
-    
+    matricesDescSet = gfx::createDescSet(matricesBuffer);
     gfx::createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(vec2) * MAX_LIGHT_SUBSOURCE_COUNT, &lightViewOffsetsBuffer, &lightViewOffsetsBufferMemory);
     gfx::createDescriptorSet(lightViewOffsetsBuffer, &lightViewOffsetsDescSet, &lightViewOffsetsDescSetLayout);
     
     vector<VkDescriptorSetLayout> descriptorSetLayouts = {
       DrawCall::worldMatrixDescSetLayout,
       shadows::getMatricesDescSetLayout(),
-      matricesDescSetLayout,
+      gfx::bufferDescLayout,
       lightViewOffsetsDescSetLayout
     };
     for (int i = 0; i < MAX_LIGHT_SUBSOURCE_COUNT; i++) {
@@ -109,7 +107,7 @@ namespace presentation {
       vector<VkDescriptorSetLayout> descriptorSetLayouts = {
         DrawCall::worldMatrixDescSetLayout,
         shadows::getMatricesDescSetLayout(),
-        matricesDescSetLayout,
+        gfx::bufferDescLayout,
         lightViewOffsetsDescSetLayout
       };
       
