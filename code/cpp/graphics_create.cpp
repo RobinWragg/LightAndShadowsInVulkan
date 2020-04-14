@@ -479,7 +479,7 @@ namespace gfx {
     return pool;
   }
   
-  static VkDescriptorSetLayout createDescriptorSetLayout(VkDescriptorType descriptorType) {
+  static VkDescriptorSetLayout createDescSetLayout(VkDescriptorType descriptorType) {
     VkDescriptorSetLayoutBinding layoutBinding = {};
     layoutBinding.descriptorType = descriptorType;
     layoutBinding.binding = 0;
@@ -500,7 +500,7 @@ namespace gfx {
   
   static void createDescriptorSet(VkDescriptorType descriptorType, const VkDescriptorBufferInfo *optionalBufferInfo, const VkDescriptorImageInfo *optionalImageInfo, VkDescriptorSet *descSetOut, VkDescriptorSetLayout *layoutOut) {
     
-    *layoutOut = createDescriptorSetLayout(descriptorType);
+    *layoutOut = createDescSetLayout(descriptorType);
     
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;

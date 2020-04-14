@@ -158,6 +158,7 @@ int main(int argc, char* argv[]) {
     while (SDL_PollEvent(&event)) {
       gui::processSdlEvent(&event);
       switch (event.type) {
+        // Input for first-person mode not currently used.
         // case SDL_KEYDOWN: {
         //   if (!event.key.repeat) {
         //     input::handleKeyPress(event.key.keysym.sym);
