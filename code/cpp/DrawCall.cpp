@@ -41,7 +41,7 @@ vector<vec3> DrawCall::createNormalsFromPositions(const vector<vec3> &positions)
   
   for (int32_t i = 0; i < positions.size(); i += 3) {
     vec3 a = positions[i] - positions[i+1];
-    vec3 b = positions[i+2] - positions[i+1];
+    vec3 b = positions[i+1] - positions[i+2];
     
     vec3 crossProduct = cross(a, b);
     

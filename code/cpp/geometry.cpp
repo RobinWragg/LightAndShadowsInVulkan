@@ -15,6 +15,7 @@ namespace geometry {
   DrawCall * newDrawCallFromObjFile(const char *filePath) {
     vector<vec3> vertices;
     vector<vec3> normals;
+    vector<vec2> texCoords;
     
     tinyobj::attrib_t attributes;
     vector<tinyobj::shape_t> shapes;
@@ -53,30 +54,20 @@ namespace geometry {
             );
           normals.push_back(normal);
           
-          // vec2 texCoord = vec2(
-          //   attributes.texcoords[2*idx.texcoord_index],
-          //   attributes.texcoords[2*idx.texcoord_index+1]
-          //   );
+          vec2 texCoord = vec2(
+            attributes.texcoords[2*idx.texcoord_index],
+            attributes.texcoords[2*idx.texcoord_index+1]
+            );
+          texCoords.push_back(texCoord);
         }
         
         indexOffset += faceVertCount;
       }
     }
     
-    // Convert to clockwise front faces
-    for (uint32_t i = 0; i < vertices.size(); i += 3) {
-      vec3 temp = vertices[i];
-      vertices[i] = vertices[i+1];
-      vertices[i+1] = temp;
-      
-      temp = normals[i];
-      normals[i] = normals[i+1];
-      normals[i+1] = temp;
-    }
-    
     SDL_assert_release(vertices.size() == normals.size());
     
-    return new DrawCall(vertices, normals);
+    return new DrawCall(vertices, normals, texCoords);
   }
   
   vector<vec3> createCuboidVertices(float width, float height, float yOffset) {
@@ -84,25 +75,25 @@ namespace geometry {
     
     vector<vec3> vertices = {
       // Top
-      {-halfWidth, yOffset+height, -halfWidth}, {halfWidth, yOffset+height, -halfWidth}, {-halfWidth, yOffset+height, halfWidth},
-      {-halfWidth, yOffset+height, halfWidth}, {halfWidth, yOffset+height, -halfWidth}, {halfWidth, yOffset+height, halfWidth},
+      {-halfWidth, yOffset+height, -halfWidth}, {-halfWidth, yOffset+height, halfWidth}, {halfWidth, yOffset+height, -halfWidth},
+      {-halfWidth, yOffset+height, halfWidth}, {halfWidth, yOffset+height, halfWidth}, {halfWidth, yOffset+height, -halfWidth},
       
       // Bottom
-      {-halfWidth, yOffset, -halfWidth}, {-halfWidth, yOffset, halfWidth}, {halfWidth, yOffset, -halfWidth},
-      {-halfWidth, yOffset, halfWidth}, {halfWidth, yOffset, halfWidth}, {halfWidth, yOffset, -halfWidth},
+      {-halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset, -halfWidth}, {-halfWidth, yOffset, halfWidth},
+      {-halfWidth, yOffset, halfWidth}, {halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset, halfWidth},
       
       // Sides
-      {-halfWidth, yOffset+height, -halfWidth}, {-halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset+height, -halfWidth},
-      {-halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset+height, -halfWidth},
+      {-halfWidth, yOffset+height, -halfWidth}, {halfWidth, yOffset+height, -halfWidth}, {-halfWidth, yOffset, -halfWidth},
+      {-halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset+height, -halfWidth}, {halfWidth, yOffset, -halfWidth},
       
-      {-halfWidth, yOffset+height, -halfWidth}, {-halfWidth, yOffset+height, halfWidth}, {-halfWidth, yOffset, -halfWidth},
-      {-halfWidth, yOffset, -halfWidth}, {-halfWidth, yOffset+height, halfWidth}, {-halfWidth, yOffset, halfWidth},
+      {-halfWidth, yOffset+height, -halfWidth}, {-halfWidth, yOffset, -halfWidth}, {-halfWidth, yOffset+height, halfWidth},
+      {-halfWidth, yOffset, -halfWidth}, {-halfWidth, yOffset, halfWidth}, {-halfWidth, yOffset+height, halfWidth},
       
-      {-halfWidth, yOffset+height, halfWidth}, {halfWidth, yOffset+height, halfWidth}, {-halfWidth, yOffset, halfWidth},
-      {-halfWidth, yOffset, halfWidth}, {halfWidth, yOffset+height, halfWidth}, {halfWidth, yOffset, halfWidth},
+      {-halfWidth, yOffset+height, halfWidth}, {-halfWidth, yOffset, halfWidth}, {halfWidth, yOffset+height, halfWidth},
+      {-halfWidth, yOffset, halfWidth}, {halfWidth, yOffset, halfWidth}, {halfWidth, yOffset+height, halfWidth},
       
-      {halfWidth, yOffset+height, -halfWidth}, {halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset+height, halfWidth},
-      {halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset, halfWidth}, {halfWidth, yOffset+height, halfWidth},
+      {halfWidth, yOffset+height, -halfWidth}, {halfWidth, yOffset+height, halfWidth}, {halfWidth, yOffset, -halfWidth},
+      {halfWidth, yOffset, -halfWidth}, {halfWidth, yOffset+height, halfWidth}, {halfWidth, yOffset, halfWidth},
     };
     
     return vertices;
@@ -121,12 +112,12 @@ namespace geometry {
       vec3 vert01 = rotate(vec3(topRadius, height, 0), angle0, normal);
       vec3 vert11 = rotate(vec3(topRadius, height, 0), angle1, normal);
       
-      verts->push_back(vert10 + translation);
       verts->push_back(vert00 + translation);
+      verts->push_back(vert10 + translation);
       verts->push_back(vert01 + translation);
       
-      verts->push_back(vert10 + translation);
       verts->push_back(vert01 + translation);
+      verts->push_back(vert10 + translation);
       verts->push_back(vert11 + translation);
     }
   }
@@ -161,8 +152,8 @@ namespace geometry {
     auto positions = createCuboidVertices(12, 0.5, -0.5);
     
     vector<vec2> texCoords = {
-      {0, 0}, {1, 0}, {0, 1},
-      {0, 1}, {1, 0}, {1, 1},
+      {0, 0}, {0, 1}, {1, 0},
+      {0, 1}, {1, 1}, {1, 0},
     };
     
     while (texCoords.size() < positions.size()) {

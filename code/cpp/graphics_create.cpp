@@ -752,7 +752,7 @@ namespace gfx {
     info.polygonMode = VK_POLYGON_MODE_FILL;
     info.lineWidth = 1;
     info.cullMode = cullMode;
-    info.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    info.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     info.depthBiasEnable = VK_FALSE;
     return info;
   }
