@@ -1,6 +1,32 @@
 #include "graphics.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 namespace gfx {
+  void loadImage(const char *filePath, bool normalMap, VkImage *imageOut, VkDeviceMemory *memoryOut, VkImageView *viewOut) {
+    VkFormat format = normalMap ? VK_FORMAT_R8G8B8A8_SNORM : VK_FORMAT_R8G8B8A8_UNORM;
+    
+    int width, height, componentsPerPixel;
+    uint8_t *data = stbi_load(filePath, &width, &height, &componentsPerPixel, 4);
+    SDL_assert_release(data != nullptr);
+    
+    if (normalMap) {
+      for (uint32_t i = 0; i < width*height*4; i += 4) {
+        data[i] = data[i] - 127;
+        data[i+1] = data[i+2] / 2;
+        data[i+2] = data[i+1] - 127;
+      }
+    }
+    
+    gfx::createImage(format, width, height, imageOut, memoryOut);
+    
+    gfx::setImageMemoryRGBA(*imageOut, *memoryOut, width, height, data);
+    
+    *viewOut = gfx::createImageView(*imageOut, format, VK_IMAGE_ASPECT_COLOR_BIT);
+    stbi_image_free(data);
+  }
+    
   void submitCommandBuffer(VkCommandBuffer cmdBuffer, VkSemaphore optionalWaitSemaphore, VkPipelineStageFlags optionalWaitStage, VkSemaphore optionalSignalSemaphore, VkFence optionalFence) {
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

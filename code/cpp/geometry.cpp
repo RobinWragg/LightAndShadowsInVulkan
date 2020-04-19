@@ -5,12 +5,19 @@
 
 namespace geometry {
   
-  DrawCall *ground    = nullptr;
+  DrawCall *floor    = nullptr;
   DrawCall *sphere0   = nullptr;
   DrawCall *sphere1   = nullptr;
   DrawCall *obelisk   = nullptr;
   DrawCall *aeroplane = nullptr;
   DrawCall *frog      = nullptr;
+  
+  VkDescriptorSet floorSamplerDescSet;
+  VkDescriptorSet floorNormalSamplerDescSet;
+  
+  VkDescriptorSet frogSamplerDescSet;
+  
+  VkDescriptorSet aeroplaneSamplerDescSet;
   
   DrawCall * newDrawCallFromObjFile(const char *filePath) {
     vector<vec3> vertices;
@@ -148,7 +155,7 @@ namespace geometry {
     } else return new DrawCall(verts);
   }
   
-  void createGround() {
+  void createFloor() {
     auto positions = createCuboidVertices(12, 0.5, -0.5);
     
     vector<vec2> texCoords = {
@@ -160,14 +167,14 @@ namespace geometry {
       texCoords.push_back(vec2(0, 0));
     }
     
-    ground = new DrawCall(positions, {}, texCoords);
+    floor = new DrawCall(positions, {}, texCoords);
   }
   
   void init() {
     aeroplane = newDrawCallFromObjFile("aeroplane.obj");
     frog = newDrawCallFromObjFile("frog.obj");
     
-    createGround();
+    createFloor();
     obelisk = new DrawCall(createCuboidVertices(1, 2, 0));
     sphere0 = newSphereDrawCall(8, false);
     sphere1 = newSphereDrawCall(64, true);
@@ -191,22 +198,80 @@ namespace geometry {
     frog->worldMatrix = rotate(frog->worldMatrix, -1.5f, vec3(0, 1, 0));
     frog->worldMatrix = rotate(frog->worldMatrix, -0.1f, vec3(1, 0, 0)); // even out the frog's feet
     
-    ground->worldMatrix = glm::identity<mat4>();
+    floor->worldMatrix = glm::identity<mat4>();
     
     obelisk->worldMatrix = translate(glm::identity<mat4>(), vec3(-1, 0, -2));
     obelisk->worldMatrix = rotate(obelisk->worldMatrix, 0.2f, vec3(0, 1, 0));
+    
+    // Create floor texture sampler
+    {
+      VkImage image;
+      VkDeviceMemory imageMemory;
+      VkImageView imageView;
+      gfx::loadImage("floorboards.jpg", false, &image, &imageMemory, &imageView);
+      VkSampler sampler = gfx::createSampler();
+      floorSamplerDescSet = gfx::createDescSet(imageView, sampler);
+    }
+    
+    // Create floor normalmap sampler
+    {
+      VkImage image;
+      VkDeviceMemory imageMemory;
+      VkImageView imageView;
+      gfx::loadImage("floorboards_normals.jpg", true, &image, &imageMemory, &imageView);
+      VkSampler sampler = gfx::createSampler();
+      floorNormalSamplerDescSet = gfx::createDescSet(imageView, sampler);
+    }
+    
+    // Create frog texture sampler
+    {
+      VkImage image;
+      VkDeviceMemory imageMemory;
+      VkImageView imageView;
+      gfx::loadImage("frog_texture.jpg", false, &image, &imageMemory, &imageView);
+      VkSampler sampler = gfx::createSampler();
+      frogSamplerDescSet = gfx::createDescSet(imageView, sampler);
+    }
+    
+    // Create aeroplane texture sampler
+    {
+      VkImage image;
+      VkDeviceMemory imageMemory;
+      VkImageView imageView;
+      gfx::loadImage("aeroplane.jpg", false, &image, &imageMemory, &imageView);
+      VkSampler sampler = gfx::createSampler();
+      aeroplaneSamplerDescSet = gfx::createDescSet(imageView, sampler);
+    }
   }
   
-  void recordCommands(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout, bool texturedGeometry) {
-    if (texturedGeometry) {
-      ground->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    } else {
-      sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
-      sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
-      aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
-      frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
-      obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    }
+  void renderAllGeometryWithoutSamplers(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
+    sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    floor->addToCmdBuffer(cmdBuffer, pipelineLayout);
+  }
+  
+  void renderBareGeometry(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
+    sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
+  }
+  
+  void renderTexturedGeometry(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 18, 1, &frogSamplerDescSet, 0, nullptr);
+    frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 18, 1, &aeroplaneSamplerDescSet, 0, nullptr);
+    aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
+  }
+  
+  void renderTexturedNormalMappedGeometry(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
+    vector<VkDescriptorSet> floorDescSets = {floorSamplerDescSet, floorNormalSamplerDescSet};
+    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 18, (int)floorDescSets.size(), floorDescSets.data(), 0, nullptr);
+    
+    floor->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
 }
 

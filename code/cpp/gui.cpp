@@ -108,8 +108,8 @@ namespace gui {
     SetNextItemWidth(90);
     PlotPoints("Subsource Layout Preview", imVecs.data(), (int)imVecs.size(), 0, NULL, FLT_MAX, FLT_MAX, ImVec2(100, 100));
     
-    Checkbox("Render textures", &settings.renderTextures);
-    Checkbox("Render normalmaps", &settings.renderNormalMaps);
+    Checkbox("Textures", &settings.renderTextures);
+    Checkbox("Normalmapped floorboards", &settings.renderNormalMaps);
     
     End();
     

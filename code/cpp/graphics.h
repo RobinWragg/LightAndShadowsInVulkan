@@ -75,6 +75,7 @@ namespace gfx {
   void submitCommandBuffer(VkCommandBuffer cmdBuffer, VkSemaphore optionalWaitSemaphore = VK_NULL_HANDLE, VkPipelineStageFlags optionalWaitStage = 0, VkSemaphore optionalSignalSemaphore = VK_NULL_HANDLE, VkFence optionalFence = VK_NULL_HANDLE);
   void presentFrame(const SwapchainFrame *frame, VkSemaphore waitSemaphore);
   void cmdBeginRenderPass(VkRenderPass renderPass, uint32_t width, uint32_t height, vec3 clearColor, VkFramebuffer framebuffer, VkCommandBuffer cmdBuffer);
+  void loadImage(const char *filePath, bool normalMap, VkImage *imageOut, VkDeviceMemory *memoryOut, VkImageView *viewOut);
 }
 
 

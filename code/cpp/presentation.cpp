@@ -6,9 +6,6 @@
 #include "geometry.h"
 #include "settings.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 namespace presentation {
   
   VkPipelineLayout basicPipelineLayout    = VK_NULL_HANDLE;
@@ -16,9 +13,6 @@ namespace presentation {
   VkPipeline       litPipeline            = VK_NULL_HANDLE;
   VkPipeline       litTexturedPipeline    = VK_NULL_HANDLE;
   VkPipeline       unlitPipeline          = VK_NULL_HANDLE;
-  
-  VkDescriptorSet floorSamplerDescSet;  
-  VkDescriptorSet floorNormalSamplerDescSet;
   
   vec3 cameraPos;
   vec2 cameraAngle;
@@ -51,29 +45,6 @@ namespace presentation {
     
     // Flip the Y axis because Vulkan shaders expect positive Y to point downwards
     return scale(proj, vec3(1, -1, 1));
-  }
-  
-  void loadImage(const char *filePath, bool normalMap, VkImage *imageOut, VkDeviceMemory *memoryOut, VkImageView *viewOut) {
-    VkFormat format = normalMap ? VK_FORMAT_R8G8B8A8_SNORM : VK_FORMAT_R8G8B8A8_UNORM;
-    
-    int width, height, componentsPerPixel;
-    uint8_t *data = stbi_load(filePath, &width, &height, &componentsPerPixel, 4);
-	SDL_assert_release(data != nullptr);
-    
-    if (normalMap) {
-      for (uint32_t i = 0; i < width*height*4; i += 4) {
-        data[i] = data[i] - 127;
-        data[i+1] = data[i+2] / 2;
-        data[i+2] = data[i+1] - 127;
-      }
-    }
-    
-    gfx::createImage(format, width, height, imageOut, memoryOut);
-    
-    gfx::setImageMemoryRGBA(*imageOut, *memoryOut, width, height, data);
-    
-    *viewOut = gfx::createImageView(*imageOut, format, VK_IMAGE_ASPECT_COLOR_BIT);
-    stbi_image_free(data);
   }
 
   void init() {
@@ -112,26 +83,11 @@ namespace presentation {
         descriptorSetLayouts.push_back(gfx::samplerDescLayout);
       }
       
-      // Create image sampler
-      {
-        VkImage image;
-        VkDeviceMemory imageMemory;
-        VkImageView imageView;
-        loadImage("floorboards.jpg", false, &image, &imageMemory, &imageView);
-        VkSampler sampler = gfx::createSampler();
-        floorSamplerDescSet = gfx::createDescSet(imageView, sampler);
-        descriptorSetLayouts.push_back(gfx::samplerDescLayout);
-      }
+      // Add texture sampler layout
+      descriptorSetLayouts.push_back(gfx::samplerDescLayout);
       
-      {
-        VkImage image;
-        VkDeviceMemory imageMemory;
-        VkImageView imageView;
-        loadImage("floorboards_normals.jpg", true, &image, &imageMemory, &imageView);
-        VkSampler sampler = gfx::createSampler();
-        floorNormalSamplerDescSet = gfx::createDescSet(imageView, sampler);
-        descriptorSetLayouts.push_back(gfx::samplerDescLayout);
-      }
+      // Add normalmap sampler layout
+      descriptorSetLayouts.push_back(gfx::samplerDescLayout);
       
       texturedPipelineLayout = gfx::createPipelineLayout(descriptorSetLayouts.data(), (int)descriptorSetLayouts.size(), sizeof(PushConstants));
       vector<VkFormat> vertAttribFormats = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT};
@@ -204,7 +160,6 @@ namespace presentation {
     
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, basicPipelineLayout, 1, (int)sets.size(), sets.data(), 0, nullptr);
     
-    PushConstants pushConstants;
     pushConstants.subsourceCount       = settings.subsourceCount;
     pushConstants.shadowAntiAliasSize  = settings.shadowAntiAliasSize;
     pushConstants.renderTexturesBool   = settings.renderTextures;
@@ -225,16 +180,17 @@ namespace presentation {
     setUniforms(cmdBuffer, shadowMaps);
     
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, litPipeline);
-    geometry::recordCommands(cmdBuffer, basicPipelineLayout, false);
-    
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, texturedPipelineLayout, 18, 1, &floorSamplerDescSet, 0, nullptr);
-    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, texturedPipelineLayout, 19, 1, &floorNormalSamplerDescSet, 0, nullptr);
+    geometry::renderBareGeometry(cmdBuffer, basicPipelineLayout);
     
     if (settings.renderTextures || settings.renderNormalMaps) {
       vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, litTexturedPipeline);
     }
     
-    geometry::recordCommands(cmdBuffer, texturedPipelineLayout, true);
+    geometry::renderTexturedNormalMappedGeometry(cmdBuffer, texturedPipelineLayout);
+    
+    pushConstants.renderNormalMapsBool = 0;
+    vkCmdPushConstants(cmdBuffer, basicPipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, sizeof(pushConstants), &pushConstants);
+    geometry::renderTexturedGeometry(cmdBuffer, texturedPipelineLayout);
     
     renderLightSource(cmdBuffer);
   }

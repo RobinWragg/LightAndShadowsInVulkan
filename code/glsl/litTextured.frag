@@ -157,13 +157,9 @@ void main() {
   const vec3 vertToLightVector = lightPosInWorld - vertPosInWorld;
   
   vec3 normal = config.renderNormalMap ? texture(normalMap, texCoord).xyz : vertNormal;
+  normal = normalize(normal);
   
-  // Transform the normal to world space
-  mat3 normalMatrix = mat3(drawCall.worldMatrix);
-  normalMatrix = transpose(inverse(normalMatrix));
-  vec3 worldNormal = normalMatrix * normal;
-  
-  float lightNormalDot = dot(worldNormal, normalize(vertToLightVector));
+  float lightNormalDot = dot(normal, normalize(vertToLightVector));
   
   vec3 baseColor = config.renderTexture ? texture(colorTexture, texCoord).rgb : vec3(1);
   

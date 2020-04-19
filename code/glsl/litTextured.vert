@@ -5,7 +5,7 @@ layout(location = 1) in vec3 vertNormalInMesh;
 layout(location = 2) in vec2 vertTexCoordInMesh;
 
 layout(location = 0) out vec3 vertPosInWorld;
-layout(location = 1) out vec3 vertNormalOut;
+layout(location = 1) out vec3 vertNormalInWorld;
 layout(location = 2) out vec3 lightPosInWorld;
 layout(location = 3) out vec2 fragTexCoord;
 
@@ -27,7 +27,10 @@ void main() {
   vec4 vertPosInWorld4 = drawCall.worldMatrix * vec4(vertPosInMesh, 1.0);
   vertPosInWorld = vertPosInWorld4.xyz;
   
-  vertNormalOut = vertNormalInMesh;
+  // Transform the normal to world space
+  mat3 normalMatrix = mat3(drawCall.worldMatrix);
+  normalMatrix = transpose(inverse(normalMatrix));
+  vertNormalInWorld = normalMatrix * vertNormalInMesh;
   
   gl_Position = matrices.proj * matrices.view * vertPosInWorld4;
   

@@ -157,7 +157,7 @@ namespace shadows {
         
         vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, sizeof(vec2), &viewOffsets[i]);
         
-        geometry::recordCommands(cmdBuffer, pipelineLayout, false);
+        geometry::renderAllGeometryWithoutSamplers(cmdBuffer, pipelineLayout);
       }
       
       vkCmdEndRenderPass(cmdBuffer);
