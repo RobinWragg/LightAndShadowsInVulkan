@@ -92,12 +92,12 @@ namespace gui {
     SliderFloat("Lightsource Radius", &settings.sourceRadius, 0.01, 1.0, "%.2f");
     
     SetNextItemWidth(90);
-    InputInt("Shadow Anti-Alias Kernel Size", &settings.shadowAntiAliasSize, 2);
+    InputInt("Shadow Anti-Alias Kernel Size", &settings.shadowAntiAliasSize);
     
     // Enforce valid values: odd numbers and 0.
     if (settings.shadowAntiAliasSize > MAX_SHADOW_ANTI_ALIAS_SIZE) settings.shadowAntiAliasSize = MAX_SHADOW_ANTI_ALIAS_SIZE;
     if (settings.shadowAntiAliasSize < 0) settings.shadowAntiAliasSize = 0;
-    if (settings.shadowAntiAliasSize != 0 && settings.shadowAntiAliasSize % 2 == 0) settings.shadowAntiAliasSize -= 1;
+    // if (settings.shadowAntiAliasSize != 0 && settings.shadowAntiAliasSize % 2 == 0) settings.shadowAntiAliasSize -= 1;
     
     vector<ImVec2> imVecs;
     for (auto &offset : shadows::getViewOffsets()) {

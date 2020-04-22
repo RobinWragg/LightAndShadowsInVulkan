@@ -3,6 +3,7 @@
 layout(location = 0) in vec3 surfacePos;
 layout(location = 1) in vec3 interpSurfaceNormal;
 layout(location = 2) in vec3 lightPos;
+layout(location = 3) in vec3 surfacePosInLightView;
 
 layout(location = 0) out vec4 outColor;
 
@@ -92,14 +93,14 @@ vec2 getLightViewOffset(int index) {
 
 // Returns the degree to which a world position is shadowed.
 // 0 for no shadow, 1 for completely shadowed.
-float getShadowFactorFromMap(vec3 posInWorld, int shadowMapIndex) {
-  vec3 posInLightView = (lightMatrices.view * vec4(posInWorld, 1)).xyz;
-  posInLightView.xy += getLightViewOffset(shadowMapIndex);
+float getShadowFactorFromMap(int shadowMapIndex) {
+  vec3 posWithOffset = surfacePosInLightView;
+  posWithOffset.xy += getLightViewOffset(shadowMapIndex);
   
   // All shadowmaps have the same dimensions, so we just get the size of shadowmap 0.
   float texelSize = 1.0 / textureSize(shadowMap0, 0).r;
   
-  const vec4 posInLightProj = lightMatrices.proj * vec4(posInLightView, 1);
+  const vec4 posInLightProj = lightMatrices.proj * vec4(posWithOffset, 1);
   
   // This is the perspective division that transforms projection space into normalised device space.
   const vec3 normalisedDevicePos = posInLightProj.xyz / posInLightProj.w;
@@ -107,7 +108,7 @@ float getShadowFactorFromMap(vec3 posInWorld, int shadowMapIndex) {
   // Change the bounds from [-1,1] to [0,1].
   vec2 centreTexCoord = normalisedDevicePos.xy * 0.5 + 0.5;
   
-  const float posToLightPosDistance = length(posInLightView);
+  const float posToLightPosDistance = length(posWithOffset);
   
   // This is necessary due to floating point inaccuracy. This equates to a tenth of a millimeter in world/lightView space, so it's not noticeable.
   const float epsilon = 0.0001;
@@ -133,11 +134,11 @@ float getShadowFactorFromMap(vec3 posInWorld, int shadowMapIndex) {
   return float(shadowSampleCount) / totalSampleCount;
 }
 
-float getTotalShadowFactor(vec3 posInWorld) {
+float getTotalShadowFactor() {
   float totalFactor = 0;
   
   for (int i = 0; i < config.shadowMapCount; i++) {
-    totalFactor += getShadowFactorFromMap(posInWorld, i);
+    totalFactor += getShadowFactorFromMap(i);
   }
   
   return totalFactor / config.shadowMapCount;
@@ -146,10 +147,10 @@ float getTotalShadowFactor(vec3 posInWorld) {
 void main() {
   const vec3 viewPos = vec3(0, 0, 0); // This is the origin because we are in view-space
   
-  const float ambReflectionConst = 0.3;
-  const float diffuseReflectionConst = 0.3;
-  const float specReflectionConst = 0.3;
-  const float specPowerConst = 3;
+  const float ambReflectionConst = 0.1; // from frame
+  const float diffuseReflectionConst = 0.5; // from material
+  const float specReflectionConst = 0.5; // from material
+  const int specPowerConst = 10; // from material
   const vec3 color = vec3(1);
   
   // Interpolation can cause normals to be non-unit length, so we re-normalise them here
@@ -159,23 +160,28 @@ void main() {
   const vec3 surfaceToViewDirectionUnit = normalize(viewPos - surfacePos);
   const vec3 reflectionDirectionUnit = reflect(-surfaceToLightDirectionUnit, surfaceNormal);
   
-  const float diffuseReflection = diffuseReflectionConst * dot(surfaceNormal, surfaceToLightDirectionUnit);
-  const float specReflection = specReflectionConst * pow(dot(reflectionDirectionUnit, surfaceToViewDirectionUnit), specPowerConst);
+  float surfaceNormalLightDirDot = dot(surfaceNormal, surfaceToLightDirectionUnit);
+  
+  float diffuseReflection = 0;
+  float specReflection = 0;
+  
+  if (surfaceNormalLightDirDot > 0) {
+    diffuseReflection = diffuseReflectionConst * surfaceNormalLightDirDot;
+    
+    float reflectionViewDot = dot(reflectionDirectionUnit, surfaceToViewDirectionUnit);
+    
+    if (reflectionViewDot > 0) {
+      specReflection = specReflectionConst * pow(reflectionViewDot, specPowerConst);
+    }
+  }
+  
+  float shadowFactor = getTotalShadowFactor();
+  diffuseReflection *= 1 - shadowFactor;
+  specReflection *= 1 - shadowFactor;
   
   const float totalReflection = ambReflectionConst + diffuseReflection + specReflection;
   
   outColor = vec4(color * totalReflection, 1);
-  
-  // if (lightNormalDot > 0) {
-  //   // Attenuate the fragment color if it is in shadow
-  //   float maxLightAttenuation = 0.7;
-  //   float lightAttenuation = getTotalShadowFactor(surfacePos) * maxLightAttenuation;
-  //   outColor.rgb *= 1 - lightAttenuation;
-  // }
-  
-  float maxLightAttenuation = 0.7;
-  float lightAttenuation = getTotalShadowFactor(surfacePos) * maxLightAttenuation;
-  outColor.rgb *= 1 - lightAttenuation;
 }
 
 

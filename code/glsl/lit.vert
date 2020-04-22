@@ -6,6 +6,7 @@ layout(location = 1) in vec3 vertNormalInMesh;
 layout(location = 0) out vec3 vertPosInView;
 layout(location = 1) out vec3 vertNormalInView;
 layout(location = 2) out vec3 lightPosInView;
+layout(location = 3) out vec3 vertPosInLightView;
 
 layout(set = 0, binding = 0) uniform DrawCall {
   mat4 worldMatrix;
@@ -22,10 +23,13 @@ layout(set = 2, binding = 0) uniform Matrices {
 } matrices;
 
 void main() {
-  vec4 vertPosInView4 = matrices.view * drawCall.worldMatrix * vec4(vertPosInMesh, 1.0);
+  vec4 vertPosInWorld4 = drawCall.worldMatrix * vec4(vertPosInMesh, 1.0);
+  vec4 vertPosInView4 = matrices.view * vertPosInWorld4;
   vertPosInView = vertPosInView4.xyz;
   
   gl_Position = matrices.proj * vertPosInView4;
+  
+  vertPosInLightView = (lightMatrices.view * vertPosInWorld4).xyz;
   
   // Transform the normal to view space
   mat3 normalMatrix = mat3(matrices.view * drawCall.worldMatrix);
