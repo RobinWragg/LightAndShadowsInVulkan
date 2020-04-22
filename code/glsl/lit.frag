@@ -1,10 +1,8 @@
 #version 450
 
-// This shader is in view-space.
-
 layout(location = 0) in vec3 surfacePos;
-layout(location = 1) in vec3 interpVertNormalInWorld;
-layout(location = 2) in vec3 lightPosInWorld;
+layout(location = 1) in vec3 interpSurfaceNormal;
+layout(location = 2) in vec3 lightPos;
 
 layout(location = 0) out vec4 outColor;
 
@@ -146,23 +144,25 @@ float getTotalShadowFactor(vec3 posInWorld) {
 }
 
 void main() {
-  const float ambReflectionConst = 0;
-  const float diffuseReflectionConst = 1;
-  const float specReflectionConst = 0.5;
+  const vec3 viewPos = vec3(0, 0, 0); // This is the origin because we are in view-space
+  
+  const float ambReflectionConst = 0.3;
+  const float diffuseReflectionConst = 0.3;
+  const float specReflectionConst = 0.3;
+  const float specPowerConst = 3;
   const vec3 color = vec3(1);
   
   // Interpolation can cause normals to be non-unit length, so we re-normalise them here
-  const vec3 surfaceNormal = normalize(interpVertNormalInWorld);
+  const vec3 surfaceNormal = normalize(interpSurfaceNormal);
   
-  const vec3 surfaceToLightDirectionUnit = normalize(lightPosInWorld - surfacePos);
-  
-  const vec3 reflectionDirectionUnit = reflect(surfaceToLightDirectionUnit, surfaceNormal);
+  const vec3 surfaceToLightDirectionUnit = normalize(lightPos - surfacePos);
+  const vec3 surfaceToViewDirectionUnit = normalize(viewPos - surfacePos);
+  const vec3 reflectionDirectionUnit = reflect(-surfaceToLightDirectionUnit, surfaceNormal);
   
   const float diffuseReflection = diffuseReflectionConst * dot(surfaceNormal, surfaceToLightDirectionUnit);
+  const float specReflection = specReflectionConst * pow(dot(reflectionDirectionUnit, surfaceToViewDirectionUnit), specPowerConst);
   
-  // const float specReflection = specReflectionConst * dot(reflectionDirectionUnit, surfaceToLightDirectionUnit);
-  
-  const float totalReflection = ambReflectionConst + diffuseReflection;
+  const float totalReflection = ambReflectionConst + diffuseReflection + specReflection;
   
   outColor = vec4(color * totalReflection, 1);
   
@@ -172,6 +172,10 @@ void main() {
   //   float lightAttenuation = getTotalShadowFactor(surfacePos) * maxLightAttenuation;
   //   outColor.rgb *= 1 - lightAttenuation;
   // }
+  
+  float maxLightAttenuation = 0.7;
+  float lightAttenuation = getTotalShadowFactor(surfacePos) * maxLightAttenuation;
+  outColor.rgb *= 1 - lightAttenuation;
 }
 
 
