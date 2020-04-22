@@ -6,9 +6,8 @@
 namespace geometry {
   
   DrawCall *floor    = nullptr;
-  DrawCall *sphere0   = nullptr;
-  DrawCall *sphere1   = nullptr;
-  DrawCall *obelisk   = nullptr;
+  vector<DrawCall*> spheres(3);
+  DrawCall *sphereDiffuse = nullptr;
   DrawCall *aeroplane = nullptr;
   DrawCall *frog      = nullptr;
   
@@ -175,16 +174,29 @@ namespace geometry {
     frog = newDrawCallFromObjFile("frog.obj");
     
     createFloor();
-    obelisk = new DrawCall(createCuboidVertices(1, 2, 0));
-    sphere0 = newSphereDrawCall(8, false);
-    sphere1 = newSphereDrawCall(64, true);
     
-    float sphereScale = 0.7;
-    sphere0->descSetData.worldMatrix = translate(glm::identity<mat4>(), vec3(2, sphereScale, -4));
-    sphere0->descSetData.worldMatrix = scale(sphere0->descSetData.worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
+    float sphereScale = 1.0;
+    for (int i = 0; i < spheres.size(); i++) {
+      spheres[i] = newSphereDrawCall(64, true);
+      
+      float posX = (i - (spheres.size()-1)/2.0f) * 3.5;
+      vec3 position(posX, sphereScale, -3.5);
+      spheres[i]->descSetData.worldMatrix = translate(glm::identity<mat4>(), position);
+      
+      spheres[i]->descSetData.worldMatrix = scale(spheres[i]->descSetData.worldMatrix, vec3(sphereScale));
+    }
     
-    sphere1->descSetData.worldMatrix = translate(glm::identity<mat4>(), vec3(-4, sphereScale, -3.5));
-    sphere1->descSetData.worldMatrix = scale(sphere1->descSetData.worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
+    spheres[0]->descSetData.diffuseReflectionConst = 0.8;
+    spheres[0]->descSetData.specReflectionConst = 0;
+    spheres[0]->descSetData.specPowerConst = 1;
+    
+    spheres[1]->descSetData.diffuseReflectionConst = 0.4;
+    spheres[1]->descSetData.specReflectionConst = 0.4;
+    spheres[1]->descSetData.specPowerConst = 10;
+    
+    spheres[2]->descSetData.diffuseReflectionConst = 0;
+    spheres[2]->descSetData.specReflectionConst = 0.8;
+    spheres[2]->descSetData.specPowerConst = 30;
         
     float aeroplaneScale = 0.6;
     aeroplane->descSetData.worldMatrix = translate(glm::identity<mat4>(), vec3(3, 1.6, 2));
@@ -199,9 +211,6 @@ namespace geometry {
     frog->descSetData.worldMatrix = rotate(frog->descSetData.worldMatrix, -0.1f, vec3(1, 0, 0)); // even out the frog's feet
     
     floor->descSetData.worldMatrix = glm::identity<mat4>();
-    
-    obelisk->descSetData.worldMatrix = translate(glm::identity<mat4>(), vec3(-1, 0, -2));
-    obelisk->descSetData.worldMatrix = rotate(obelisk->descSetData.worldMatrix, 0.2f, vec3(0, 1, 0));
     
     // Create floor texture sampler
     {
@@ -245,18 +254,14 @@ namespace geometry {
   }
   
   void renderAllGeometryWithoutSamplers(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
-    sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    for (auto &sphere : spheres) sphere->addToCmdBuffer(cmdBuffer, pipelineLayout);
     frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
     aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
     floor->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
   
   void renderBareGeometry(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
-    sphere0->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    sphere1->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    for (auto &sphere : spheres) sphere->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
   
   void renderTexturedGeometry(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
