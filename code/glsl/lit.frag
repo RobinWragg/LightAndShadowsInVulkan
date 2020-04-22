@@ -7,6 +7,13 @@ layout(location = 3) in vec3 surfacePosInLightView;
 
 layout(location = 0) out vec4 outColor;
 
+layout(set = 0, binding = 0) uniform DrawCall {
+  mat4 worldMatrix;
+  float diffuseReflectionConst;
+  float specReflectionConst;
+  int specPowerConst;
+} drawCall;
+
 layout(set = 1, binding = 0) uniform LightMatrices {
   mat4 view;
   mat4 proj;
@@ -147,10 +154,6 @@ float getTotalShadowFactor() {
 
 void main() {
   const vec3 viewPos = vec3(0, 0, 0); // This is the origin because we are in view-space
-  
-  const float diffuseReflectionConst = 0.5; // from material
-  const float specReflectionConst = 0.5; // from material
-  const int specPowerConst = 10; // from material
   const vec3 color = vec3(1);
   
   // Interpolation can cause normals to be non-unit length, so we re-normalise them here
@@ -166,12 +169,12 @@ void main() {
   float specReflection = 0;
   
   if (surfaceNormalLightDirDot > 0) {
-    diffuseReflection = diffuseReflectionConst * surfaceNormalLightDirDot;
+    diffuseReflection = drawCall.diffuseReflectionConst * surfaceNormalLightDirDot;
     
     float reflectionViewDot = dot(reflectionDirectionUnit, surfaceToViewDirectionUnit);
     
     if (reflectionViewDot > 0) {
-      specReflection = specReflectionConst * pow(reflectionViewDot, specPowerConst);
+      specReflection = drawCall.specReflectionConst * pow(reflectionViewDot, drawCall.specPowerConst);
     }
   }
   

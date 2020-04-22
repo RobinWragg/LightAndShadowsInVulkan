@@ -9,10 +9,16 @@ public:
   VkBuffer texCoordBuffer = VK_NULL_HANDLE;
   uint32_t vertexCount;
   
-  mat4 worldMatrix;
-  VkBuffer        worldMatrixBuffer       = VK_NULL_HANDLE;
-  VkDeviceMemory  worldMatrixBufferMemory = VK_NULL_HANDLE;
-  VkDescriptorSet worldMatrixDescSet      = VK_NULL_HANDLE;
+  struct {
+    mat4  worldMatrix            = glm::identity<mat4>();
+    float diffuseReflectionConst = 0.5;
+    float specReflectionConst    = 0.5;
+    int   specPowerConst         = 10;
+  } descSetData;
+  
+  VkBuffer        descSetBuffer       = VK_NULL_HANDLE;
+  VkDeviceMemory  descSetBufferMemory = VK_NULL_HANDLE;
+  VkDescriptorSet descSet             = VK_NULL_HANDLE;
   
   DrawCall() {}
   

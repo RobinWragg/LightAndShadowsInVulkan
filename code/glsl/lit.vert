@@ -10,6 +10,9 @@ layout(location = 3) out vec3 vertPosInLightView;
 
 layout(set = 0, binding = 0) uniform DrawCall {
   mat4 worldMatrix;
+  float diffuseReflectionConst;
+  float specReflectionConst;
+  int specPowerConst;
 } drawCall;
 
 layout(set = 1, binding = 0) uniform LightMatrices {

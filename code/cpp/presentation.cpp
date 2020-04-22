@@ -172,8 +172,8 @@ namespace presentation {
   void renderLightSource(VkCommandBuffer cmdBuffer) {
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, unlitPipeline);
     
-    lightSource->worldMatrix = translate(glm::identity<mat4>(), shadows::getLightPos());
-    lightSource->worldMatrix = scale(lightSource->worldMatrix, vec3(0.2, 0.2, 0.2));
+    lightSource->descSetData.worldMatrix = translate(glm::identity<mat4>(), shadows::getLightPos());
+    lightSource->descSetData.worldMatrix = scale(lightSource->descSetData.worldMatrix, vec3(0.2, 0.2, 0.2));
     
     lightSource->addToCmdBuffer(cmdBuffer, basicPipelineLayout);
   }

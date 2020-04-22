@@ -180,28 +180,28 @@ namespace geometry {
     sphere1 = newSphereDrawCall(64, true);
     
     float sphereScale = 0.7;
-    sphere0->worldMatrix = translate(glm::identity<mat4>(), vec3(2, sphereScale, -4));
-    sphere0->worldMatrix = scale(sphere0->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
+    sphere0->descSetData.worldMatrix = translate(glm::identity<mat4>(), vec3(2, sphereScale, -4));
+    sphere0->descSetData.worldMatrix = scale(sphere0->descSetData.worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
     
-    sphere1->worldMatrix = translate(glm::identity<mat4>(), vec3(-4, sphereScale, -3.5));
-    sphere1->worldMatrix = scale(sphere1->worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
+    sphere1->descSetData.worldMatrix = translate(glm::identity<mat4>(), vec3(-4, sphereScale, -3.5));
+    sphere1->descSetData.worldMatrix = scale(sphere1->descSetData.worldMatrix, vec3(sphereScale, sphereScale, sphereScale));
         
     float aeroplaneScale = 0.6;
-    aeroplane->worldMatrix = translate(glm::identity<mat4>(), vec3(3, 1.6, 2));
-    aeroplane->worldMatrix = scale(aeroplane->worldMatrix, vec3(aeroplaneScale, aeroplaneScale, aeroplaneScale));
-    aeroplane->worldMatrix = rotate(aeroplane->worldMatrix, 0.2f, vec3(0, 1, 0));
-    aeroplane->worldMatrix = rotate(aeroplane->worldMatrix, 0.035f, vec3(1, 0, 0));
+    aeroplane->descSetData.worldMatrix = translate(glm::identity<mat4>(), vec3(3, 1.6, 2));
+    aeroplane->descSetData.worldMatrix = scale(aeroplane->descSetData.worldMatrix, vec3(aeroplaneScale, aeroplaneScale, aeroplaneScale));
+    aeroplane->descSetData.worldMatrix = rotate(aeroplane->descSetData.worldMatrix, 0.2f, vec3(0, 1, 0));
+    aeroplane->descSetData.worldMatrix = rotate(aeroplane->descSetData.worldMatrix, 0.035f, vec3(1, 0, 0));
     
     float frogScale = 1;
-    frog->worldMatrix = translate(glm::identity<mat4>(), vec3(2, 0.35, 4));
-    frog->worldMatrix = scale(frog->worldMatrix, vec3(frogScale, frogScale, frogScale));
-    frog->worldMatrix = rotate(frog->worldMatrix, -1.5f, vec3(0, 1, 0));
-    frog->worldMatrix = rotate(frog->worldMatrix, -0.1f, vec3(1, 0, 0)); // even out the frog's feet
+    frog->descSetData.worldMatrix = translate(glm::identity<mat4>(), vec3(2, 0.35, 4));
+    frog->descSetData.worldMatrix = scale(frog->descSetData.worldMatrix, vec3(frogScale, frogScale, frogScale));
+    frog->descSetData.worldMatrix = rotate(frog->descSetData.worldMatrix, -1.5f, vec3(0, 1, 0));
+    frog->descSetData.worldMatrix = rotate(frog->descSetData.worldMatrix, -0.1f, vec3(1, 0, 0)); // even out the frog's feet
     
-    floor->worldMatrix = glm::identity<mat4>();
+    floor->descSetData.worldMatrix = glm::identity<mat4>();
     
-    obelisk->worldMatrix = translate(glm::identity<mat4>(), vec3(-1, 0, -2));
-    obelisk->worldMatrix = rotate(obelisk->worldMatrix, 0.2f, vec3(0, 1, 0));
+    obelisk->descSetData.worldMatrix = translate(glm::identity<mat4>(), vec3(-1, 0, -2));
+    obelisk->descSetData.worldMatrix = rotate(obelisk->descSetData.worldMatrix, 0.2f, vec3(0, 1, 0));
     
     // Create floor texture sampler
     {
