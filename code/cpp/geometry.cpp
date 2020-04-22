@@ -171,7 +171,7 @@ namespace geometry {
   
   void init() {
     aeroplane = newDrawCallFromObjFile("aeroplane.obj");
-    frog = newDrawCallFromObjFile("frog.obj");
+    frog = newDrawCallFromObjFile("Tree_frog.obj");
     
     createFloor();
     
@@ -237,7 +237,7 @@ namespace geometry {
       VkImage image;
       VkDeviceMemory imageMemory;
       VkImageView imageView;
-      gfx::loadImage("frog_texture.jpg", false, &image, &imageMemory, &imageView);
+      gfx::loadImage("Tree_frog.jpg", false, &image, &imageMemory, &imageView);
       VkSampler sampler = gfx::createSampler();
       frogSamplerDescSet = gfx::createDescSet(imageView, sampler);
     }
