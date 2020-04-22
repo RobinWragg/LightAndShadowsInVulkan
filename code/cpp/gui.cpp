@@ -75,6 +75,9 @@ namespace gui {
     
     Checkbox("Animate Lightsource", &settings.animateLightPos);
     
+    SetNextItemWidth(90);
+    SliderFloat("Ambient Lighting Amount", &settings.ambReflection, 0, 1, "%.3f", 2);
+    
     Text("Subsource Arrangement");
     if (RadioButton("Spiral", settings.subsourceArrangement == settings.SPIRAL)) {
       settings.subsourceArrangement = settings.SPIRAL;

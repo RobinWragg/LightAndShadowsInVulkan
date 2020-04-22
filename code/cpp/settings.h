@@ -16,6 +16,7 @@ struct Settings {
   bool animateLightPos = false;
   bool renderTextures = false;
   bool renderNormalMaps = false;
+  float ambReflection = 0.1;
   
   float sourceRadius = 0.1;
   int shadowAntiAliasSize = 0;

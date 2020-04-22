@@ -34,6 +34,7 @@ layout(push_constant) uniform Config {
   int shadowAntiAliasSize;
   bool renderTexture; // Not used in this shader
   bool renderNormalMap; // Not used in this shader
+  float ambReflection;
 } config;
 
 layout(set = 4, binding = 0) uniform sampler2D shadowMap0;
@@ -147,7 +148,6 @@ float getTotalShadowFactor() {
 void main() {
   const vec3 viewPos = vec3(0, 0, 0); // This is the origin because we are in view-space
   
-  const float ambReflectionConst = 0.1; // from frame
   const float diffuseReflectionConst = 0.5; // from material
   const float specReflectionConst = 0.5; // from material
   const int specPowerConst = 10; // from material
@@ -179,7 +179,7 @@ void main() {
   diffuseReflection *= 1 - shadowFactor;
   specReflection *= 1 - shadowFactor;
   
-  const float totalReflection = ambReflectionConst + diffuseReflection + specReflection;
+  const float totalReflection = config.ambReflection + diffuseReflection + specReflection;
   
   outColor = vec4(color * totalReflection, 1);
 }

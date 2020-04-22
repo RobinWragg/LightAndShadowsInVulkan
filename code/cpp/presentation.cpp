@@ -29,6 +29,7 @@ namespace presentation {
     int32_t shadowAntiAliasSize;
     uint32_t renderTexturesBool;
     uint32_t renderNormalMapsBool;
+    float ambReflection;
   } pushConstants;
   
   VkBuffer              matricesBuffer        = VK_NULL_HANDLE;
@@ -164,6 +165,7 @@ namespace presentation {
     pushConstants.shadowAntiAliasSize  = settings.shadowAntiAliasSize;
     pushConstants.renderTexturesBool   = settings.renderTextures;
     pushConstants.renderNormalMapsBool = settings.renderNormalMaps;
+    pushConstants.ambReflection        = settings.ambReflection;
     vkCmdPushConstants(cmdBuffer, basicPipelineLayout, VK_SHADER_STAGE_ALL_GRAPHICS, 0, sizeof(pushConstants), &pushConstants);
   }
   
