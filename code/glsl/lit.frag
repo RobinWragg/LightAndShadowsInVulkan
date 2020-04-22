@@ -1,6 +1,8 @@
 #version 450
 
-layout(location = 0) in vec3 vertPosInWorld;
+// This shader is in view-space.
+
+layout(location = 0) in vec3 surfacePos;
 layout(location = 1) in vec3 interpVertNormalInWorld;
 layout(location = 2) in vec3 lightPosInWorld;
 
@@ -144,22 +146,32 @@ float getTotalShadowFactor(vec3 posInWorld) {
 }
 
 void main() {
+  const float ambReflectionConst = 0;
+  const float diffuseReflectionConst = 1;
+  const float specReflectionConst = 0.5;
+  const vec3 color = vec3(1);
+  
   // Interpolation can cause normals to be non-unit length, so we re-normalise them here
-  vec3 vertNormalInWorld = normalize(interpVertNormalInWorld);
+  const vec3 surfaceNormal = normalize(interpVertNormalInWorld);
   
-  const vec3 vertToLightVector = lightPosInWorld - vertPosInWorld;
+  const vec3 surfaceToLightDirectionUnit = normalize(lightPosInWorld - surfacePos);
   
-  float lightNormalDot = dot(vertNormalInWorld, normalize(vertToLightVector));
+  const vec3 reflectionDirectionUnit = reflect(surfaceToLightDirectionUnit, surfaceNormal);
   
-  vec3 preShadowColor = vec3(1, 1, 1) * lightNormalDot;
-  outColor = vec4(preShadowColor, 1);
+  const float diffuseReflection = diffuseReflectionConst * dot(surfaceNormal, surfaceToLightDirectionUnit);
   
-  if (lightNormalDot > 0) {
-    // Attenuate the fragment color if it is in shadow
-    float maxLightAttenuation = 0.7;
-    float lightAttenuation = getTotalShadowFactor(vertPosInWorld) * maxLightAttenuation;
-    outColor.rgb *= 1 - lightAttenuation;
-  }
+  // const float specReflection = specReflectionConst * dot(reflectionDirectionUnit, surfaceToLightDirectionUnit);
+  
+  const float totalReflection = ambReflectionConst + diffuseReflection;
+  
+  outColor = vec4(color * totalReflection, 1);
+  
+  // if (lightNormalDot > 0) {
+  //   // Attenuate the fragment color if it is in shadow
+  //   float maxLightAttenuation = 0.7;
+  //   float lightAttenuation = getTotalShadowFactor(surfacePos) * maxLightAttenuation;
+  //   outColor.rgb *= 1 - lightAttenuation;
+  // }
 }
 
 
