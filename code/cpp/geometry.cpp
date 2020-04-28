@@ -10,6 +10,7 @@ namespace geometry {
   DrawCall *sphereDiffuse = nullptr;
   DrawCall *aeroplane = nullptr;
   DrawCall *frog      = nullptr;
+  DrawCall *obelisk   = nullptr;
   
   VkDescriptorSet floorSamplerDescSet;
   VkDescriptorSet floorNormalSamplerDescSet;
@@ -155,7 +156,7 @@ namespace geometry {
   }
   
   void createFloor() {
-    auto positions = createCuboidVertices(12, 0.5, -0.5);
+    auto positions = createCuboidVertices(30, 0.5, -0.5);
     
     vector<vec2> texCoords = {
       {0, 0}, {0, 1}, {1, 0},
@@ -172,6 +173,12 @@ namespace geometry {
   void init() {
     aeroplane = newDrawCallFromObjFile("aeroplane.obj");
     frog = newDrawCallFromObjFile("Tree_frog.obj");
+    
+    obelisk = new DrawCall(createCuboidVertices(1, 3, 0));
+    obelisk->descSetData.worldMatrix = translate(glm::identity<mat4>(), vec3(-2, 0, -2));
+    obelisk->descSetData.diffuseReflectionConst = 0.8;
+    obelisk->descSetData.specReflectionConst = 0;
+    obelisk->descSetData.specPowerConst = 1;
     
     createFloor();
     
@@ -254,22 +261,24 @@ namespace geometry {
   }
   
   void renderAllGeometryWithoutSamplers(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
-    for (auto &sphere : spheres) sphere->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    // for (auto &sphere : spheres) sphere->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    // frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    // aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
     floor->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
   
   void renderBareGeometry(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
-    for (auto &sphere : spheres) sphere->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    // for (auto &sphere : spheres) sphere->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
   
   void renderTexturedGeometry(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 18, 1, &frogSamplerDescSet, 0, nullptr);
-    frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    // frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
     
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 18, 1, &aeroplaneSamplerDescSet, 0, nullptr);
-    aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    // aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
   
   void renderTexturedNormalMappedGeometry(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {

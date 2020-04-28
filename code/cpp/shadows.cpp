@@ -95,9 +95,11 @@ namespace shadows {
       lightPos.z = 0.0001; // Non-zero in order to work around a bug in glm::lookAt()
     }
     
+    lightPos = vec3(1, 7, 0.5);
+    
     matrices.view = lookAt(lightPos, vec3(0, 0, 0), vec3(0, 1, 0));
     
-    float fieldOfView = 2.5;
+    float fieldOfView = 2.3;
     float aspectRatio = (*shadowMaps)[0].width / (float)(*shadowMaps)[0].height;
     matrices.proj = perspective(fieldOfView, aspectRatio, 0.1f, 100.0f);
     

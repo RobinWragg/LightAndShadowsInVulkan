@@ -96,7 +96,7 @@ namespace presentation {
     }
     
     VkExtent2D extent = gfx::getSurfaceExtent();
-    matrices.proj = createProjectionMatrix(extent.width, extent.height, 0.5);
+    matrices.proj = createProjectionMatrix(extent.width, extent.height, 0.6);
     
     cameraPos.x = 3.388;
     cameraPos.y = 2;
@@ -129,7 +129,8 @@ namespace presentation {
     } else {
       // Camera positioning settings
       const float lateralDistanceFromOrigin = 20;
-      const float lateralAngle = 2.5 + getTime()*0.1;
+      const float lateralAngle = 3.5;
+      // const float lateralAngle = 2.5 + getTime()*0.1;
       
       float height = 8;
       
