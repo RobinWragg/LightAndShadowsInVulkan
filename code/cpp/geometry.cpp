@@ -212,10 +212,13 @@ namespace geometry {
     aeroplane->descSetData.worldMatrix = rotate(aeroplane->descSetData.worldMatrix, 0.035f, vec3(1, 0, 0));
     
     float frogScale = 1;
-    frog->descSetData.worldMatrix = translate(glm::identity<mat4>(), vec3(2, 0.35, 4));
+    frog->descSetData.worldMatrix = translate(glm::identity<mat4>(), vec3(-5, 3, -2));
     frog->descSetData.worldMatrix = scale(frog->descSetData.worldMatrix, vec3(frogScale, frogScale, frogScale));
-    frog->descSetData.worldMatrix = rotate(frog->descSetData.worldMatrix, -1.5f, vec3(0, 1, 0));
-    frog->descSetData.worldMatrix = rotate(frog->descSetData.worldMatrix, -0.1f, vec3(1, 0, 0)); // even out the frog's feet
+    frog->descSetData.worldMatrix = rotate(frog->descSetData.worldMatrix, -3.5f, vec3(0, 1, 0));
+    // frog->descSetData.worldMatrix = rotate(frog->descSetData.worldMatrix, -0.1f, vec3(1, 0, 0)); // even out the frog's feet
+    frog->descSetData.diffuseReflectionConst = 0.0;
+    frog->descSetData.specReflectionConst = 0.0;
+    frog->descSetData.specPowerConst = 10;
     
     floor->descSetData.worldMatrix = glm::identity<mat4>();
     
@@ -264,18 +267,18 @@ namespace geometry {
     // for (auto &sphere : spheres) sphere->addToCmdBuffer(cmdBuffer, pipelineLayout);
     // frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
     // aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    floor->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    // floor->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    // obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
   
   void renderBareGeometry(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
     // for (auto &sphere : spheres) sphere->addToCmdBuffer(cmdBuffer, pipelineLayout);
-    obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    // obelisk->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
   
   void renderTexturedGeometry(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout) {
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 18, 1, &frogSamplerDescSet, 0, nullptr);
-    // frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    frog->addToCmdBuffer(cmdBuffer, pipelineLayout);
     
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 18, 1, &aeroplaneSamplerDescSet, 0, nullptr);
     // aeroplane->addToCmdBuffer(cmdBuffer, pipelineLayout);
@@ -285,7 +288,7 @@ namespace geometry {
     vector<VkDescriptorSet> floorDescSets = {floorSamplerDescSet, floorNormalSamplerDescSet};
     vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 18, (int)floorDescSets.size(), floorDescSets.data(), 0, nullptr);
     
-    floor->addToCmdBuffer(cmdBuffer, pipelineLayout);
+    // floor->addToCmdBuffer(cmdBuffer, pipelineLayout);
   }
 }
 

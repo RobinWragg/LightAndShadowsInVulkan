@@ -96,7 +96,7 @@ namespace presentation {
     }
     
     VkExtent2D extent = gfx::getSurfaceExtent();
-    matrices.proj = createProjectionMatrix(extent.width, extent.height, 0.6);
+    matrices.proj = createProjectionMatrix(extent.width, extent.height, 0.4);
     
     cameraPos.x = 3.388;
     cameraPos.y = 2;
