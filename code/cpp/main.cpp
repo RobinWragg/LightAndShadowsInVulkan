@@ -94,7 +94,7 @@ void renderNextFrame(float deltaTime) {
 
 int main(int argc, char* argv[]) {
   
-  #ifdef DEBUG
+  #ifdef _DEBUG
   printf("Debug build\n");
   printf("Validation enabled\n");
   const char *windowTitle = "Light and Shadow (debug build)";
@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
   printf("main()\n");
   fflush(stdout);
   
-  int result = SDL_Init(SDL_INIT_EVERYTHING);
+  int result = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS);
   SDL_assert_release(result == 0);
   
   setWorkingDir();

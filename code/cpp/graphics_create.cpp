@@ -103,7 +103,7 @@ namespace gfx {
     vector<const char*> extensions(extensionCount);
     SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, extensions.data());
     
-    #ifdef DEBUG
+    #ifdef _DEBUG
       extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     #endif
     
@@ -560,7 +560,7 @@ namespace gfx {
     instance = createInstance(window);
     SDL_assert_release(instance != VK_NULL_HANDLE);
     
-    #ifdef DEBUG
+    #ifdef _DEBUG
       createDebugMessenger();
       SDL_assert_release(debugMsgr != VK_NULL_HANDLE);
     #endif

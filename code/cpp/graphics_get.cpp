@@ -23,7 +23,7 @@ namespace gfx {
   };
   
   vector<const char*> getRequiredLayers() {
-    #ifdef DEBUG
+    #ifdef _DEBUG
       return requiredDebugLayers;
     #else
       return requiredReleaseLayers;
