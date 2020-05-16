@@ -203,14 +203,23 @@ namespace geometry {
     aeroplane->descSetData.worldMatrix = scale(aeroplane->descSetData.worldMatrix, vec3(aeroplaneScale, aeroplaneScale, aeroplaneScale));
     aeroplane->descSetData.worldMatrix = rotate(aeroplane->descSetData.worldMatrix, 0.2f, vec3(0, 1, 0));
     aeroplane->descSetData.worldMatrix = rotate(aeroplane->descSetData.worldMatrix, 0.035f, vec3(1, 0, 0));
+    aeroplane->descSetData.diffuseReflectionConst = 0.8;
+    aeroplane->descSetData.specReflectionConst = 0;
+    aeroplane->descSetData.specPowerConst = 1;
     
     float frogScale = 1;
     frog->descSetData.worldMatrix = translate(glm::identity<mat4>(), vec3(2, 0.35, 4));
     frog->descSetData.worldMatrix = scale(frog->descSetData.worldMatrix, vec3(frogScale, frogScale, frogScale));
     frog->descSetData.worldMatrix = rotate(frog->descSetData.worldMatrix, -1.5f, vec3(0, 1, 0));
     frog->descSetData.worldMatrix = rotate(frog->descSetData.worldMatrix, -0.1f, vec3(1, 0, 0)); // even out the frog's feet
+    frog->descSetData.diffuseReflectionConst = 0.8;
+    frog->descSetData.specReflectionConst = 1;
+    frog->descSetData.specPowerConst = 50;
     
     floor->descSetData.worldMatrix = glm::identity<mat4>();
+    floor->descSetData.diffuseReflectionConst = 0.8;
+    floor->descSetData.specReflectionConst = 0.5;
+    floor->descSetData.specPowerConst = 30;
     
     // Create floor texture sampler
     {

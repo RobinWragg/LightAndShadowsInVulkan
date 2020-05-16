@@ -157,7 +157,7 @@ void main() {
   const vec3 color = vec3(1);
   
   // Interpolation can cause normals to be non-unit length, so we re-normalise them here
-  const vec3 surfaceNormal = normalize(interpSurfaceNormal);
+  vec3 surfaceNormal = normalize(interpSurfaceNormal);
   
   const vec3 surfaceToLightDirectionUnit = normalize(lightPos - surfacePos);
   const vec3 surfaceToViewDirectionUnit = normalize(viewPos - surfacePos);
@@ -182,9 +182,9 @@ void main() {
   diffuseReflection *= 1 - shadowFactor;
   specReflection *= 1 - shadowFactor;
   
-  const float totalReflection = config.ambReflection + diffuseReflection + specReflection;
+  const float colorReflection = config.ambReflection + diffuseReflection;
   
-  outColor = vec4(color * totalReflection, 1);
+  outColor = vec4(color * colorReflection + specReflection, 1);
 }
 
 

@@ -2,12 +2,14 @@
 
 layout(location = 0) in vec3 vertPosInMesh;
 layout(location = 1) in vec3 vertNormalInMesh;
-layout(location = 2) in vec2 vertTexCoordInMesh;
+layout(location = 2) in vec2 inTexCoord;
 
-layout(location = 0) out vec3 vertPosInWorld;
-layout(location = 1) out vec3 vertNormalInWorld;
-layout(location = 2) out vec3 lightPosInWorld;
-layout(location = 3) out vec2 fragTexCoord;
+layout(location = 0) out vec3 vertPosInView;
+layout(location = 1) out vec3 vertNormalInView;
+layout(location = 2) out vec3 lightPosInView;
+layout(location = 3) out vec3 vertPosInLightView;
+layout(location = 4) out vec2 outTexCoord;
+layout(location = 5) out mat3 normalMatrix;
 
 layout(set = 0, binding = 0) uniform DrawCall {
   mat4 worldMatrix;
@@ -25,18 +27,23 @@ layout(set = 2, binding = 0) uniform Matrices {
 
 void main() {
   vec4 vertPosInWorld4 = drawCall.worldMatrix * vec4(vertPosInMesh, 1.0);
-  vertPosInWorld = vertPosInWorld4.xyz;
+  vec4 vertPosInView4 = matrices.view * vertPosInWorld4;
+  vertPosInView = vertPosInView4.xyz;
   
-  // Transform the normal to world space
-  mat3 normalMatrix = mat3(drawCall.worldMatrix);
+  gl_Position = matrices.proj * vertPosInView4;
+  
+  vertPosInLightView = (lightMatrices.view * vertPosInWorld4).xyz;
+  
+  // Transform the normal to view space
+  normalMatrix = mat3(matrices.view * drawCall.worldMatrix);
   normalMatrix = transpose(inverse(normalMatrix));
-  vertNormalInWorld = normalMatrix * vertNormalInMesh;
+  vertNormalInView = normalMatrix * vertNormalInMesh;
   
-  gl_Position = matrices.proj * matrices.view * vertPosInWorld4;
+  // The light is of course at the origin in light-view space, so we can get its world position this way:
+  vec4 lightPosInWorld4 = inverse(lightMatrices.view) * vec4(0, 0, 0, /* <- origin */ 1);
+  lightPosInView = (matrices.view * lightPosInWorld4).xyz;
   
-  lightPosInWorld = (inverse(lightMatrices.view) * vec4(0, 0, 0, 1)).xyz;
-  
-  fragTexCoord = vertTexCoordInMesh;
+  outTexCoord = inTexCoord;
 }
 
 

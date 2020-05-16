@@ -1,20 +1,30 @@
 #version 450
 
-layout(location = 0) in vec3 vertPosInWorld;
-layout(location = 1) in vec3 vertNormal;
-layout(location = 2) in vec3 lightPosInWorld;
-layout(location = 3) in vec2 texCoord;
+layout(location = 0) in vec3 surfacePos;
+layout(location = 1) in vec3 interpSurfaceNormal;
+layout(location = 2) in vec3 lightPos;
+layout(location = 3) in vec3 surfacePosInLightView;
+layout(location = 4) in vec2 texCoord;
+layout(location = 5) in mat3 normalMatrix;
 
 layout(location = 0) out vec4 outColor;
 
 layout(set = 0, binding = 0) uniform DrawCall {
   mat4 worldMatrix;
+  float diffuseReflectionConst;
+  float specReflectionConst;
+  int specPowerConst;
 } drawCall;
 
 layout(set = 1, binding = 0) uniform LightMatrices {
   mat4 view;
   mat4 proj;
 } lightMatrices;
+
+layout(set = 2, binding = 0) uniform Matrices {
+  mat4 view;
+  mat4 proj;
+} matrices;
 
 layout(set = 3, binding = 0) uniform LightViewOffsets {
   vec2 value0;
@@ -40,6 +50,7 @@ layout(push_constant) uniform Config {
   int shadowAntiAliasSize;
   bool renderTexture;
   bool renderNormalMap;
+  float ambReflection;
 } config;
 
 layout(set = 4, binding = 0) uniform sampler2D shadowMap0;
@@ -102,14 +113,14 @@ vec2 getLightViewOffset(int index) {
 
 // Returns the degree to which a world position is shadowed.
 // 0 for no shadow, 1 for completely shadowed.
-float getShadowFactorFromMap(vec3 posInWorld, int shadowMapIndex) {
-  vec3 posInLightView = (lightMatrices.view * vec4(posInWorld, 1)).xyz;
-  posInLightView.xy += getLightViewOffset(shadowMapIndex);
+float getShadowFactorFromMap(int shadowMapIndex) {
+  vec3 posWithOffset = surfacePosInLightView;
+  posWithOffset.xy += getLightViewOffset(shadowMapIndex);
   
   // All shadowmaps have the same dimensions, so we just get the size of shadowmap 0.
   float texelSize = 1.0 / textureSize(shadowMap0, 0).r;
   
-  const vec4 posInLightProj = lightMatrices.proj * vec4(posInLightView, 1);
+  const vec4 posInLightProj = lightMatrices.proj * vec4(posWithOffset, 1);
   
   // This is the perspective division that transforms projection space into normalised device space.
   const vec3 normalisedDevicePos = posInLightProj.xyz / posInLightProj.w;
@@ -117,7 +128,7 @@ float getShadowFactorFromMap(vec3 posInWorld, int shadowMapIndex) {
   // Change the bounds from [-1,1] to [0,1].
   vec2 centreTexCoord = normalisedDevicePos.xy * 0.5 + 0.5;
   
-  const float posToLightPosDistance = length(posInLightView);
+  const float posToLightPosDistance = length(posWithOffset);
   
   // This is necessary due to floating point inaccuracy. This equates to a tenth of a millimeter in world/lightView space, so it's not noticeable.
   const float epsilon = 0.0001;
@@ -143,34 +154,56 @@ float getShadowFactorFromMap(vec3 posInWorld, int shadowMapIndex) {
   return float(shadowSampleCount) / totalSampleCount;
 }
 
-float getTotalShadowFactor(vec3 posInWorld) {
+float getTotalShadowFactor() {
   float totalFactor = 0;
   
   for (int i = 0; i < config.shadowMapCount; i++) {
-    totalFactor += getShadowFactorFromMap(posInWorld, i);
+    totalFactor += getShadowFactorFromMap(i);
   }
   
   return totalFactor / config.shadowMapCount;
 }
 
 void main() {
-  const vec3 vertToLightVector = lightPosInWorld - vertPosInWorld;
+  const vec3 viewPos = vec3(0, 0, 0); // This is the origin because we are in view-space
+  const vec3 color = config.renderTexture ? texture(colorTexture, texCoord).rgb : vec3(1);
   
-  vec3 normal = config.renderNormalMap ? texture(normalMap, texCoord).xyz : vertNormal;
-  normal = normalize(normal);
   
-  float lightNormalDot = dot(normal, normalize(vertToLightVector));
   
-  vec3 baseColor = config.renderTexture ? texture(colorTexture, texCoord).rgb : vec3(1);
+  vec3 surfaceNormal;
   
-  outColor = vec4(baseColor * lightNormalDot, 1);
-  
-  if (lightNormalDot > 0) {
-    // Attenuate the fragment color if it is in shadow
-    float maxLightAttenuation = 0.7;
-    float lightAttenuation = getTotalShadowFactor(vertPosInWorld) * maxLightAttenuation;
-    outColor.rgb *= 1 - lightAttenuation;
+  if (config.renderNormalMap) {
+    surfaceNormal = normalMatrix * texture(normalMap, texCoord).xyz;
+  } else {
+    surfaceNormal = normalize(interpSurfaceNormal);
   }
+  
+  const vec3 surfaceToLightDirectionUnit = normalize(lightPos - surfacePos);
+  const vec3 surfaceToViewDirectionUnit = normalize(viewPos - surfacePos);
+  const vec3 reflectionDirectionUnit = reflect(-surfaceToLightDirectionUnit, surfaceNormal);
+  
+  float surfaceNormalLightDirDot = dot(surfaceNormal, surfaceToLightDirectionUnit);
+  
+  float diffuseReflection = 0;
+  float specReflection = 0;
+  
+  if (surfaceNormalLightDirDot > 0) {
+    diffuseReflection = drawCall.diffuseReflectionConst * surfaceNormalLightDirDot;
+    
+    float reflectionViewDot = dot(reflectionDirectionUnit, surfaceToViewDirectionUnit);
+    
+    if (reflectionViewDot > 0) {
+      specReflection = drawCall.specReflectionConst * pow(reflectionViewDot, drawCall.specPowerConst);
+    }
+  }
+  
+  float shadowFactor = getTotalShadowFactor();
+  diffuseReflection *= 1 - shadowFactor;
+  specReflection *= 1 - shadowFactor;
+  
+  const float colorReflection = config.ambReflection + diffuseReflection;
+  
+  outColor = vec4(color * colorReflection + specReflection, 1);
 }
 
 
