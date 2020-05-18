@@ -195,7 +195,7 @@ namespace geometry {
     spheres[1]->descSetData.specPowerConst = 10;
     
     spheres[2]->descSetData.diffuseReflectionConst = 0;
-    spheres[2]->descSetData.specReflectionConst = 0.8;
+    spheres[2]->descSetData.specReflectionConst = 0.6;
     spheres[2]->descSetData.specPowerConst = 30;
         
     float aeroplaneScale = 0.6;

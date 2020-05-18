@@ -129,7 +129,7 @@ namespace presentation {
     } else {
       // Camera positioning settings
       const float lateralDistanceFromOrigin = 20;
-      const float lateralAngle = 2.5 + getTime()*0.1;
+      const float lateralAngle = getTime()*0.1 - 1;
       
       float height = 8;
       

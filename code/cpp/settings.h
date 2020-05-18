@@ -14,9 +14,9 @@ struct Settings {
   } subsourceArrangement = SPIRAL;
   
   bool animateLightPos = false;
-  bool renderTextures = false;
-  bool renderNormalMaps = false;
-  float ambReflection = 0.1;
+  bool renderTextures = true;
+  bool renderNormalMaps = true;
+  float ambReflection = 0.2;
   
   float sourceRadius = 0.1;
   int shadowAntiAliasSize = 0;

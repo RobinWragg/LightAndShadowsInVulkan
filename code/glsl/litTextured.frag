@@ -168,8 +168,6 @@ void main() {
   const vec3 viewPos = vec3(0, 0, 0); // This is the origin because we are in view-space
   const vec3 color = config.renderTexture ? texture(colorTexture, texCoord).rgb : vec3(1);
   
-  
-  
   vec3 surfaceNormal;
   
   if (config.renderNormalMap) {
