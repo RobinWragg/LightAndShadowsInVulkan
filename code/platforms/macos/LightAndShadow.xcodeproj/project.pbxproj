@@ -142,7 +142,7 @@
 		00687E4E240F0FF7003B0EF2 /* settings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = settings.cpp; sourceTree = "<group>"; };
 		00687E4F240F0FF7003B0EF2 /* geometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = geometry.h; sourceTree = "<group>"; };
 		008D37CB238F129F00336F14 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MoltenVK.framework; sourceTree = SOURCE_ROOT; };
-		008D37FD238F16AB00336F14 /* Release.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Release.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		008D37FD238F16AB00336F14 /* Light and Shadow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Light and Shadow.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		00DC28B7240EA5ED0076B13D /* imgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
 		00DC28B8240EA5ED0076B13D /* imstb_textedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imstb_textedit.h; sourceTree = "<group>"; };
 		00DC28B9240EA5ED0076B13D /* imconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imconfig.h; sourceTree = "<group>"; };
@@ -216,7 +216,7 @@
 			isa = PBXGroup;
 			children = (
 				001D32B7238217CF001A68C7 /* Debug.app */,
-				008D37FD238F16AB00336F14 /* Release.app */,
+				008D37FD238F16AB00336F14 /* Light and Shadow.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -325,9 +325,9 @@
 			productReference = 001D32B7238217CF001A68C7 /* Debug.app */;
 			productType = "com.apple.product-type.application";
 		};
-		008D37E2238F16AB00336F14 /* Release */ = {
+		008D37E2238F16AB00336F14 /* Light and Shadow */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 008D37FA238F16AB00336F14 /* Build configuration list for PBXNativeTarget "Release" */;
+			buildConfigurationList = 008D37FA238F16AB00336F14 /* Build configuration list for PBXNativeTarget "Light and Shadow" */;
 			buildPhases = (
 				008D37E3238F16AB00336F14 /* Sources */,
 				008D37E8238F16AB00336F14 /* ShellScript */,
@@ -339,9 +339,9 @@
 			);
 			dependencies = (
 			);
-			name = Release;
+			name = "Light and Shadow";
 			productName = LightAndShadow;
-			productReference = 008D37FD238F16AB00336F14 /* Release.app */;
+			productReference = 008D37FD238F16AB00336F14 /* Light and Shadow.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -372,7 +372,7 @@
 			projectRoot = "";
 			targets = (
 				001D32B6238217CF001A68C7 /* Debug */,
-				008D37E2238F16AB00336F14 /* Release */,
+				008D37E2238F16AB00336F14 /* Light and Shadow */,
 			);
 		};
 /* End PBXProject section */
@@ -742,7 +742,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		008D37FA238F16AB00336F14 /* Build configuration list for PBXNativeTarget "Release" */ = {
+		008D37FA238F16AB00336F14 /* Build configuration list for PBXNativeTarget "Light and Shadow" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				008D37FB238F16AB00336F14 /* Debug */,

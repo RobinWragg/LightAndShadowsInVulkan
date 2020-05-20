@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "008D37E2238F16AB00336F14"
-               BuildableName = "Release.app"
-               BlueprintName = "Release"
+               BuildableName = "Light and Shadow.app"
+               BlueprintName = "Light and Shadow"
                ReferencedContainer = "container:LightAndShadow.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,8 +45,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "008D37E2238F16AB00336F14"
-            BuildableName = "Release.app"
-            BlueprintName = "Release"
+            BuildableName = "Light and Shadow.app"
+            BlueprintName = "Light and Shadow"
             ReferencedContainer = "container:LightAndShadow.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
