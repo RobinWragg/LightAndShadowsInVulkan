@@ -1,0 +1,1 @@
+The project files for Visual Studio and Xcode are in the 'platforms' folder. If you would like to build the project, I recommend building with the Release configuration, as your GPU driver might not support the Vulkan validation layers that I have used in the Debug configuration.
